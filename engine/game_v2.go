@@ -51,56 +51,13 @@ func NewGameV2() *GameV2 {
 func (g *GameV2) initializeWorld() {
 	// Create all 110 rooms from original Zork I
 	InitializeRooms(g)
-	// Create items
-	g.createItems()
+	// Create all items from original Zork I
+	InitializeItems(g)
 	// Create NPCs
 	g.createNPCs()
 
 	// Set starting location
 	g.Location = "west-of-house"
-}
-
-func (g *GameV2) createItems() {
-	// Mailbox
-	mailbox := NewItem("mailbox", "small mailbox", "The small mailbox is open.")
-	mailbox.Aliases = []string{"mailbox", "box"}
-	mailbox.Location = "west-of-house"
-	mailbox.Flags.IsContainer = true
-	mailbox.Flags.IsOpen = true
-	mailbox.Flags.IsTransparent = true
-	g.Items["mailbox"] = mailbox
-	g.Rooms["west-of-house"].AddItem("mailbox")
-
-	// Leaflet
-	leaflet := NewItem("leaflet", "leaflet", `"WELCOME TO ZORK!
-
-ZORK is a game of adventure, danger, and low cunning. In it you will explore some of the most amazing territory ever seen by mortals. No computer should be without one!"`)
-	leaflet.Aliases = []string{"leaflet", "pamphlet", "booklet"}
-	leaflet.Location = "mailbox"
-	leaflet.Flags.IsTakeable = true
-	leaflet.Flags.IsReadable = true
-	g.Items["leaflet"] = leaflet
-
-	// Brass Lantern - THE most important item!
-	lamp := NewItem("lamp", "brass lantern", "The brass lantern is on.")
-	lamp.Aliases = []string{"lamp", "lantern", "light"}
-	lamp.Location = "living-room"
-	lamp.Flags.IsTakeable = true
-	lamp.Flags.IsLightSource = true
-	lamp.Flags.IsLit = true
-	g.Items["lamp"] = lamp
-	g.Rooms["living-room"].AddItem("lamp")
-
-	// Sword
-	sword := NewItem("sword", "elvish sword", "The sword glows with a faint blue light.")
-	sword.Aliases = []string{"sword", "blade", "elvish"}
-	sword.Location = "living-room"
-	sword.Flags.IsTakeable = true
-	sword.Flags.IsWeapon = true
-	g.Items["sword"] = sword
-	g.Rooms["living-room"].AddItem("sword")
-
-	// Add more items...
 }
 
 func (g *GameV2) createNPCs() {
@@ -151,6 +108,9 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 	// Handle other verbs
 	switch cmd.Verb {
 	case "look":
+		if cmd.Preposition == "in" || cmd.Preposition == "into" {
+			return g.handleLookIn(cmd.IndirectObject)
+		}
 		return g.handleLook()
 	case "examine":
 		return g.handleExamine(cmd.DirectObject)
@@ -158,8 +118,29 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		return g.handleTake(cmd.DirectObject)
 	case "drop":
 		return g.handleDrop(cmd.DirectObject)
+	case "open":
+		return g.handleOpen(cmd.DirectObject)
+	case "close":
+		return g.handleClose(cmd.DirectObject)
+	case "read":
+		return g.handleRead(cmd.DirectObject)
+	case "turn":
+		// Handle both "turn on lamp" and "turn lamp on"
+		objName := cmd.DirectObject
+		if objName == "" {
+			objName = cmd.IndirectObject
+		}
+
+		if cmd.Preposition == "on" {
+			return g.handleTurnOn(objName)
+		} else if cmd.Preposition == "off" {
+			return g.handleTurnOff(objName)
+		}
+		return "Turn it on or off?"
 	case "inventory":
 		return g.handleInventory()
+	case "help":
+		return g.handleHelp()
 	case "quit":
 		g.GameOver = true
 		return "Thanks for playing!"
@@ -248,7 +229,35 @@ func (g *GameV2) handleExamine(objName string) string {
 	// Try to find item
 	item := g.findItem(objName)
 	if item != nil {
-		return item.Description
+		result := item.Description
+
+		// If it's a container, show if it's open/closed
+		if item.Flags.IsContainer {
+			if item.Flags.IsOpen {
+				result += " It is open."
+			} else {
+				result += " It is closed."
+			}
+
+			// Show what's inside if open or transparent
+			if item.Flags.IsOpen || item.Flags.IsTransparent {
+				var contents []string
+				for _, otherItem := range g.Items {
+					if otherItem.Location == item.ID {
+						contents = append(contents, otherItem.Name)
+					}
+				}
+
+				if len(contents) > 0 {
+					result += "\n\nThe " + item.Name + " contains:\n"
+					for _, itemName := range contents {
+						result += "  A " + itemName + "\n"
+					}
+				}
+			}
+		}
+
+		return strings.TrimSpace(result)
 	}
 
 	// Try to find NPC
@@ -323,6 +332,195 @@ func (g *GameV2) handleInventory() string {
 	return strings.TrimSpace(result.String())
 }
 
+func (g *GameV2) handleOpen(objName string) string {
+	if objName == "" {
+		return "What do you want to open?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special handling for kitchen window
+	if item.ID == "kitchen-window" {
+		if g.Flags["window-open"] {
+			return "It's already open."
+		}
+		g.Flags["window-open"] = true
+		item.Flags.IsOpen = true
+		return "With great effort, you open the window far enough to allow entry."
+	}
+
+	if !item.Flags.IsContainer {
+		return "You can't open that."
+	}
+
+	if item.Flags.IsOpen {
+		return "It's already open."
+	}
+
+	item.Flags.IsOpen = true
+	return "Opened."
+}
+
+func (g *GameV2) handleClose(objName string) string {
+	if objName == "" {
+		return "What do you want to close?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special handling for kitchen window
+	if item.ID == "kitchen-window" {
+		if !g.Flags["window-open"] {
+			return "It's already closed."
+		}
+		g.Flags["window-open"] = false
+		item.Flags.IsOpen = false
+		return "You close the window."
+	}
+
+	if !item.Flags.IsContainer {
+		return "You can't close that."
+	}
+
+	if !item.Flags.IsOpen {
+		return "It's already closed."
+	}
+
+	item.Flags.IsOpen = false
+	return "Closed."
+}
+
+func (g *GameV2) handleRead(objName string) string {
+	if objName == "" {
+		return "What do you want to read?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	if !item.Flags.IsReadable {
+		return "How does one read a " + item.Name + "?"
+	}
+
+	return item.Description
+}
+
+func (g *GameV2) handleLookIn(objName string) string {
+	if objName == "" {
+		return "Look in what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	if !item.Flags.IsContainer {
+		return "You can't look inside that."
+	}
+
+	if !item.Flags.IsOpen && !item.Flags.IsTransparent {
+		return "You can't see inside the closed " + item.Name + "."
+	}
+
+	// Find items inside this container
+	var contents []string
+	for _, otherItem := range g.Items {
+		if otherItem.Location == item.ID {
+			contents = append(contents, otherItem.Name)
+		}
+	}
+
+	if len(contents) == 0 {
+		return "The " + item.Name + " is empty."
+	}
+
+	var result strings.Builder
+	result.WriteString("The " + item.Name + " contains:\n")
+	for _, itemName := range contents {
+		result.WriteString("  A " + itemName + "\n")
+	}
+	return strings.TrimSpace(result.String())
+}
+
+func (g *GameV2) handleTurnOn(objName string) string {
+	if objName == "" {
+		return "What do you want to turn on?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	if !item.Flags.IsLightSource {
+		return "You can't turn that on."
+	}
+
+	if item.Flags.IsLit {
+		return "It's already on."
+	}
+
+	item.Flags.IsLit = true
+	return "The " + item.Name + " is now on."
+}
+
+func (g *GameV2) handleTurnOff(objName string) string {
+	if objName == "" {
+		return "What do you want to turn off?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	if !item.Flags.IsLightSource {
+		return "You can't turn that off."
+	}
+
+	if !item.Flags.IsLit {
+		return "It's already off."
+	}
+
+	item.Flags.IsLit = false
+	return "The " + item.Name + " is now off."
+}
+
+func (g *GameV2) handleHelp() string {
+	room := g.Rooms[g.Location]
+	if room == nil {
+		return "You are nowhere!"
+	}
+
+	var result strings.Builder
+	result.WriteString("Available commands:\n\n")
+	result.WriteString("Movement: NORTH, SOUTH, EAST, WEST, UP, DOWN, IN, OUT, etc.\n")
+	result.WriteString("Actions: TAKE, DROP, OPEN, CLOSE, READ, EXAMINE, LOOK, INVENTORY\n")
+	result.WriteString("Light: TURN ON, TURN OFF\n")
+	result.WriteString("Other: HELP, QUIT\n\n")
+
+	// Show available exits
+	result.WriteString("Obvious exits from here:\n")
+	if len(room.Exits) == 0 {
+		result.WriteString("  None!\n")
+	} else {
+		for dir := range room.Exits {
+			result.WriteString("  " + strings.ToUpper(dir) + "\n")
+		}
+	}
+
+	return result.String()
+}
+
 // Helper methods
 
 func (g *GameV2) findItem(name string) *Item {
@@ -334,11 +532,37 @@ func (g *GameV2) findItem(name string) *Item {
 			if item != nil && item.HasAlias(name) {
 				return item
 			}
+
+			// Check inside containers in the room
+			if item != nil && item.Flags.IsContainer && (item.Flags.IsOpen || item.Flags.IsTransparent) {
+				for _, otherItem := range g.Items {
+					if otherItem.Location == item.ID && otherItem.HasAlias(name) {
+						return otherItem
+					}
+				}
+			}
 		}
 	}
 
 	// Check inventory
-	return g.findItemInInventory(name)
+	inventoryItem := g.findItemInInventory(name)
+	if inventoryItem != nil {
+		return inventoryItem
+	}
+
+	// Check inside containers in inventory
+	for _, itemID := range g.Player.Inventory {
+		item := g.Items[itemID]
+		if item != nil && item.Flags.IsContainer && (item.Flags.IsOpen || item.Flags.IsTransparent) {
+			for _, otherItem := range g.Items {
+				if otherItem.Location == item.ID && otherItem.HasAlias(name) {
+					return otherItem
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (g *GameV2) findItemInInventory(name string) *Item {
