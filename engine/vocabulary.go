@@ -72,6 +72,7 @@ func (v *Vocabulary) initVerbs() {
 	v.addVerb("restore", "restore", "load")
 	v.addVerb("score", "score")
 	v.addVerb("version", "version")
+	v.addVerb("help", "help", "?")
 
 	// Verbosity commands (V?VERBOSE, V?BRIEF, V?SUPER-BRIEF)
 	v.addVerb("verbose", "verbose", "long")
