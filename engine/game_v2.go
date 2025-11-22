@@ -62,7 +62,7 @@ func (g *GameV2) initializeWorld() {
 }
 
 func (g *GameV2) createNPCs() {
-	// The Troll - First major enemy
+	// The Troll - Blocks passages, guards treasure
 	troll := NewNPC(
 		"troll",
 		"nasty troll",
@@ -70,14 +70,73 @@ func (g *GameV2) createNPCs() {
 	)
 	troll.Location = "troll-room"
 	troll.Strength = 20
-	troll.Weapon = "troll-axe" // We'd create this item
+	troll.Weapon = "axe"
 	troll.Hostile = true
 	troll.Flags.IsAggressive = true
 	troll.Flags.CanFight = true
 	g.NPCs["troll"] = troll
 	g.Rooms["troll-room"].AddNPC("troll")
 
-	// Add more NPCs (thief, cyclops, etc.)...
+	// The Thief - Steals treasures, moves around dungeon
+	thief := NewNPC(
+		"thief",
+		"shady thief",
+		"A suspicious-looking individual with a bag of stolen goods eyes you warily.",
+	)
+	thief.Location = "maze-1" // Starts in maze
+	thief.Strength = 15
+	thief.Weapon = "stiletto"
+	thief.Hostile = false // Only hostile if attacked or has loot
+	thief.Flags.IsAggressive = false
+	thief.Flags.CanFight = true
+	thief.Inventory = []string{} // Will steal treasures
+	g.NPCs["thief"] = thief
+	g.Rooms["maze-1"].AddNPC("thief")
+
+	// The Cyclops - Guards treasure room
+	cyclops := NewNPC(
+		"cyclops",
+		"cyclops",
+		"A cyclops, who looks prepared to eat you, blocks the way. He seems to have been eating, for on the ground is a lot of refuse.",
+	)
+	cyclops.Location = "cyclops-room"
+	cyclops.Strength = 30
+	cyclops.Weapon = "" // Uses fists
+	cyclops.Hostile = true
+	cyclops.Flags.IsAggressive = true
+	cyclops.Flags.CanFight = true
+	g.NPCs["cyclops"] = cyclops
+	g.Rooms["cyclops-room"].AddNPC("cyclops")
+
+	// The Bat - Carries player to random dark rooms
+	bat := NewNPC(
+		"bat",
+		"vampire bat",
+		"A vampire bat is circling overhead, its beady eyes fixed on you.",
+	)
+	bat.Location = "bat-room"
+	bat.Strength = 5
+	bat.Weapon = ""
+	bat.Hostile = false // Not directly hostile, just annoying
+	bat.Flags.IsAggressive = true // Will grab you
+	bat.Flags.CanFight = false    // Can't be fought effectively
+	g.NPCs["bat"] = bat
+	g.Rooms["bat-room"].AddNPC("bat")
+
+	// The Ghosts - Temple spirits, need exorcism
+	ghosts := NewNPC(
+		"ghosts",
+		"evil spirits",
+		"The room is filled with evil spirits. They are making a significant racket.",
+	)
+	ghosts.Location = "entrance-to-hades"
+	ghosts.Strength = 0 // Can't be fought
+	ghosts.Weapon = ""
+	ghosts.Hostile = false
+	ghosts.Flags.IsAggressive = false
+	ghosts.Flags.CanFight = false // Need exorcism, not combat
+	g.NPCs["ghosts"] = ghosts
+	g.Rooms["entrance-to-hades"].AddNPC("ghosts")
 }
 
 // Process handles a command - same interface as before
@@ -642,7 +701,7 @@ func (g *GameV2) findNPC(name string) *NPC {
 
 	for _, npcID := range room.NPCs {
 		npc := g.NPCs[npcID]
-		if npc != nil && npc.Name == name {
+		if npc != nil && (npc.ID == name || npc.Name == name || strings.Contains(npc.Name, name)) {
 			return npc
 		}
 	}
@@ -728,19 +787,51 @@ func (g *GameV2) handleGive(objName string, npcName string) string {
 		return "There is no " + npcName + " here."
 	}
 
-	// Special case: troll likes food
-	if npc.ID == "troll" && (item.ID == "lunch" || item.ID == "garlic") {
-		// Remove from inventory
-		for i, id := range g.Player.Inventory {
-			if id == item.ID {
-				g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
-				break
-			}
+	// Remove from inventory first
+	for i, id := range g.Player.Inventory {
+		if id == item.ID {
+			g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+			break
 		}
-		return "The troll grabs the " + item.Name + " and devours it. He looks satisfied and wanders off."
 	}
 
-	return "The " + npc.Name + " doesn't want that."
+	// Special cases per NPC
+	switch npc.ID {
+	case "troll":
+		if item.ID == "lunch" || item.ID == "garlic" {
+			// Troll accepts food and leaves
+			g.Flags["troll-satisfied"] = true
+			room := g.Rooms[npc.Location]
+			if room != nil {
+				room.RemoveNPC("troll")
+			}
+			delete(g.Items, item.ID) // Food is consumed
+			return "The troll grabs the " + item.Name + " and devours it. He looks satisfied and wanders off, leaving the path clear."
+		}
+
+	case "cyclops":
+		if item.ID == "lunch" {
+			// Cyclops eats lunch and becomes less hostile
+			g.Flags["cyclops-fed"] = true
+			npc.Flags.IsAggressive = false
+			delete(g.Items, item.ID)
+			return "The cyclops eagerly grabs the lunch and stuffs it into his mouth. He seems less inclined to eat you now."
+		}
+
+	case "thief":
+		// Thief steals valuable items
+		if item.Flags.IsTreasure {
+			npc.Inventory = append(npc.Inventory, item.ID)
+			item.Location = "thief-inventory"
+			return "The thief snatches the " + item.Name + " and runs off with a wicked grin!"
+		}
+	}
+
+	// Give item to NPC (add to their inventory)
+	npc.Inventory = append(npc.Inventory, item.ID)
+	item.Location = npc.ID
+
+	return "The " + npc.Name + " accepts the " + item.Name + " reluctantly."
 }
 
 // handleAttack attacks an NPC or object (V-ATTACK in ZIL)
@@ -751,21 +842,138 @@ func (g *GameV2) handleAttack(objName string) string {
 
 	// Check for NPC
 	npc := g.findNPC(objName)
-	if npc != nil {
-		if !npc.Flags.CanFight {
-			return "You can't attack the " + npc.Name + "."
+	if npc == nil {
+		// Check for item
+		item := g.findItem(objName)
+		if item != nil {
+			return "Violence isn't the answer to this one."
 		}
-		// Basic combat - needs full combat system
+		return "You can't see any " + objName + " here."
+	}
+
+	if !npc.Flags.CanFight {
+		return "You can't attack the " + npc.Name + "."
+	}
+
+	if !npc.Flags.IsAlive {
+		return "The " + npc.Name + " is already dead."
+	}
+
+	// Check if player has a weapon
+	var playerWeapon *Item
+	var playerDamage int = 5 // Base damage with bare hands
+
+	for _, itemID := range g.Player.Inventory {
+		item := g.Items[itemID]
+		if item != nil && item.Flags.IsWeapon {
+			playerWeapon = item
+			// Different weapons have different damage
+			switch itemID {
+			case "sword":
+				playerDamage = 20
+			case "axe":
+				playerDamage = 15
+			case "knife", "stiletto", "rusty-knife":
+				playerDamage = 10
+			case "trident":
+				playerDamage = 12
+			default:
+				playerDamage = 8
+			}
+			break
+		}
+	}
+
+	if playerWeapon == nil {
 		return "Attacking the " + npc.Name + " with your bare hands is suicidal."
 	}
 
-	// Check for item
-	item := g.findItem(objName)
-	if item != nil {
-		return "Violence isn't the answer to this one."
+	// Combat! Player attacks first
+	var result strings.Builder
+	result.WriteString("You attack the " + npc.Name + " with your " + playerWeapon.Name + "!\n")
+
+	// Player hits NPC
+	npc.Strength -= playerDamage
+
+	if npc.Strength <= 0 {
+		// NPC is defeated!
+		npc.Flags.IsAlive = false
+		npc.Flags.IsAggressive = false
+
+		result.WriteString("The " + npc.Name + " is defeated!\n")
+
+		// Special handling per NPC
+		switch npc.ID {
+		case "troll":
+			// Troll drops treasure and vanishes
+			g.Flags["troll-dead"] = true
+			// Remove troll from room
+			room := g.Rooms[npc.Location]
+			if room != nil {
+				room.RemoveNPC("troll")
+			}
+			result.WriteString("Almost as soon as the troll breathes his last breath, a cloud of sinister black fog envelops him, and when the fog lifts, the carcass has disappeared.")
+
+		case "cyclops":
+			// Cyclops drops treasure
+			g.Flags["cyclops-dead"] = true
+			// Add treasure to room
+			if treasure := g.Items["cyclops-treasure"]; treasure != nil {
+				treasure.Location = npc.Location
+				if room := g.Rooms[npc.Location]; room != nil {
+					room.AddItem("cyclops-treasure")
+				}
+			}
+			// Replace with corpse
+			room := g.Rooms[npc.Location]
+			if room != nil {
+				room.RemoveNPC("cyclops")
+			}
+			result.WriteString("The cyclops falls with a thunderous crash. His treasures are now yours!")
+
+		case "thief":
+			// Thief drops stolen items
+			g.Flags["thief-dead"] = true
+			for _, itemID := range npc.Inventory {
+				if item := g.Items[itemID]; item != nil {
+					item.Location = npc.Location
+					if room := g.Rooms[npc.Location]; room != nil {
+						room.AddItem(itemID)
+					}
+				}
+			}
+			npc.Inventory = []string{}
+			// Remove thief from room
+			room := g.Rooms[npc.Location]
+			if room != nil {
+				room.RemoveNPC("thief")
+			}
+			result.WriteString("The thief falls, and his stolen loot spills across the floor.")
+		}
+
+		return strings.TrimSpace(result.String())
 	}
 
-	return "You can't see any " + objName + " here."
+	// NPC is still alive and fights back!
+	result.WriteString("The " + npc.Name + " is wounded but still fighting!\n")
+
+	// NPC counter-attacks
+	npcDamage := npc.Strength / 5 // Simple damage calculation
+	if npcDamage < 3 {
+		npcDamage = 3
+	}
+
+	g.Player.Health -= npcDamage
+	result.WriteString(fmt.Sprintf("The %s strikes back, dealing %d damage!\n", npc.Name, npcDamage))
+
+	if g.Player.Health <= 0 {
+		g.GameOver = true
+		result.WriteString("\n****  You have died  ****\n")
+	} else {
+		result.WriteString(fmt.Sprintf("Your health: %d\n", g.Player.Health))
+	}
+
+	return strings.TrimSpace(result.String())
 }
 
 // handleWave waves an item (V-WAVE in ZIL)
