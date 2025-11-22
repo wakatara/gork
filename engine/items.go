@@ -130,6 +130,52 @@ func createTreasures(g *GameV2) {
 	egg.Flags.IsTreasure = true
 	egg.Value = 5
 	g.Items["egg"] = egg
+
+	// PLATINUM BAR - 10 points
+	platinumBar := NewItem("platinum-bar", "platinum bar", "There is a bar of platinum here.")
+	platinumBar.Aliases = []string{"bar", "platinum", "platinum-bar", "treasure"}
+	platinumBar.Flags.IsTakeable = true
+	platinumBar.Flags.IsTreasure = true
+	platinumBar.Value = 10
+	g.Items["platinum-bar"] = platinumBar
+
+	// SAPPHIRE - 5 points
+	sapphire := NewItem("sapphire", "large sapphire", "There is a large sapphire here.")
+	sapphire.Aliases = []string{"sapphire", "gem", "treasure"}
+	sapphire.Flags.IsTakeable = true
+	sapphire.Flags.IsTreasure = true
+	sapphire.Value = 5
+	g.Items["sapphire"] = sapphire
+
+	// IVORY TORCH - 6 points
+	ivoryTorch := NewItem("ivory-torch", "ivory torch", "There is an ivory torch here.")
+	ivoryTorch.Aliases = []string{"ivory-torch", "ivory", "torch", "treasure"}
+	ivoryTorch.Flags.IsTakeable = true
+	ivoryTorch.Flags.IsTreasure = true
+	ivoryTorch.Flags.IsLightSource = true
+	ivoryTorch.Flags.IsLit = true
+	ivoryTorch.Value = 6
+	g.Items["ivory-torch"] = ivoryTorch
+
+	// TRUNK OF JEWELS - 15 points
+	trunkOfJewels := NewItem("trunk-of-jewels", "trunk of jewels", "There is a jewel-encrusted trunk here.")
+	trunkOfJewels.Aliases = []string{"trunk", "jewels", "trunk-of-jewels", "treasure"}
+	trunkOfJewels.Flags.IsTakeable = true
+	trunkOfJewels.Flags.IsTreasure = true
+	trunkOfJewels.Flags.IsContainer = true
+	trunkOfJewels.Value = 15
+	g.Items["trunk-of-jewels"] = trunkOfJewels
+
+	// PEARL - 1 point
+	pearl := NewItem("pearl", "large pearl", "There is an enormous pearl resting in an open clam here.")
+	pearl.Aliases = []string{"pearl", "treasure"}
+	pearl.Flags.IsTakeable = true
+	pearl.Flags.IsTreasure = true
+	pearl.Value = 1
+	g.Items["pearl"] = pearl
+
+	// Mark the oriental rug as a treasure (it already exists in createFixedObjects)
+	// We'll update it there to have the treasure flag
 }
 
 // createWeapons creates all weapon items
@@ -435,9 +481,11 @@ func createFixedObjects(g *GameV2) {
 
 	// RUG (conceals trap door)
 	rug := NewItem("rug", "oriental rug", "There is a large oriental rug here.")
-	rug.Aliases = []string{"rug", "oriental-rug"}
+	rug.Aliases = []string{"rug", "oriental-rug", "treasure"}
 	rug.Location = "living-room"
-	rug.Flags.IsTakeable = false
+	rug.Flags.IsTakeable = true // Can be taken once trap door is opened
+	rug.Flags.IsTreasure = true
+	rug.Value = 15
 	g.Items["rug"] = rug
 	g.Rooms["living-room"].AddItem("rug")
 
@@ -664,4 +712,203 @@ func createMiscItems(g *GameV2) {
 	keys.Aliases = []string{"keys", "key"}
 	keys.Flags.IsTakeable = true
 	g.Items["keys"] = keys
+
+	// CLAM (contains pearl)
+	clam := NewItem("clam", "giant clam", "There is a giant clam here.")
+	clam.Aliases = []string{"clam", "shell"}
+	clam.Flags.IsContainer = true
+	clam.Flags.IsOpen = true
+	g.Items["clam"] = clam
+
+	// MATCHES (book of matches)
+	matches := NewItem("matches", "book of matches", "There is a book of matches here.")
+	matches.Aliases = []string{"matches", "book-of-matches", "matchbook"}
+	matches.Flags.IsTakeable = true
+	matches.Flags.IsReadable = true
+	g.Items["matches"] = matches
+
+	// MIRROR
+	mirror := NewItem("mirror", "mirror", "There is a large mirror here.")
+	mirror.Aliases = []string{"mirror", "looking-glass"}
+	mirror.Flags.IsTakeable = false
+	g.Items["mirror"] = mirror
+
+	// PILE (pile of leaves)
+	pile := NewItem("pile-of-leaves", "pile of leaves", "There is a pile of leaves here.")
+	pile.Aliases = []string{"pile", "leaves", "pile-of-leaves"}
+	pile.Flags.IsTakeable = false
+	g.Items["pile-of-leaves"] = pile
+
+	// GRATING (metal grating)
+	grating := NewItem("grating", "metal grating", "There is a metal grating here.")
+	grating.Aliases = []string{"grating", "grate", "bars"}
+	grating.Flags.IsTakeable = false
+	g.Items["grating"] = grating
+
+	// CYCLOPS (as an object, not NPC - for examine purposes)
+	cyclopsCorp := NewItem("cyclops-corpse", "cyclops corpse", "The body of a dead cyclops is here.")
+	cyclopsCorp.Aliases = []string{"corpse", "body", "cyclops"}
+	cyclopsCorp.Flags.IsTakeable = false
+	g.Items["cyclops-corpse"] = cyclopsCorp
+
+	// THIEF (as corpse/object)
+	thiefCorpse := NewItem("thief-corpse", "thief corpse", "The body of a dead thief is here.")
+	thiefCorpse.Aliases = []string{"corpse", "body", "thief"}
+	thiefCorpse.Flags.IsTakeable = false
+	g.Items["thief-corpse"] = thiefCorpse
+
+	// RESERVOIR (large body of water)
+	reservoir := NewItem("reservoir", "reservoir", "The reservoir is a large body of water.")
+	reservoir.Aliases = []string{"reservoir", "lake"}
+	reservoir.Flags.IsTakeable = false
+	g.Items["reservoir"] = reservoir
+
+	// STREAM
+	stream := NewItem("stream", "stream", "A stream of water flows here.")
+	stream.Aliases = []string{"stream", "brook"}
+	stream.Flags.IsTakeable = false
+	g.Items["stream"] = stream
+
+	// GLACIER
+	glacier := NewItem("glacier", "glacier", "A massive glacier fills the cavern.")
+	glacier.Aliases = []string{"glacier", "ice"}
+	glacier.Flags.IsTakeable = false
+	g.Items["glacier"] = glacier
+
+	// SLIDE (ice slide)
+	slide := NewItem("slide", "ice slide", "There is a long ice slide here.")
+	slide.Aliases = []string{"slide"}
+	slide.Flags.IsTakeable = false
+	g.Items["slide"] = slide
+
+	// BRICK
+	brick := NewItem("brick", "brick", "There is a brick here.")
+	brick.Aliases = []string{"brick"}
+	brick.Flags.IsTakeable = true
+	g.Items["brick"] = brick
+
+	// STATUE (ivory and jade)
+	statue := NewItem("statue", "ivory and jade statue", "There is an exquisite statue here.")
+	statue.Aliases = []string{"statue", "idol"}
+	statue.Flags.IsTakeable = false
+	g.Items["statue"] = statue
+
+	// AIR PUMP (for boat)
+	airPump := NewItem("air-pump", "air pump", "There is a hand-held air pump here.")
+	airPump.Aliases = []string{"air-pump", "pump"}
+	airPump.Flags.IsTakeable = true
+	g.Items["air-pump"] = airPump
+
+	// CYCLOPS CORPSE TREASURE (what cyclops drops)
+	cyclopsTreasure := NewItem("cyclops-treasure", "treasure chest", "There is a small treasure chest here.")
+	cyclopsTreasure.Aliases = []string{"chest", "treasure-chest"}
+	cyclopsTreasure.Flags.IsTakeable = true
+	cyclopsTreasure.Flags.IsContainer = true
+	g.Items["cyclops-treasure"] = cyclopsTreasure
+
+	// CRYSTAL (crystal sphere/ball)
+	crystal := NewItem("crystal-sphere", "crystal sphere", "There is a crystal sphere here.")
+	crystal.Aliases = []string{"crystal", "sphere", "ball", "crystal-ball"}
+	crystal.Flags.IsTakeable = true
+	g.Items["crystal-sphere"] = crystal
+
+	// RAINBOW (when active)
+	rainbowObj := NewItem("rainbow-arc", "rainbow", "A brilliant rainbow arches overhead.")
+	rainbowObj.Aliases = []string{"rainbow", "arc"}
+	rainbowObj.Flags.IsTakeable = false
+	g.Items["rainbow-arc"] = rainbowObj
+
+	// HEADS (shrunken heads)
+	heads := NewItem("shrunken-heads", "shrunken heads", "There are four shrunken heads here.")
+	heads.Aliases = []string{"heads", "head", "shrunken-heads"}
+	heads.Flags.IsTakeable = true
+	g.Items["shrunken-heads"] = heads
+
+	// FLASK (crystal flask)
+	flask := NewItem("flask", "crystal flask", "There is a crystal flask here.")
+	flask.Aliases = []string{"flask", "vial"}
+	flask.Flags.IsTakeable = true
+	flask.Flags.IsContainer = true
+	g.Items["flask"] = flask
+
+	// SWORD-HOLDER (for mounting sword)
+	swordHolder := NewItem("sword-holder", "sword holder", "There is a sword holder mounted on the wall.")
+	swordHolder.Aliases = []string{"holder", "mount", "sword-holder"}
+	swordHolder.Flags.IsTakeable = false
+	g.Items["sword-holder"] = swordHolder
+
+	// CRYPT (stone crypt)
+	crypt := NewItem("crypt", "stone crypt", "There is a stone crypt here.")
+	crypt.Aliases = []string{"crypt", "tomb"}
+	crypt.Flags.IsTakeable = false
+	crypt.Flags.IsContainer = true
+	g.Items["crypt"] = crypt
+
+	// GRANITE WALL
+	graniteWall := NewItem("granite-wall", "granite wall", "A massive granite wall blocks your way.")
+	graniteWall.Aliases = []string{"wall", "granite", "granite-wall"}
+	graniteWall.Flags.IsTakeable = false
+	g.Items["granite-wall"] = graniteWall
+
+	// WOODEN DOOR
+	woodenDoor := NewItem("wooden-door", "wooden door", "There is a wooden door here.")
+	woodenDoor.Aliases = []string{"door", "wooden-door"}
+	woodenDoor.Flags.IsTakeable = false
+	g.Items["wooden-door"] = woodenDoor
+
+	// IRON DOOR
+	ironDoor := NewItem("iron-door", "iron door", "There is an iron door here.")
+	ironDoor.Aliases = []string{"door", "iron-door"}
+	ironDoor.Flags.IsTakeable = false
+	g.Items["iron-door"] = ironDoor
+
+	// CANDLE (single candle)
+	candle := NewItem("candle", "candle", "There is a candle here.")
+	candle.Aliases = []string{"candle"}
+	candle.Flags.IsTakeable = true
+	candle.Flags.IsLightSource = true
+	candle.Flags.IsLit = false
+	g.Items["candle"] = candle
+
+	// CHAIN (rusty chain)
+	chain := NewItem("chain", "rusty chain", "There is a rusty chain here.")
+	chain.Aliases = []string{"chain"}
+	chain.Flags.IsTakeable = true
+	g.Items["chain"] = chain
+
+	// HOOK (brass hook)
+	hook := NewItem("hook", "brass hook", "There is a brass hook here.")
+	hook.Aliases = []string{"hook"}
+	hook.Flags.IsTakeable = true
+	g.Items["hook"] = hook
+
+	// PILLAR (marble pillar)
+	pillar := NewItem("pillar", "marble pillar", "A massive marble pillar dominates the room.")
+	pillar.Aliases = []string{"pillar", "column"}
+	pillar.Flags.IsTakeable = false
+	g.Items["pillar"] = pillar
+
+	// ALTAR-CLOTH (on altar)
+	altarCloth := NewItem("altar-cloth", "altar cloth", "There is an altar cloth here.")
+	altarCloth.Aliases = []string{"cloth", "altar-cloth"}
+	altarCloth.Flags.IsTakeable = true
+	g.Items["altar-cloth"] = altarCloth
+
+	// STICK (walking stick)
+	stick := NewItem("stick", "walking stick", "There is a walking stick here.")
+	stick.Aliases = []string{"stick", "walking-stick"}
+	stick.Flags.IsTakeable = true
+	g.Items["stick"] = stick
+
+	// VOLCANO (scenery - for volcano room)
+	volcano := NewItem("volcano", "volcano", "A massive volcano looms above.")
+	volcano.Aliases = []string{"volcano"}
+	volcano.Flags.IsTakeable = false
+	g.Items["volcano"] = volcano
+
+	// RAILING (for ledge rooms)
+	railing := NewItem("railing", "railing", "There is a wooden railing here.")
+	railing.Aliases = []string{"railing", "rail"}
+	railing.Flags.IsTakeable = false
+	g.Items["railing"] = railing
 }
