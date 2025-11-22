@@ -302,7 +302,9 @@ This enables:
 
 ## License
 
-The original Zork I source code was released by Infocom/Activision for historical preservation. This Go port is created for educational purposes and preserving gaming history.
+The original Zork I source code was released as open source by
+Infocom/Activision for historical preservation. This Go port is created for
+educational purposes and preserving gaming history.
 
 ## Acknowledgments
 
@@ -310,13 +312,13 @@ The original Zork I source code was released by Infocom/Activision for historica
 - Infocom - For creating the ZIL language and Zork
 - The interactive fiction community - For preserving these classics
 
-## Coming Soon
+## Progress
 
-- [x] ~~Full dungeon implementation (~110 rooms)~~ ✅ **Complete - 110 rooms**
-- [x] ~~Light and darkness (and the grue!)~~ ✅ **Complete - hasLight() with grue warning**
-- [x] ~~Command synonyms (`x`, `i`, `n`, `s`, etc.)~~ ✅ **Complete - 684 words**
-- [ ] All 19 treasures (13/19 implemented - 68% complete)
-- [ ] Complete item set (85/122 items - 70% complete)
+- ✅ ~~Full dungeon implementation (~110 rooms)~~ **Complete - 110 rooms**
+- ✅ ~~Light and darkness (and the grue!)~~ **Complete - hasLight() with grue warning**
+- ✅ ~~Commands and synonyms (`x`, `i`, `n`, `s`, etc.)~~ **Complete - 684 words**
+- 🚧 All 19 treasures (13/19 implemented - 68% complete)
+- 🚧 Complete item set (85/122 items - 70% complete)
 - [ ] NPCs and combat system (troll, thief, cyclops, bat, ghosts)
 - [ ] Puzzle special handlers (dam controls, mirror room, basket/rope, machine)
 - [ ] Save/restore functionality
