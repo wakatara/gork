@@ -4,14 +4,12 @@
 
 A somewhat faithful port of the classic 1980s text adventure game **Zork I: The
 Great Underground Empire** from Infocom to Go from the original variant of a
-variant of lisp ZIL (Zork Implementation Language) files located here when Zork
-became open sourced.
-
-From the [original Zork I ZIL code here](https://github.com/historicalsource/zork1)
+variant of lisp ZIL (Zork Implementation Language) files located here from the
+[original Zork I ZIL code here](https://github.com/historicalsource/zork1)
 
 ## About
 
-Ah, nostalgia. I remember trying to play Zork in the "computer store" in the
+Ah, nostalgia... I remember trying to play Zork in the "computer store" in the
 small town I grew up in well before I could even dream of owning my own actual
 computer. I was eaten repeatedly by several grue (grues? gruen? gri?).
 
