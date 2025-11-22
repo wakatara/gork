@@ -314,7 +314,7 @@ educational purposes and preserving gaming history.
 
 ## Progress
 
-- ✅ ~~Full dungeon implementation (~110 rooms)~~ **Complete - 110 rooms**
+- ✅ ~~Full dungeon implementation~~ **Complete - 110 rooms**
 - ✅ ~~Light and darkness (and the grue!)~~ **Complete - hasLight() with grue warning**
 - ✅ ~~Commands and synonyms (`x`, `i`, `n`, `s`, etc.)~~ **Complete - 684 words**
 - 🚧 All 19 treasures (13/19 implemented - 68% complete)
