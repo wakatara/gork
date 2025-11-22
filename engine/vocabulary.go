@@ -203,10 +203,17 @@ func (v *Vocabulary) initObjects() {
 	v.addObject("book", "book", "guidebook", "guide")
 	v.addObject("bell", "bell")
 	v.addObject("canary", "canary", "bird")
-	v.addObject("garlic", "garlic")
+	v.addObject("garlic", "garlic", "clove")
 	v.addObject("coffin", "coffin", "casket")
 	v.addObject("basket", "basket")
 	v.addObject("boat", "boat", "raft")
+	v.addObject("lunch", "lunch", "sandwich", "food")
+	v.addObject("troll", "troll", "nasty")
+	v.addObject("rope", "rope")
+	v.addObject("bell", "bell")
+	v.addObject("tree", "tree", "trees")
+	v.addObject("lever", "lever", "handle")
+	v.addObject("whistle", "whistle")
 }
 
 // initPrepositions initializes valid prepositions from ZIL
