@@ -14,33 +14,34 @@ small town I grew up in well before I could even dream of owning my own actual
 computer. I was eaten repeatedly by several grue (grues? gruen? gri?).
 
 Zork was amazingly influential as a piece of interactive fiction and to computer
-gaming in general, and probably what got Infocom purchased by Activision (as
-well as being - for the time - a huge commercial success).
+gaming in general, and instrumental in Infocom being by Activision. It was also
+a runaway commercial success for video games at that time.
 
-I never really got a chance to play the whole thing (or any substantive playtime
-at all, to be honest — also, suddenly games with actual graphical interfaces
-exploded on the scene which my pre-teen brain was powerless to resist), and was
-curious how hard this would be to actually port since I've been porting a lot of
-old scientific libraries in Astronomy lately, and it's been rather surprisingly
-educational. Also, I kinda wanted to play the whole thing through, ya know?
+I never really got a chance to play the whole thing. We did not have the kind of
+money to shell out to buy a computer back then. So, was curious how hard this
+would be to actually port since I've been porting a lot of old scientific
+libraries in Astronomy lately, and it's been rather surprisingly educational.
+Also, I kinda wanted to play the whole thing through, ya know?
 
-The idea is to recreate the original game experience (as I hazily and
-imperfectly remember it - so please chime in if you see I've messed something
-up) and just make it fun and available for people to try. Kinda a 2025 Xmas gift
-to the world, if you will.
+The idea is to recreate the original game experience (as I hazily remember it -
+so please chime in if you see I've messed something up) and just make it fun and
+available for people to try.
+
+Kinda an early 2025 Xmas gift to the world, if you will.
 
 I had to take some liberties with the original ZIL source code since
-_everything_ was an object, so translating to modern computing constructs for my
-own sanity took a bit of overarching redesign. The parser was trickier than
-you'd think despite the simplicity of the language commands. Other than the
-underlying internals though, and some affectations with intentionally trying to
-make it "CRT"-y and terminal effects, I _think_ I managed to stick the landing.
+_everything_ was an non-type safe object, so translating to modern computing
+constructs for my own sanity took a bit of overarching redesign. The parser was
+trickier than you'd think despite the simplicity of the language commands. Other
+than the underlying internals though, and some affectations with intentionally
+trying to make it "CRT"-y with terminal effects, I _think_ I managed to stick
+the landing.
 
 Please try it out and let me know what I may have gotten worong. I'm hoping
 there's someone who actually played the whole thing through that can give
 feedback on the port.
 
-Have fun and please don't get eaten by a grue.
+Have fun and please don't feed the grues.
 
 ## Features
 
