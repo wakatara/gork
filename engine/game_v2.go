@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -141,9 +142,67 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		return g.handleInventory()
 	case "help":
 		return g.handleHelp()
+	case "put":
+		return g.handlePut(cmd.DirectObject, cmd.Preposition, cmd.IndirectObject)
+	case "give":
+		return g.handleGive(cmd.DirectObject, cmd.IndirectObject)
+	case "attack":
+		return g.handleAttack(cmd.DirectObject)
+	case "wave":
+		return g.handleWave(cmd.DirectObject)
+	case "climb":
+		return g.handleClimb(cmd.DirectObject)
+	case "tie":
+		return g.handleTie(cmd.DirectObject, cmd.IndirectObject)
+	case "untie":
+		return g.handleUntie(cmd.DirectObject)
+	case "dig":
+		return g.handleDig(cmd.DirectObject)
+	case "push":
+		return g.handlePush(cmd.DirectObject)
+	case "pull":
+		return g.handlePull(cmd.DirectObject)
+	case "ring":
+		return g.handleRing(cmd.DirectObject)
+	case "pray":
+		return g.handlePray()
+	case "wait":
+		return g.handleWait()
+	case "eat":
+		return g.handleEat(cmd.DirectObject)
+	case "drink":
+		return g.handleDrink(cmd.DirectObject)
+	case "fill":
+		return g.handleFill(cmd.DirectObject, cmd.IndirectObject)
+	case "pour":
+		return g.handlePour(cmd.DirectObject, cmd.IndirectObject)
+	case "listen":
+		return g.handleListen()
+	case "smell":
+		return g.handleSmell(cmd.DirectObject)
+	case "touch":
+		return g.handleTouch(cmd.DirectObject)
+	case "search":
+		return g.handleSearch(cmd.DirectObject)
+	case "jump":
+		return g.handleJump()
+	case "swim":
+		return g.handleSwim()
+	case "blow":
+		return g.handleBlow(cmd.DirectObject)
+	case "knock":
+		return g.handleKnock(cmd.DirectObject)
 	case "quit":
 		g.GameOver = true
 		return "Thanks for playing!"
+	case "save":
+		return "Save is not yet implemented."
+	case "restore":
+		return "Restore is not yet implemented."
+	case "score":
+		return g.handleScore()
+	case "restart":
+		return "Restart is not yet implemented."
 	default:
 		return "I don't understand how to \"" + cmd.Verb + "\" something."
 	}
@@ -606,6 +665,466 @@ func (g *GameV2) hasLight() bool {
 	}
 
 	return false
+}
+
+// handlePut places an item in/on a container (V-PUT in ZIL)
+func (g *GameV2) handlePut(objName string, prep string, containerName string) string {
+	if objName == "" {
+		return "What do you want to put?"
+	}
+	if containerName == "" {
+		return "Where do you want to put it?"
+	}
+
+	// Find the item in inventory
+	item := g.findItemInInventory(objName)
+	if item == nil {
+		return "You don't have that."
+	}
+
+	// Find the container
+	container := g.findItem(containerName)
+	if container == nil {
+		return "You can't see any " + containerName + " here."
+	}
+
+	if !container.Flags.IsContainer {
+		return "You can't put things in the " + container.Name + "."
+	}
+
+	if !container.Flags.IsOpen && !container.Flags.IsTransparent {
+		return "The " + container.Name + " is closed."
+	}
+
+	// Remove from inventory
+	for i, id := range g.Player.Inventory {
+		if id == item.ID {
+			g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+			break
+		}
+	}
+
+	// Add to container
+	item.Location = container.ID
+	return "Done."
+}
+
+// handleGive gives an item to an NPC (V-GIVE in ZIL)
+func (g *GameV2) handleGive(objName string, npcName string) string {
+	if objName == "" {
+		return "What do you want to give?"
+	}
+	if npcName == "" {
+		return "Give it to whom?"
+	}
+
+	item := g.findItemInInventory(objName)
+	if item == nil {
+		return "You don't have that."
+	}
+
+	npc := g.findNPC(npcName)
+	if npc == nil {
+		return "There is no " + npcName + " here."
+	}
+
+	// Special case: troll likes food
+	if npc.ID == "troll" && (item.ID == "lunch" || item.ID == "garlic") {
+		// Remove from inventory
+		for i, id := range g.Player.Inventory {
+			if id == item.ID {
+				g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+				break
+			}
+		}
+		return "The troll grabs the " + item.Name + " and devours it. He looks satisfied and wanders off."
+	}
+
+	return "The " + npc.Name + " doesn't want that."
+}
+
+// handleAttack attacks an NPC or object (V-ATTACK in ZIL)
+func (g *GameV2) handleAttack(objName string) string {
+	if objName == "" {
+		return "Attack what?"
+	}
+
+	// Check for NPC
+	npc := g.findNPC(objName)
+	if npc != nil {
+		if !npc.Flags.CanFight {
+			return "You can't attack the " + npc.Name + "."
+		}
+		// Basic combat - needs full combat system
+		return "Attacking the " + npc.Name + " with your bare hands is suicidal."
+	}
+
+	// Check for item
+	item := g.findItem(objName)
+	if item != nil {
+		return "Violence isn't the answer to this one."
+	}
+
+	return "You can't see any " + objName + " here."
+}
+
+// handleWave waves an item (V-WAVE in ZIL)
+func (g *GameV2) handleWave(objName string) string {
+	if objName == "" {
+		return "Wave what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You don't have that."
+	}
+
+	// Special case: waving sceptre
+	if item.ID == "sceptre" {
+		return "The sceptre glows briefly."
+	}
+
+	return "You wave the " + item.Name + " around. Nothing happens."
+}
+
+// handleClimb climbs something (V-CLIMB in ZIL)
+func (g *GameV2) handleClimb(objName string) string {
+	if objName == "" {
+		return "Climb what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special cases would go here (ladder, tree, etc.)
+	if item.ID == "ladder" {
+		return "The ladder is lying on the ground. You can't climb it."
+	}
+
+	return "You can't climb that."
+}
+
+// handleTie ties something to something else (V-TIE in ZIL)
+func (g *GameV2) handleTie(objName string, targetName string) string {
+	if objName == "" {
+		return "Tie what?"
+	}
+	if targetName == "" {
+		return "Tie it to what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You don't have that."
+	}
+
+	// Special case: rope
+	if item.ID == "rope" {
+		return "You tie the rope, but nothing interesting happens."
+	}
+
+	return "You can't tie that."
+}
+
+// handleUntie unties something (V-UNTIE in ZIL)
+func (g *GameV2) handleUntie(objName string) string {
+	if objName == "" {
+		return "Untie what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	return "It's not tied."
+}
+
+// handleDig digs in the ground (V-DIG in ZIL)
+func (g *GameV2) handleDig(objName string) string {
+	room := g.Rooms[g.Location]
+	if room == nil {
+		return "You are nowhere!"
+	}
+
+	// Special cases would check for sandy areas, shovel, etc.
+	return "The ground is too hard for digging here."
+}
+
+// handlePush pushes something (V-PUSH in ZIL)
+func (g *GameV2) handlePush(objName string) string {
+	if objName == "" {
+		return "Push what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special cases would go here (buttons, statues, etc.)
+	if strings.Contains(item.ID, "button") {
+		return "Click."
+	}
+
+	return "Pushing the " + item.Name + " doesn't seem to help."
+}
+
+// handlePull pulls something (V-PULL in ZIL)
+func (g *GameV2) handlePull(objName string) string {
+	if objName == "" {
+		return "Pull what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	return "Pulling the " + item.Name + " doesn't seem to help."
+}
+
+// handleRing rings something (V-RING in ZIL)
+func (g *GameV2) handleRing(objName string) string {
+	if objName == "" {
+		return "Ring what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special case: bell
+	if item.ID == "bell" {
+		return "Ding, dong. The bell echoes throughout the dungeon."
+	}
+
+	return "How does one ring a " + item.Name + "?"
+}
+
+// handlePray prays (V-PRAY in ZIL)
+func (g *GameV2) handlePray() string {
+	room := g.Rooms[g.Location]
+	if room == nil {
+		return "You are nowhere!"
+	}
+
+	// Special case: in temple areas
+	if strings.Contains(room.ID, "temple") || strings.Contains(room.ID, "altar") {
+		return "Your prayer is heard, but not answered."
+	}
+
+	return "If you pray enough, your prayers may be answered."
+}
+
+// handleWait waits a turn (V-WAIT in ZIL)
+func (g *GameV2) handleWait() string {
+	// Time passes... (would trigger turn-based events in full implementation)
+	return "Time passes..."
+}
+
+// handleEat eats something (V-EAT in ZIL)
+func (g *GameV2) handleEat(objName string) string {
+	if objName == "" {
+		return "Eat what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You don't have that."
+	}
+
+	// Special cases for edible items
+	if item.ID == "lunch" {
+		// Remove from inventory
+		for i, id := range g.Player.Inventory {
+			if id == item.ID {
+				g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+				break
+			}
+		}
+		delete(g.Items, item.ID)
+		return "Thank you very much. It really hit the spot."
+	}
+
+	if item.ID == "garlic" {
+		// Remove from inventory
+		for i, id := range g.Player.Inventory {
+			if id == item.ID {
+				g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+				break
+			}
+		}
+		delete(g.Items, item.ID)
+		return "What the heck! You won't be bothered by vampires, anyway."
+	}
+
+	return "I don't think the " + item.Name + " would agree with you."
+}
+
+// handleDrink drinks something (V-DRINK in ZIL)
+func (g *GameV2) handleDrink(objName string) string {
+	if objName == "" {
+		return "Drink what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special case: water
+	if item.ID == "water" {
+		return "Thank you very much. I was rather thirsty."
+	}
+
+	return "I don't think the " + item.Name + " is potable."
+}
+
+// handleFill fills a container (V-FILL in ZIL)
+func (g *GameV2) handleFill(objName string, sourceName string) string {
+	if objName == "" {
+		return "Fill what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You don't have that."
+	}
+
+	if !item.Flags.IsContainer {
+		return "You can't fill that."
+	}
+
+	return "There is nothing to fill it with."
+}
+
+// handlePour pours from a container (V-POUR in ZIL)
+func (g *GameV2) handlePour(objName string, targetName string) string {
+	if objName == "" {
+		return "Pour what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You don't have that."
+	}
+
+	return "The " + item.Name + " is empty."
+}
+
+// handleListen listens (V-LISTEN in ZIL)
+func (g *GameV2) handleListen() string {
+	room := g.Rooms[g.Location]
+	if room == nil {
+		return "You are nowhere!"
+	}
+
+	// Special cases for specific rooms
+	return "You hear nothing unusual."
+}
+
+// handleSmell smells something (V-SMELL in ZIL)
+func (g *GameV2) handleSmell(objName string) string {
+	if objName == "" {
+		return "Smell what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	return "It doesn't smell unusual."
+}
+
+// handleTouch touches something (V-TOUCH in ZIL)
+func (g *GameV2) handleTouch(objName string) string {
+	if objName == "" {
+		return "Touch what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	return "You feel nothing unexpected."
+}
+
+// handleSearch searches something (V-SEARCH in ZIL)
+func (g *GameV2) handleSearch(objName string) string {
+	if objName == "" {
+		// Search the room
+		return g.handleLook()
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	if item.Flags.IsContainer {
+		return g.handleLookIn(item.ID)
+	}
+
+	return "You find nothing special."
+}
+
+// handleJump jumps (V-JUMP in ZIL)
+func (g *GameV2) handleJump() string {
+	return "You jump on the spot, fruitlessly."
+}
+
+// handleSwim swims (V-SWIM in ZIL)
+func (g *GameV2) handleSwim() string {
+	room := g.Rooms[g.Location]
+	if room == nil {
+		return "You are nowhere!"
+	}
+
+	// Check for water
+	if strings.Contains(room.ID, "river") || strings.Contains(room.ID, "reservoir") {
+		return "You would drown."
+	}
+
+	return "There is no water here."
+}
+
+// handleBlow blows something (V-BLOW in ZIL)
+func (g *GameV2) handleBlow(objName string) string {
+	if objName == "" {
+		return "Blow what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You don't have that."
+	}
+
+	return "You can't blow that."
+}
+
+// handleKnock knocks on something (V-KNOCK in ZIL)
+func (g *GameV2) handleKnock(objName string) string {
+	if objName == "" {
+		return "Knock on what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	return "No one answers."
+}
+
+// handleScore shows the current score (V-SCORE in ZIL)
+func (g *GameV2) handleScore() string {
+	return fmt.Sprintf("Your score is %d (out of 350), in %d move(s).", g.Score, g.Moves)
 }
 
 // GetInitialMessage returns the opening text
