@@ -255,7 +255,12 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		case "blow":
 			result = g.handleBlow(cmd.DirectObject)
 		case "knock":
-			result = g.handleKnock(cmd.DirectObject)
+			// Handle both "knock door" and "knock on door"
+			objName := cmd.DirectObject
+			if objName == "" && cmd.Preposition == "on" {
+				objName = cmd.IndirectObject
+			}
+			result = g.handleKnock(objName)
 		case "quit":
 			g.GameOver = true
 			return "Thanks for playing!"
@@ -688,6 +693,11 @@ func (g *GameV2) handleOpen(objName string) string {
 	item := g.findItem(objName)
 	if item == nil {
 		return "You can't see any " + objName + " here."
+	}
+
+	// Special handling for nailed door in living room
+	if item.ID == "door" {
+		return "The door is solidly nailed shut and cannot be opened."
 	}
 
 	// Special handling for kitchen window
@@ -1746,6 +1756,8 @@ func (g *GameV2) handleKnock(objName string) string {
 		return "Knock on what?"
 	}
 
+	// For "knock on X", objName might be empty and we need to check for direct object
+	// The parser puts "door" in IndirectObject for "knock on door"
 	item := g.findItem(objName)
 	if item == nil {
 		return "You can't see any " + objName + " here."
