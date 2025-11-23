@@ -165,124 +165,144 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 	// Handle movement
 	if cmd.Verb == "walk" && cmd.Direction != "" {
 		result = g.handleMove(cmd.Direction)
-		// Process NPC turns and append
-		npcResult := g.processNPCTurns()
-		if npcResult != "" {
-			result += "\n\n" + npcResult
+	} else {
+		// Handle other verbs
+		switch cmd.Verb {
+		case "look":
+			if cmd.Preposition == "in" || cmd.Preposition == "into" {
+				result = g.handleLookIn(cmd.IndirectObject)
+			} else {
+				result = g.handleLook()
+			}
+		case "examine":
+			result = g.handleExamine(cmd.DirectObject)
+		case "take":
+			result = g.handleTake(cmd.DirectObject)
+		case "drop":
+			result = g.handleDrop(cmd.DirectObject)
+		case "open":
+			result = g.handleOpen(cmd.DirectObject)
+		case "close":
+			result = g.handleClose(cmd.DirectObject)
+		case "read":
+			result = g.handleRead(cmd.DirectObject)
+		case "turn":
+			// Handle both "turn on lamp" and "turn lamp on"
+			objName := cmd.DirectObject
+			if objName == "" {
+				objName = cmd.IndirectObject
+			}
+
+			if cmd.Preposition == "on" {
+				result = g.handleTurnOn(objName)
+			} else if cmd.Preposition == "off" {
+				result = g.handleTurnOff(objName)
+			} else {
+				result = "Turn it on or off?"
+			}
+		case "inventory":
+			result = g.handleInventory()
+		case "help":
+			result = g.handleHelp()
+		case "put":
+			result = g.handlePut(cmd.DirectObject, cmd.Preposition, cmd.IndirectObject)
+		case "give":
+			result = g.handleGive(cmd.DirectObject, cmd.IndirectObject)
+		case "attack":
+			result = g.handleAttack(cmd.DirectObject)
+		case "wave":
+			result = g.handleWave(cmd.DirectObject)
+		case "climb":
+			result = g.handleClimb(cmd.DirectObject)
+		case "tie":
+			result = g.handleTie(cmd.DirectObject, cmd.IndirectObject)
+		case "untie":
+			result = g.handleUntie(cmd.DirectObject)
+		case "dig":
+			result = g.handleDig(cmd.DirectObject)
+		case "push":
+			result = g.handlePush(cmd.DirectObject)
+		case "pull":
+			result = g.handlePull(cmd.DirectObject)
+		case "move":
+			result = g.handleMoveObject(cmd.DirectObject)
+		case "ring":
+			result = g.handleRing(cmd.DirectObject)
+		case "pray":
+			result = g.handlePray()
+		case "wait":
+			result = g.handleWait()
+		case "eat":
+			result = g.handleEat(cmd.DirectObject)
+		case "drink":
+			result = g.handleDrink(cmd.DirectObject)
+		case "fill":
+			result = g.handleFill(cmd.DirectObject, cmd.IndirectObject)
+		case "pour":
+			result = g.handlePour(cmd.DirectObject, cmd.IndirectObject)
+		case "listen":
+			result = g.handleListen()
+		case "smell":
+			result = g.handleSmell(cmd.DirectObject)
+		case "touch":
+			result = g.handleTouch(cmd.DirectObject)
+		case "search":
+			result = g.handleSearch(cmd.DirectObject)
+		case "jump":
+			result = g.handleJump()
+		case "swim":
+			result = g.handleSwim()
+		case "blow":
+			result = g.handleBlow(cmd.DirectObject)
+		case "knock":
+			result = g.handleKnock(cmd.DirectObject)
+		case "quit":
+			g.GameOver = true
+			return "Thanks for playing!"
+		case "save":
+			result = "Save is not yet implemented."
+		case "restore":
+			result = "Restore is not yet implemented."
+		case "score":
+			result = g.handleScore()
+		case "restart":
+			result = "Restart is not yet implemented."
+		default:
+			result = "I don't understand how to \"" + cmd.Verb + "\" something."
 		}
-		return result
 	}
 
-	// Handle other verbs
-	switch cmd.Verb {
-	case "look":
-		if cmd.Preposition == "in" || cmd.Preposition == "into" {
-			return g.handleLookIn(cmd.IndirectObject)
-		}
-		return g.handleLook()
-	case "examine":
-		return g.handleExamine(cmd.DirectObject)
-	case "take":
-		return g.handleTake(cmd.DirectObject)
-	case "drop":
-		return g.handleDrop(cmd.DirectObject)
-	case "open":
-		return g.handleOpen(cmd.DirectObject)
-	case "close":
-		return g.handleClose(cmd.DirectObject)
-	case "read":
-		return g.handleRead(cmd.DirectObject)
-	case "turn":
-		// Handle both "turn on lamp" and "turn lamp on"
-		objName := cmd.DirectObject
-		if objName == "" {
-			objName = cmd.IndirectObject
-		}
-
-		if cmd.Preposition == "on" {
-			return g.handleTurnOn(objName)
-		} else if cmd.Preposition == "off" {
-			return g.handleTurnOff(objName)
-		}
-		return "Turn it on or off?"
-	case "inventory":
-		return g.handleInventory()
-	case "help":
-		return g.handleHelp()
-	case "put":
-		return g.handlePut(cmd.DirectObject, cmd.Preposition, cmd.IndirectObject)
-	case "give":
-		return g.handleGive(cmd.DirectObject, cmd.IndirectObject)
-	case "attack":
-		return g.handleAttack(cmd.DirectObject)
-	case "wave":
-		return g.handleWave(cmd.DirectObject)
-	case "climb":
-		return g.handleClimb(cmd.DirectObject)
-	case "tie":
-		return g.handleTie(cmd.DirectObject, cmd.IndirectObject)
-	case "untie":
-		return g.handleUntie(cmd.DirectObject)
-	case "dig":
-		return g.handleDig(cmd.DirectObject)
-	case "push":
-		return g.handlePush(cmd.DirectObject)
-	case "pull":
-		return g.handlePull(cmd.DirectObject)
-	case "move":
-		return g.handleMoveObject(cmd.DirectObject)
-	case "ring":
-		return g.handleRing(cmd.DirectObject)
-	case "pray":
-		return g.handlePray()
-	case "wait":
-		return g.handleWait()
-	case "eat":
-		return g.handleEat(cmd.DirectObject)
-	case "drink":
-		return g.handleDrink(cmd.DirectObject)
-	case "fill":
-		return g.handleFill(cmd.DirectObject, cmd.IndirectObject)
-	case "pour":
-		return g.handlePour(cmd.DirectObject, cmd.IndirectObject)
-	case "listen":
-		return g.handleListen()
-	case "smell":
-		return g.handleSmell(cmd.DirectObject)
-	case "touch":
-		return g.handleTouch(cmd.DirectObject)
-	case "search":
-		return g.handleSearch(cmd.DirectObject)
-	case "jump":
-		return g.handleJump()
-	case "swim":
-		return g.handleSwim()
-	case "blow":
-		return g.handleBlow(cmd.DirectObject)
-	case "knock":
-		return g.handleKnock(cmd.DirectObject)
-	case "quit":
-		g.GameOver = true
-		return "Thanks for playing!"
-	case "save":
-		return "Save is not yet implemented."
-	case "restore":
-		return "Restore is not yet implemented."
-	case "score":
-		return g.handleScore()
-	case "restart":
-		return "Restart is not yet implemented."
-	default:
-		return "I don't understand how to \"" + cmd.Verb + "\" something."
+	// Process NPC turns after every command (including grues!)
+	npcResult := g.processNPCTurns()
+	if npcResult != "" {
+		result += "\n\n" + npcResult
 	}
+
+	return result
 }
 
 // processNPCTurns handles NPC behaviors each turn
 func (g *GameV2) processNPCTurns() string {
 	var result strings.Builder
 
+	// Process grue attacks (must be first - can end the game!)
+	grueResult := g.processGrueBehavior()
+	if grueResult != "" {
+		result.WriteString(grueResult)
+		// If grue killed player, don't process other NPCs
+		if g.GameOver {
+			return strings.TrimSpace(result.String())
+		}
+	}
+
 	// Process thief roaming and stealing
-	result.WriteString(g.processThiefBehavior())
+	thiefResult := g.processThiefBehavior()
+	if thiefResult != "" {
+		if result.Len() > 0 {
+			result.WriteString("\n")
+		}
+		result.WriteString(thiefResult)
+	}
 
 	// Process bat behavior
 	batResult := g.processBatBehavior()
@@ -405,6 +425,55 @@ func (g *GameV2) processBatBehavior() string {
 					return "A large vampire bat swoops down, grabs you, and carries you off!\n\n" + g.handleLook()
 				}
 			}
+		}
+	}
+
+	return ""
+}
+
+// processGrueBehavior handles grue attacks in the dark
+func (g *GameV2) processGrueBehavior() string {
+	// Check if player is in darkness without light
+	room := g.Rooms[g.Location]
+	if room == nil {
+		return ""
+	}
+
+	// If room is dark and player has no light source
+	if room.Flags.IsDark && !g.hasLight() {
+		// Track consecutive turns in darkness
+		if !g.Flags["in-darkness"] {
+			// First turn in darkness - just a warning
+			g.Flags["in-darkness"] = true
+			g.Flags["darkness-turns"] = true // Using flag as counter start
+			return "" // Warning already shown by handleLook/handleMove
+		}
+
+		// Player has been in darkness for multiple turns
+		// In original Zork, grue attacks after 2-3 turns in darkness
+		// We'll use turn count modulo to create randomness
+		turnMod := g.Moves % 4
+		if turnMod == 0 {
+			// Grue attacks!
+			g.GameOver = true
+			return "\nOh, no! You have walked into the slavering fangs of a lurking grue!\n\n****  You have died  ****"
+		}
+
+		// Additional warnings
+		warningMod := g.Moves % 3
+		switch warningMod {
+		case 0:
+			return "You hear a horrible slavering sound in the darkness nearby..."
+		case 1:
+			return "The grue is getting closer! You can feel its hot, fetid breath..."
+		default:
+			return "Something is moving in the darkness. You should find light quickly!"
+		}
+	} else {
+		// Player has light or is in lit room - clear darkness tracking
+		if g.Flags["in-darkness"] {
+			g.Flags["in-darkness"] = false
+			delete(g.Flags, "darkness-turns")
 		}
 	}
 
