@@ -163,10 +163,10 @@ func TestPushPullCommands(t *testing.T) {
 	g := NewGameV2()
 	g.Location = "machine-room"
 
-	// Push button
-	result := g.Process("push red button")
-	if !strings.Contains(result, "Click") {
-		t.Errorf("Expected button click, got: %s", result)
+	// Push button (use start button which is in machine-room)
+	result := g.Process("push start button")
+	if !strings.Contains(result, "whirring") && !strings.Contains(result, "already") {
+		t.Errorf("Expected basket response, got: %s", result)
 	}
 
 	// Pull something
@@ -180,7 +180,10 @@ func TestRingCommand(t *testing.T) {
 	g := NewGameV2()
 
 	// Add bell to room
-	g.Items["bell"].Location = g.Location
+	bell := g.Items["bell"]
+	bell.Location = g.Location
+	room := g.Rooms[g.Location]
+	room.AddItem("bell")
 
 	result := g.Process("ring bell")
 
@@ -250,7 +253,10 @@ func TestDrinkCommand(t *testing.T) {
 	g := NewGameV2()
 
 	// Add water to room
-	g.Items["water"].Location = g.Location
+	water := g.Items["water"]
+	water.Location = g.Location
+	room := g.Rooms[g.Location]
+	room.AddItem("water")
 
 	result := g.Process("drink water")
 
@@ -350,7 +356,13 @@ func TestBlowKnockCommands(t *testing.T) {
 		t.Error("Expected response for blow command")
 	}
 
-	result = g.Process("knock on door")
+	// Add wooden door to room for knock test
+	woodenDoor := g.Items["wooden-door"]
+	woodenDoor.Location = g.Location
+	room := g.Rooms[g.Location]
+	room.AddItem("wooden-door")
+
+	result = g.Process("knock on wooden door")
 
 	if !strings.Contains(result, "No one answers") {
 		t.Errorf("Expected no answer, got: %s", result)
