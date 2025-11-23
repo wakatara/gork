@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -324,5 +325,132 @@ func TestLampProtectsFromGrue(t *testing.T) {
 
 	if g.GameOver {
 		t.Error("Game should not be over with lit lamp")
+	}
+}
+
+// TestTrophyCaseScoring tests that placing treasures in trophy case awards points
+func TestTrophyCaseScoring(t *testing.T) {
+	g := NewGameV2()
+
+	// Navigate to living room where trophy case is
+	g.Process("north")
+	g.Process("east")
+	g.Process("open window")
+	g.Process("in")
+	g.Process("west")
+
+	// Verify trophy case is present
+	result := g.Process("look")
+	if !strings.Contains(result, "trophy case") {
+		t.Errorf("Expected to see trophy case, got: %s", result)
+	}
+
+	// Get a treasure (use diamond for testing - worth 10 points)
+	diamond := g.Items["diamond"]
+	if diamond == nil {
+		t.Fatal("Diamond not found")
+	}
+	diamond.Location = "player-inventory"
+	g.Player.Inventory = append(g.Player.Inventory, "diamond")
+
+	// Check initial score
+	if g.Score != 0 {
+		t.Errorf("Initial score should be 0, got: %d", g.Score)
+	}
+
+	// Open trophy case
+	result = g.Process("open trophy case")
+	if !strings.Contains(result, "Opened") {
+		t.Errorf("Expected to open trophy case, got: %s", result)
+	}
+
+	// Put diamond in trophy case - should award 10 points
+	result = g.Process("put diamond in trophy case")
+	if !strings.Contains(result, "10 points") {
+		t.Errorf("Expected point notification, got: %s", result)
+	}
+
+	// Check score increased
+	if g.Score != 10 {
+		t.Errorf("Expected score to be 10, got: %d", g.Score)
+	}
+
+	// Verify scored flag is set
+	if !g.Flags["scored-diamond"] {
+		t.Error("Expected scored-diamond flag to be set")
+	}
+
+	// Try putting same diamond in again (after taking it out) - should NOT award points
+	diamond.Location = "player-inventory"
+	g.Player.Inventory = append(g.Player.Inventory, "diamond")
+	result = g.Process("put diamond in trophy case")
+	if strings.Contains(result, "points awarded") {
+		t.Errorf("Should not award points twice, got: %s", result)
+	}
+	if g.Score != 10 {
+		t.Errorf("Score should still be 10, got: %d", g.Score)
+	}
+}
+
+// TestMultipleTreasuresScoring tests scoring with multiple treasures
+func TestMultipleTreasuresScoring(t *testing.T) {
+	g := NewGameV2()
+
+	// Set up in living room
+	g.Location = "living-room"
+
+	// Open trophy case
+	trophyCase := g.Items["trophy-case"]
+	if trophyCase == nil {
+		t.Fatal("Trophy case not found")
+	}
+	trophyCase.Flags.IsOpen = true
+
+	// Add multiple treasures to inventory
+	treasures := []struct {
+		id    string
+		value int
+	}{
+		{"diamond", 10},
+		{"emerald", 5},
+		{"chalice", 10},
+	}
+
+	for _, treasure := range treasures {
+		item := g.Items[treasure.id]
+		if item == nil {
+			t.Fatalf("Treasure %s not found", treasure.id)
+		}
+		item.Location = "player-inventory"
+		g.Player.Inventory = append(g.Player.Inventory, treasure.id)
+	}
+
+	// Put each treasure in case and verify points
+	expectedScore := 0
+	for _, treasure := range treasures {
+		result := g.Process("put " + treasure.id + " in trophy case")
+		expectedScore += treasure.value
+
+		if !strings.Contains(result, fmt.Sprintf("%d points", treasure.value)) {
+			t.Errorf("Expected %d points for %s, got: %s", treasure.value, treasure.id, result)
+		}
+
+		if g.Score != expectedScore {
+			t.Errorf("Expected score %d, got: %d", expectedScore, g.Score)
+		}
+	}
+
+	// Final score should be 10 + 5 + 10 = 25
+	if g.Score != 25 {
+		t.Errorf("Final score should be 25, got: %d", g.Score)
+	}
+
+	// Check rank
+	result := g.Process("score")
+	if !strings.Contains(result, "25") {
+		t.Errorf("Score command should show 25 points, got: %s", result)
+	}
+	if !strings.Contains(result, "Amateur Adventurer") {
+		t.Errorf("Expected Amateur Adventurer rank for 25 points, got: %s", result)
 	}
 }
