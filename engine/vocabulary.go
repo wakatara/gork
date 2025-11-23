@@ -102,7 +102,8 @@ func (v *Vocabulary) initVerbs() {
 	v.addVerb("touch", "touch", "feel", "rub")
 	v.addVerb("wave", "wave", "brandish")
 	v.addVerb("pull", "pull", "tug")
-	v.addVerb("push", "push", "press", "move")
+	v.addVerb("push", "push", "press")
+	v.addVerb("move", "move", "shift")
 	v.addVerb("turn-on", "turn-on", "activate", "switch-on")
 	v.addVerb("turn-off", "turn-off", "deactivate", "switch-off")
 	v.addVerb("enter", "enter", "board", "climb-in")
@@ -131,6 +132,7 @@ func (v *Vocabulary) initObjects() {
 	v.addObject("sword", "sword", "blade", "elvish")
 	v.addObject("bottle", "bottle", "flask")
 	v.addObject("water", "water", "h2o", "liquid")
+	v.addObject("keys", "keys", "key", "set-of-keys")
 
 	// White house area (WEST-OF-HOUSE, EAST-OF-HOUSE)
 	v.addObject("white-house", "house", "building", "home", "white house", "white-house")

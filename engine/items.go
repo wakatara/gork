@@ -711,7 +711,9 @@ func createMiscItems(g *GameV2) {
 	keys := NewItem("keys", "set of keys", "There is a set of keys here.")
 	keys.Aliases = []string{"keys", "key"}
 	keys.Flags.IsTakeable = true
+	keys.Location = "living-room"
 	g.Items["keys"] = keys
+	g.Rooms["living-room"].AddItem("keys")
 
 	// CLAM (contains pearl)
 	clam := NewItem("clam", "giant clam", "There is a giant clam here.")
@@ -742,8 +744,10 @@ func createMiscItems(g *GameV2) {
 	// GRATING (metal grating)
 	grating := NewItem("grating", "metal grating", "There is a metal grating here.")
 	grating.Aliases = []string{"grating", "grate", "bars"}
+	grating.Location = "grating-clearing"
 	grating.Flags.IsTakeable = false
 	g.Items["grating"] = grating
+	g.Rooms["grating-clearing"].AddItem("grating")
 
 	// CYCLOPS (as an object, not NPC - for examine purposes)
 	cyclopsCorp := NewItem("cyclops-corpse", "cyclops corpse", "The body of a dead cyclops is here.")

@@ -221,6 +221,8 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		return g.handlePush(cmd.DirectObject)
 	case "pull":
 		return g.handlePull(cmd.DirectObject)
+	case "move":
+		return g.handleMoveObject(cmd.DirectObject)
 	case "ring":
 		return g.handleRing(cmd.DirectObject)
 	case "pray":
@@ -397,6 +399,19 @@ func (g *GameV2) handleTake(objName string) string {
 		return "You can't take the " + item.Name + "."
 	}
 
+	// Special case: Taking the rug reveals the trap door
+	if item.ID == "rug" && g.Location == "living-room" {
+		g.Flags["trap-door-open"] = true
+		trapDoor := g.Items["trap-door"]
+		if trapDoor != nil {
+			trapDoor.Location = "living-room"
+			room := g.Rooms["living-room"]
+			if room != nil {
+				room.AddItem("trap-door")
+			}
+		}
+	}
+
 	// Remove from room
 	room := g.Rooms[g.Location]
 	if room != nil {
@@ -406,6 +421,10 @@ func (g *GameV2) handleTake(objName string) string {
 	// Add to inventory
 	item.Location = "inventory"
 	g.Player.Inventory = append(g.Player.Inventory, item.ID)
+
+	if item.ID == "rug" && g.Location == "living-room" {
+		return "Taken.\nWith the rug moved aside, you can see a closed trap door beneath it!"
+	}
 
 	return "Taken."
 }
@@ -468,6 +487,39 @@ func (g *GameV2) handleOpen(objName string) string {
 		g.Flags["window-open"] = true
 		item.Flags.IsOpen = true
 		return "With great effort, you open the window far enough to allow entry."
+	}
+
+	// Special handling for trap door
+	if item.ID == "trap-door" {
+		if !g.Flags["trap-door-open"] {
+			return "The rug must be moved first."
+		}
+		if item.Flags.IsOpen {
+			return "It's already open."
+		}
+		item.Flags.IsOpen = true
+		return "The door reluctantly opens to reveal a rickety staircase descending into darkness."
+	}
+
+	// Special handling for grating
+	if item.ID == "grating" || item.ID == "grate" {
+		// Check if player has keys
+		hasKeys := false
+		for _, itemID := range g.Player.Inventory {
+			if itemID == "keys" {
+				hasKeys = true
+				break
+			}
+		}
+		if !hasKeys {
+			return "The grating is locked."
+		}
+		if g.Flags["grate-open"] {
+			return "It's already open."
+		}
+		g.Flags["grate-open"] = true
+		item.Flags.IsOpen = true
+		return "The grating is unlocked and opens easily."
 	}
 
 	if !item.Flags.IsContainer {
@@ -1094,6 +1146,37 @@ func (g *GameV2) handlePull(objName string) string {
 	return "Pulling the " + item.Name + " doesn't seem to help."
 }
 
+// handleMoveObject moves an object (V-MOVE in ZIL)
+func (g *GameV2) handleMoveObject(objName string) string {
+	if objName == "" {
+		return "Move what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special case: Moving the rug reveals the trap door
+	if item.ID == "rug" && g.Location == "living-room" {
+		if g.Flags["trap-door-open"] {
+			return "The rug is already moved, and the trap door is visible."
+		}
+		g.Flags["trap-door-open"] = true
+		trapDoor := g.Items["trap-door"]
+		if trapDoor != nil {
+			trapDoor.Location = "living-room"
+			room := g.Rooms["living-room"]
+			if room != nil {
+				room.AddItem("trap-door")
+			}
+		}
+		return "With the rug moved aside, you can see a closed trap door beneath it!"
+	}
+
+	return "Moving the " + item.Name + " doesn't seem to help."
+}
+
 // handleRing rings something (V-RING in ZIL)
 func (g *GameV2) handleRing(objName string) string {
 	if objName == "" {
@@ -1118,6 +1201,31 @@ func (g *GameV2) handlePray() string {
 	room := g.Rooms[g.Location]
 	if room == nil {
 		return "You are nowhere!"
+	}
+
+	// Special case: exorcising ghosts at entrance to Hades
+	if g.Location == "entrance-to-hades" {
+		// Check if ghosts are present
+		ghostsPresent := false
+		for _, npcID := range room.NPCs {
+			if npcID == "ghosts" {
+				ghostsPresent = true
+				break
+			}
+		}
+
+		if ghostsPresent {
+			// Banish the ghosts
+			g.Flags["ghosts-banished"] = true
+			room.RemoveNPC("ghosts")
+			// Mark ghosts as not alive
+			if ghosts := g.NPCs["ghosts"]; ghosts != nil {
+				ghosts.Flags.IsAlive = false
+			}
+			return "The prayer is answered! The evil spirits are dispelled, and a path opens to the south!"
+		} else if g.Flags["ghosts-banished"] {
+			return "Your prayers have already been answered here."
+		}
 	}
 
 	// Special case: in temple areas
