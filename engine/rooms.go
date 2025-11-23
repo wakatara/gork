@@ -27,11 +27,11 @@ func createAboveGroundRooms(g *GameV2) {
 		"You are standing in an open field west of a white house, with a boarded front door.",
 	)
 	westOfHouse.Flags.IsOutdoors = true
-	westOfHouse.AddExit("north", "north-of-house")
-	westOfHouse.AddExit("south", "south-of-house")
-	westOfHouse.AddExit("ne", "north-of-house")
-	westOfHouse.AddExit("se", "south-of-house")
-	westOfHouse.AddExit("west", "forest-1")
+	westOfHouse.AddExit("north", "north-of-house") // per ZIL
+	westOfHouse.AddExit("south", "south-of-house") // per ZIL
+	westOfHouse.AddExit("ne", "north-of-house") // per ZIL
+	westOfHouse.AddExit("se", "south-of-house") // per ZIL
+	westOfHouse.AddExit("west", "forest-1") // per ZIL
 	westOfHouse.AddConditionalExit("sw", "stone-barrow", "won-flag", "")
 	westOfHouse.AddConditionalExit("in", "stone-barrow", "won-flag", "")
 	g.Rooms["west-of-house"] = westOfHouse
@@ -53,12 +53,11 @@ func createAboveGroundRooms(g *GameV2) {
 		"You are facing the north side of a white house. There is no door here, and all the windows are boarded up. To the north a narrow path winds through the trees.",
 	)
 	northOfHouse.Flags.IsOutdoors = true
-	northOfHouse.AddExit("north", "path")
-	northOfHouse.AddExit("south", "west-of-house") // FIX: walking around house
-	northOfHouse.AddExit("east", "behind-house")
-	northOfHouse.AddExit("west", "west-of-house")
-	northOfHouse.AddExit("sw", "west-of-house")
-	northOfHouse.AddExit("se", "behind-house")
+	northOfHouse.AddExit("north", "path") // per ZIL
+	northOfHouse.AddExit("sw", "west-of-house") // per ZIL
+	northOfHouse.AddExit("se", "behind-house") // per ZIL
+	northOfHouse.AddExit("west", "west-of-house") // per ZIL
+	northOfHouse.AddExit("east", "behind-house") // per ZIL
 	g.Rooms["north-of-house"] = northOfHouse
 
 	// SOUTH-OF-HOUSE
@@ -68,13 +67,11 @@ func createAboveGroundRooms(g *GameV2) {
 		"You are facing the south side of a white house. There is no door here, and all the windows are boarded.",
 	)
 	southOfHouse.Flags.IsOutdoors = true
-	southOfHouse.AddExit("north", "west-of-house") // FIX: matches west-of-house south
-	southOfHouse.AddExit("east", "behind-house")
-	southOfHouse.AddExit("west", "west-of-house")
-	southOfHouse.AddExit("ne", "behind-house")
-	southOfHouse.AddExit("nw", "west-of-house")
-	southOfHouse.AddExit("south", "forest-3")
-	southOfHouse.AddExit("se", "forest-3") // Add diagonal exit for consistency
+	southOfHouse.AddExit("west", "west-of-house") // per ZIL
+	southOfHouse.AddExit("east", "behind-house") // per ZIL
+	southOfHouse.AddExit("ne", "behind-house") // per ZIL
+	southOfHouse.AddExit("nw", "west-of-house") // per ZIL
+	southOfHouse.AddExit("south", "forest-3") // per ZIL
 	g.Rooms["south-of-house"] = southOfHouse
 
 	// BEHIND-HOUSE (EAST-OF-HOUSE in ZIL)
@@ -84,12 +81,12 @@ func createAboveGroundRooms(g *GameV2) {
 		"You are behind the white house. A path leads into the forest to the east. In one corner of the house there is a small window which is slightly ajar.",
 	)
 	behindHouse.Flags.IsOutdoors = true
-	behindHouse.AddExit("north", "north-of-house")
-	behindHouse.AddExit("south", "south-of-house")
-	behindHouse.AddExit("sw", "south-of-house")
-	behindHouse.AddExit("nw", "north-of-house")
-	// Kitchen access is via window only (in/out), not west
-	behindHouse.AddExit("east", "clearing")
+	behindHouse.AddExit("north", "north-of-house") // per ZIL
+	behindHouse.AddExit("south", "south-of-house") // per ZIL
+	behindHouse.AddExit("sw", "south-of-house") // per ZIL
+	behindHouse.AddExit("nw", "north-of-house") // per ZIL
+	behindHouse.AddExit("east", "clearing") // per ZIL
+	// Kitchen access via window only (in/out when window open)
 	behindHouse.AddConditionalExit("in", "kitchen", "window-open", "The window is closed.")
 	g.Rooms["behind-house"] = behindHouse
 
@@ -100,8 +97,9 @@ func createAboveGroundRooms(g *GameV2) {
 		"This is a forest, with trees in all directions. To the east, there appears to be sunlight.",
 	)
 	forest1.Flags.IsOutdoors = true
-	forest1.AddExit("north", "grating-clearing") // north to grating-clearing (matches grating-clearing west)
-	forest1.AddExit("east", "west-of-house")  // FIX: matches west-of-house west (user's original bug!)
+	forest1.AddExit("north", "grating-clearing") // per ZIL
+	forest1.AddExit("east", "path") // per ZIL
+	forest1.AddExit("south", "forest-3") // per ZIL
 	g.Rooms["forest-1"] = forest1
 
 	// FOREST-2
@@ -111,11 +109,9 @@ func createAboveGroundRooms(g *GameV2) {
 		"This is a dimly lit forest, with large trees all around.",
 	)
 	forest2.Flags.IsOutdoors = true
-	forest2.AddExit("east", "mountains")
-	forest2.AddExit("south", "clearing") // FIX: matches clearing north
-	forest2.AddExit("north", "clearing") // FIX: matches clearing south
-	forest2.AddExit("west", "grating-clearing") // Fixed: west to grating-clearing (matches grating-clearing east)
-	forest2.AddExit("sw", "path") // Keep path connection via southwest
+	forest2.AddExit("east", "mountains") // per ZIL
+	forest2.AddExit("south", "clearing") // per ZIL
+	forest2.AddExit("west", "path") // per ZIL
 	g.Rooms["forest-2"] = forest2
 
 	// MOUNTAINS
@@ -137,10 +133,9 @@ func createAboveGroundRooms(g *GameV2) {
 		"This is a dimly lit forest, with large trees all around.",
 	)
 	forest3.Flags.IsOutdoors = true
-	forest3.AddExit("north", "south-of-house") // FIX: matches south-of-house south
-	forest3.AddExit("east", "clearing") // FIX: matches clearing west
-	forest3.AddExit("west", "path") // FIX: path goes through forest
-	forest3.AddExit("nw", "south-of-house")
+	forest3.AddExit("north", "clearing") // per ZIL
+	forest3.AddExit("west", "forest-1") // per ZIL
+	forest3.AddExit("nw", "south-of-house") // per ZIL
 	g.Rooms["forest-3"] = forest3
 
 	// PATH (Forest Path)
@@ -150,11 +145,10 @@ func createAboveGroundRooms(g *GameV2) {
 		"This is a path winding through a dimly lit forest. The path heads north-south here. One particularly large tree with some low branches stands at the edge of the path.",
 	)
 	path.Flags.IsOutdoors = true
-	path.AddExit("north", "grating-clearing") // FIX: north to grating-clearing (matches grating-clearing south)
-	path.AddExit("ne", "forest-2") // Fixed: ne to forest-2 (matches forest-2 sw)
-	path.AddExit("south", "north-of-house") // south leads back toward house
-	path.AddExit("east", "forest-3") // east to forest-3 (matches forest-3 west)
-	path.AddExit("west", "forest-1") // ADD: reverse of forest-1 east to path
+	path.AddExit("north", "grating-clearing") // per ZIL
+	path.AddExit("east", "forest-2") // per ZIL
+	path.AddExit("south", "north-of-house") // per ZIL
+	path.AddExit("west", "forest-1") // per ZIL
 	path.AddExit("up", "up-a-tree")
 	g.Rooms["path"] = path
 
@@ -175,9 +169,9 @@ func createAboveGroundRooms(g *GameV2) {
 		"You are in a clearing near a large grating that descends into the ground.",
 	)
 	gratingClearing.Flags.IsOutdoors = true
-	gratingClearing.AddExit("east", "forest-2") // east to forest-2 (matches forest-2 west)
-	gratingClearing.AddExit("south", "path") // FIX: south to path (matches path north)
-	gratingClearing.AddExit("west", "forest-1") // ADD: reverse of forest-1 north
+	gratingClearing.AddExit("east", "forest-2") // per ZIL
+	gratingClearing.AddExit("west", "forest-1") // per ZIL
+	gratingClearing.AddExit("south", "path") // per ZIL
 	gratingClearing.AddConditionalExit("down", "grating-room", "grate-open", "The grating is closed.")
 	g.Rooms["grating-clearing"] = gratingClearing
 
@@ -188,11 +182,10 @@ func createAboveGroundRooms(g *GameV2) {
 		"You are in a small clearing in a well marked forest path that extends to the east and west.",
 	)
 	clearing.Flags.IsOutdoors = true
-	clearing.AddExit("east", "canyon-view") // FIX: matches canyon-view west
-	clearing.AddExit("se", "canyon-view") // ADD: reverse of canyon-view nw
-	clearing.AddExit("north", "forest-2")
-	clearing.AddExit("south", "forest-2") // FIX: matches forest-2 north
-	clearing.AddExit("west", "forest-3") // FIX: matches forest-3 east
+	clearing.AddExit("east", "canyon-view") // per ZIL
+	clearing.AddExit("north", "forest-2") // per ZIL
+	clearing.AddExit("south", "forest-3") // per ZIL
+	clearing.AddExit("west", "behind-house") // per ZIL (ZIL calls it east-of-house)
 	g.Rooms["clearing"] = clearing
 
 	// CANYON-VIEW
@@ -202,10 +195,10 @@ func createAboveGroundRooms(g *GameV2) {
 		"You are at the top of the Great Canyon on its west wall. From here there is a marvelous view of the canyon and parts of the Frigid River upstream. Across the canyon, the walls of the White Cliffs join the mighty ramparts of the Flathead Mountains to the east. Following the Canyon upstream to the north, Aragain Falls may be seen, complete with rainbow. The mighty Frigid River flows out from a great dark cavern. To the west and south can be seen an immense forest, stretching for miles around. A path leads northwest. It is possible to climb down into the canyon from here.",
 	)
 	canyonView.Flags.IsOutdoors = true
-	canyonView.AddExit("east", "cliff-middle")
-	canyonView.AddExit("down", "cliff-middle")
-	canyonView.AddExit("nw", "clearing")
-	canyonView.AddExit("west", "clearing") // FIX: matches clearing east
+	canyonView.AddExit("east", "cliff-middle") // per ZIL
+	canyonView.AddExit("down", "cliff-middle") // per ZIL
+	canyonView.AddExit("nw", "clearing") // per ZIL
+	canyonView.AddExit("west", "forest-3") // per ZIL
 	g.Rooms["canyon-view"] = canyonView
 }
 
@@ -311,8 +304,8 @@ func createMazeRooms(g *GameV2) {
 	maze1.Flags.IsLit = false
 	maze1.Flags.IsDark = true
 	maze1.AddExit("east", "troll-room")
-	maze1.AddExit("north", "maze-2") // FIX: was maze-1, should be maze-2
-	maze1.AddExit("south", "maze-4") // FIX: was maze-2, should be maze-4
+	maze1.AddExit("north", "maze-1") // self-loop per ZIL source
+	maze1.AddExit("south", "maze-2") // per ZIL source
 	maze1.AddExit("west", "maze-4")
 	g.Rooms["maze-1"] = maze1
 
@@ -337,9 +330,9 @@ func createMazeRooms(g *GameV2) {
 	maze4 := NewRoom("maze-4", "Maze", "This is part of a maze of twisty little passages, all alike.")
 	maze4.Flags.IsLit = false
 	maze4.Flags.IsDark = true
-	maze4.AddExit("west", "maze-1") // FIX: matches maze-1 west (bidirectional)
-	maze4.AddExit("north", "dead-end-1") // FIX: matches dead-end-1 south
-	maze4.AddExit("east", "maze-3") // east to maze-3
+	maze4.AddExit("west", "maze-3") // per ZIL source
+	maze4.AddExit("north", "maze-1") // per ZIL source
+	maze4.AddExit("east", "dead-end-1") // per ZIL source
 	g.Rooms["maze-4"] = maze4
 
 	// DEAD-END-1
@@ -390,7 +383,7 @@ func createMazeRooms(g *GameV2) {
 	maze8.Flags.IsLit = false
 	maze8.Flags.IsDark = true
 	maze8.AddExit("ne", "maze-7")
-	maze8.AddExit("west", "maze-7") // FIX: was maze-8, should be maze-7
+	maze8.AddExit("west", "maze-8") // self-loop per ZIL source
 	maze8.AddExit("se", "dead-end-3")
 	g.Rooms["maze-8"] = maze8
 
@@ -449,7 +442,7 @@ func createMazeRooms(g *GameV2) {
 	maze12.Flags.IsDark = true
 	maze12.AddExit("sw", "maze-11")
 	maze12.AddExit("east", "maze-13") // FIX: matches maze-13 west
-	maze12.AddExit("up", "maze-13") // FIX: was maze-9, should be maze-13
+	maze12.AddExit("up", "maze-9") // per ZIL source
 	maze12.AddExit("north", "dead-end-4")
 	g.Rooms["maze-12"] = maze12
 
@@ -467,7 +460,7 @@ func createMazeRooms(g *GameV2) {
 	maze13.AddExit("east", "maze-9") // FIX: matches maze-9 south
 	maze13.AddExit("down", "maze-12")
 	maze13.AddExit("south", "maze-10")
-	maze13.AddExit("west", "maze-12") // FIX: matches maze-12 east
+	maze13.AddExit("west", "maze-11") // per ZIL source
 	g.Rooms["maze-13"] = maze13
 
 	// MAZE-14
@@ -503,7 +496,6 @@ func createCyclopsArea(g *GameV2) {
 	cyclopsRoom.AddExit("nw", "maze-15")
 	cyclopsRoom.AddConditionalExit("east", "strange-passage", "magic-flag", "The east wall is solid rock.")
 	cyclopsRoom.AddConditionalExit("up", "treasure-room", "cyclops-dead", "The cyclops doesn't look like he'll let you past.")
-	cyclopsRoom.AddExit("out", "strange-passage") // ADD: reverse of strange-passage in
 	g.Rooms["cyclops-room"] = cyclopsRoom
 
 	// STRANGE-PASSAGE
@@ -593,10 +585,9 @@ func createMirrorRooms(g *GameV2) {
 		"Mirror Room",
 		"You are in a large square room with tall ceilings. On the south wall is an enormous mirror which fills the entire wall. There are exits on the other three sides of the room.",
 	)
-	mirrorRoom1.AddExit("north", "cold-passage")
-	mirrorRoom1.AddExit("west", "twisting-passage")
-	mirrorRoom1.AddExit("east", "small-cave")
-	mirrorRoom1.AddExit("south", "small-cave") // ADD: reverse of small-cave north
+	mirrorRoom1.AddExit("north", "cold-passage") // per ZIL
+	mirrorRoom1.AddExit("west", "twisting-passage") // per ZIL
+	mirrorRoom1.AddExit("east", "small-cave") // per ZIL
 	g.Rooms["mirror-room-1"] = mirrorRoom1
 
 	// MIRROR-ROOM-2
@@ -605,10 +596,9 @@ func createMirrorRooms(g *GameV2) {
 		"Mirror Room",
 		"You are in a large square room with tall ceilings. On the north wall is an enormous mirror which fills the entire wall. There are exits on the other three sides of the room.",
 	)
-	mirrorRoom2.AddExit("west", "winding-passage")
-	mirrorRoom2.AddExit("north", "narrow-passage")
-	mirrorRoom2.AddExit("east", "tiny-cave")
-	mirrorRoom2.AddExit("south", "tiny-cave") // ADD: reverse of tiny-cave north
+	mirrorRoom2.AddExit("west", "winding-passage") // per ZIL
+	mirrorRoom2.AddExit("north", "narrow-passage") // per ZIL
+	mirrorRoom2.AddExit("east", "tiny-cave") // per ZIL
 	g.Rooms["mirror-room-2"] = mirrorRoom2
 
 	// SMALL-CAVE
@@ -617,10 +607,10 @@ func createMirrorRooms(g *GameV2) {
 		"Cave",
 		"This is a tiny cave with entrances west and north, and a staircase leading down.",
 	)
-	smallCave.AddExit("north", "mirror-room-1")
-	smallCave.AddExit("down", "atlantis-room")
-	smallCave.AddExit("south", "atlantis-room")
-	smallCave.AddExit("west", "mirror-room-1") // FIX: was twisting-passage, should be mirror-room-1
+	smallCave.AddExit("north", "mirror-room-1") // per ZIL
+	smallCave.AddExit("west", "twisting-passage") // per ZIL
+	smallCave.AddExit("down", "atlantis-room") // per ZIL
+	smallCave.AddExit("south", "atlantis-room") // per ZIL
 	g.Rooms["small-cave"] = smallCave
 
 	// TINY-CAVE
@@ -629,9 +619,9 @@ func createMirrorRooms(g *GameV2) {
 		"Cave",
 		"This is a tiny cave with entrances west and north, and a dark, forbidding staircase leading down.",
 	)
-	tinyCave.AddExit("north", "mirror-room-2")
-	tinyCave.AddExit("west", "mirror-room-2") // FIX: was winding-passage, should be mirror-room-2
-	tinyCave.AddExit("down", "entrance-to-hades")
+	tinyCave.AddExit("north", "mirror-room-2") // per ZIL
+	tinyCave.AddExit("west", "winding-passage") // per ZIL
+	tinyCave.AddExit("down", "entrance-to-hades") // per ZIL
 	g.Rooms["tiny-cave"] = tinyCave
 
 	// COLD-PASSAGE
@@ -660,8 +650,8 @@ func createMirrorRooms(g *GameV2) {
 		"Winding Passage",
 		"This is a winding passage. It seems that there are only exits on the east and north.",
 	)
-	windingPassage.AddExit("north", "mirror-room-2")
-	windingPassage.AddExit("east", "mirror-room-2") // FIX: was tiny-cave, should be mirror-room-2
+	windingPassage.AddExit("north", "mirror-room-2") // per ZIL
+	windingPassage.AddExit("east", "tiny-cave") // per ZIL
 	g.Rooms["winding-passage"] = windingPassage
 
 	// TWISTING-PASSAGE
@@ -670,8 +660,8 @@ func createMirrorRooms(g *GameV2) {
 		"Twisting Passage",
 		"This is a winding passage. It seems that there are only exits on the east and north.",
 	)
-	twistingPassage.AddExit("north", "mirror-room-1")
-	twistingPassage.AddExit("east", "mirror-room-1") // FIX: was small-cave, should be mirror-room-1
+	twistingPassage.AddExit("north", "mirror-room-1") // per ZIL
+	twistingPassage.AddExit("east", "small-cave") // per ZIL
 	g.Rooms["twisting-passage"] = twistingPassage
 
 	// ATLANTIS-ROOM
@@ -682,7 +672,6 @@ func createMirrorRooms(g *GameV2) {
 	)
 	atlantisRoom.AddExit("up", "small-cave")
 	atlantisRoom.AddExit("south", "reservoir-north")
-	atlantisRoom.AddExit("north", "small-cave") // ADD: reverse of small-cave south
 	g.Rooms["atlantis-room"] = atlantisRoom
 }
 
@@ -779,7 +768,7 @@ func createRoundRoomArea(g *GameV2) {
 	chasmRoom.AddExit("ne", "reservoir-south")
 	chasmRoom.AddExit("sw", "ew-passage")
 	chasmRoom.AddExit("up", "ew-passage")
-	chasmRoom.AddExit("south", "ew-passage") // FIX: matches ew-passage north
+	chasmRoom.AddExit("south", "ns-passage") // per ZIL
 	g.Rooms["chasm-room"] = chasmRoom
 }
 
@@ -885,11 +874,11 @@ func createDamArea(g *GameV2) {
 		"Dam",
 		"You are standing on the top of the Flood Control Dam #3, which was quite a tourist attraction in times far distant. There are paths to the north, south, and west, and a scramble down.",
 	)
-	damRoom.AddExit("south", "dam-base") // FIX: matches dam-base north
-	damRoom.AddExit("down", "dam-base")
-	damRoom.AddExit("east", "dam-base")
-	damRoom.AddExit("north", "dam-lobby")
-	damRoom.AddExit("west", "deep-canyon") // FIX: matches deep-canyon east
+	damRoom.AddExit("south", "deep-canyon") // per ZIL
+	damRoom.AddExit("down", "dam-base") // per ZIL
+	damRoom.AddExit("east", "dam-base") // per ZIL
+	damRoom.AddExit("north", "dam-lobby") // per ZIL
+	damRoom.AddExit("west", "reservoir-south") // per ZIL
 	g.Rooms["dam-room"] = damRoom
 
 	// DAM-LOBBY
@@ -972,7 +961,6 @@ func createRiverArea(g *GameV2) {
 	whiteCliffsNorth.Flags.IsOutdoors = true
 	whiteCliffsNorth.AddConditionalExit("south", "white-cliffs-south", "deflate", "The path is too narrow.")
 	whiteCliffsNorth.AddConditionalExit("west", "damp-cave", "deflate", "The path is too narrow.")
-	whiteCliffsNorth.AddExit("east", "river-3") // ADD: reverse of river-3 west/land
 	g.Rooms["white-cliffs-north"] = whiteCliffsNorth
 
 	// WHITE-CLIFFS-SOUTH
@@ -983,7 +971,6 @@ func createRiverArea(g *GameV2) {
 	)
 	whiteCliffsSouth.Flags.IsOutdoors = true
 	whiteCliffsSouth.AddConditionalExit("north", "white-cliffs-north", "deflate", "The path is too narrow.")
-	whiteCliffsSouth.AddExit("east", "river-4") // ADD: reverse of river-4 west
 	g.Rooms["white-cliffs-south"] = whiteCliffsSouth
 
 	// RIVER-4
@@ -1076,7 +1063,6 @@ func createRiverArea(g *GameV2) {
 	endOfRainbow.AddConditionalExit("ne", "on-rainbow", "rainbow-flag", "")
 	endOfRainbow.AddConditionalExit("east", "on-rainbow", "rainbow-flag", "")
 	endOfRainbow.AddExit("sw", "canyon-bottom")
-	endOfRainbow.AddExit("south", "canyon-bottom") // ADD: reverse of canyon-bottom north
 	g.Rooms["end-of-rainbow"] = endOfRainbow
 
 	// CANYON-BOTTOM
@@ -1088,7 +1074,6 @@ func createRiverArea(g *GameV2) {
 	canyonBottom.Flags.IsOutdoors = true
 	canyonBottom.AddExit("up", "cliff-middle")
 	canyonBottom.AddExit("north", "end-of-rainbow")
-	canyonBottom.AddExit("ne", "end-of-rainbow") // ADD: reverse of end-of-rainbow sw
 	g.Rooms["canyon-bottom"] = canyonBottom
 
 	// CLIFF-MIDDLE
@@ -1100,7 +1085,6 @@ func createRiverArea(g *GameV2) {
 	cliffMiddle.Flags.IsOutdoors = true
 	cliffMiddle.AddExit("up", "canyon-view")
 	cliffMiddle.AddExit("down", "canyon-bottom")
-	cliffMiddle.AddExit("west", "canyon-view") // ADD: reverse of canyon-view east
 	g.Rooms["cliff-middle"] = cliffMiddle
 }
 
@@ -1264,11 +1248,9 @@ func createCoalMineArea(g *GameV2) {
 		"Coal Mine",
 		"This is a nondescript part of a coal mine.",
 	)
-	mine3.AddExit("south", "mine-3") // self-loop to match north
-	mine3.AddExit("north", "mine-3") // self-loop
-	mine3.AddExit("sw", "mine-4")
-	mine3.AddExit("east", "mine-2")
-	mine3.AddExit("nw", "mine-2") // ADD: reverse of mine-2 se
+	mine3.AddExit("south", "mine-3") // per ZIL (self-loop)
+	mine3.AddExit("sw", "mine-4") // per ZIL
+	mine3.AddExit("east", "mine-2") // per ZIL
 	g.Rooms["mine-3"] = mine3
 
 	// MINE-4
@@ -1277,11 +1259,9 @@ func createCoalMineArea(g *GameV2) {
 		"Coal Mine",
 		"This is a nondescript part of a coal mine.",
 	)
-	mine4.AddExit("north", "mine-3")
-	mine4.AddExit("west", "mine-4")
-	mine4.AddExit("down", "ladder-top")
-	mine4.AddExit("east", "mine-4") // ADD: self-loop
-	mine4.AddExit("ne", "mine-3") // ADD: reverse of mine-3 sw
+	mine4.AddExit("north", "mine-3") // per ZIL
+	mine4.AddExit("west", "mine-4") // per ZIL (self-loop)
+	mine4.AddExit("down", "ladder-top") // per ZIL
 	g.Rooms["mine-4"] = mine4
 
 	// SLIDE-ROOM
