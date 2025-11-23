@@ -259,6 +259,17 @@ func (v *Vocabulary) initObjects() {
 	v.addObject("stick", "stick", "walking-stick")
 	v.addObject("volcano", "volcano")
 	v.addObject("railing", "railing", "rail")
+
+	// Dam control buttons
+	v.addObject("yellow-button", "yellow-button", "yellow button", "yellow")
+	v.addObject("blue-button", "blue-button", "blue button", "blue")
+	v.addObject("brown-button", "brown-button", "brown button", "brown")
+	v.addObject("red-button", "red-button", "red button", "red")
+
+	// Machine control buttons
+	v.addObject("start-button", "start-button", "start button", "start")
+	v.addObject("launch-button", "launch-button", "launch button", "launch")
+	v.addObject("lower-button", "lower-button", "lower button", "lower")
 }
 
 // initPrepositions initializes valid prepositions from ZIL

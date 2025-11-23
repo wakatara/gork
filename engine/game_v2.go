@@ -160,9 +160,17 @@ func (g *GameV2) Process(input string) string {
 func (g *GameV2) executeCommand(cmd *Command) string {
 	g.Moves++
 
+	var result string
+
 	// Handle movement
 	if cmd.Verb == "walk" && cmd.Direction != "" {
-		return g.handleMove(cmd.Direction)
+		result = g.handleMove(cmd.Direction)
+		// Process NPC turns and append
+		npcResult := g.processNPCTurns()
+		if npcResult != "" {
+			result += "\n\n" + npcResult
+		}
+		return result
 	}
 
 	// Handle other verbs
@@ -267,6 +275,140 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 	default:
 		return "I don't understand how to \"" + cmd.Verb + "\" something."
 	}
+}
+
+// processNPCTurns handles NPC behaviors each turn
+func (g *GameV2) processNPCTurns() string {
+	var result strings.Builder
+
+	// Process thief roaming and stealing
+	result.WriteString(g.processThiefBehavior())
+
+	// Process bat behavior
+	batResult := g.processBatBehavior()
+	if batResult != "" {
+		if result.Len() > 0 {
+			result.WriteString("\n")
+		}
+		result.WriteString(batResult)
+	}
+
+	return strings.TrimSpace(result.String())
+}
+
+// processThiefBehavior handles thief roaming and treasure stealing
+func (g *GameV2) processThiefBehavior() string {
+	thief := g.NPCs["thief"]
+	if thief == nil || !thief.Flags.IsAlive {
+		return ""
+	}
+
+	// Thief only acts every few turns (to not be too annoying)
+	if g.Moves%3 != 0 {
+		return ""
+	}
+
+	thiefRoom := g.Rooms[thief.Location]
+	if thiefRoom == nil {
+		return ""
+	}
+
+	// If thief is in same room as player, try to steal treasures
+	if thief.Location == g.Location {
+		// Look for treasures in room or player inventory
+		for _, itemID := range g.Player.Inventory {
+			item := g.Items[itemID]
+			if item != nil && item.Flags.IsTreasure {
+				// Thief steals the treasure!
+				// Remove from player inventory
+				for i, id := range g.Player.Inventory {
+					if id == itemID {
+						g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+						break
+					}
+				}
+				// Add to thief's inventory
+				thief.Inventory = append(thief.Inventory, itemID)
+				item.Location = "thief-inventory"
+				return "The thief steals your " + item.Name + " and runs away laughing!"
+			}
+		}
+	}
+
+	// Thief moves to a random connected room
+	exits := thiefRoom.Exits
+	if len(exits) > 0 {
+		// Pick a random exit from the map
+		exitIndex := 0
+		targetIndex := g.Moves % len(exits)
+		var newLocation string
+		for _, exit := range exits {
+			if exitIndex == targetIndex {
+				newLocation = exit.To
+				break
+			}
+			exitIndex++
+		}
+
+		if newLocation != "" {
+			// Move thief
+			thiefRoom.RemoveNPC("thief")
+			thief.Location = newLocation
+			newRoom := g.Rooms[newLocation]
+			if newRoom != nil {
+				newRoom.AddNPC("thief")
+			}
+
+			// If player can hear the thief, mention it
+			if thief.Location == g.Location {
+				return "The thief appears from the shadows!"
+			}
+		}
+	}
+
+	return ""
+}
+
+// processBatBehavior handles bat grabbing and moving player
+func (g *GameV2) processBatBehavior() string {
+	bat := g.NPCs["bat"]
+	if bat == nil || !bat.Flags.IsAlive {
+		return ""
+	}
+
+	// Bat only acts occasionally
+	if g.Moves%5 != 0 {
+		return ""
+	}
+
+	// If bat is in same room as player, it might grab them
+	if bat.Location == g.Location {
+		// 50% chance to grab player (based on turn number)
+		if g.Moves%10 == 0 {
+			// Move player to a random adjacent room
+			currentRoom := g.Rooms[g.Location]
+			if currentRoom != nil && len(currentRoom.Exits) > 0 {
+				// Pick a random exit from the map
+				exitIndex := 0
+				targetIndex := g.Moves % len(currentRoom.Exits)
+				var newLocation string
+				for _, exit := range currentRoom.Exits {
+					if exitIndex == targetIndex {
+						newLocation = exit.To
+						break
+					}
+					exitIndex++
+				}
+
+				if newLocation != "" {
+					g.Location = newLocation
+					return "A large vampire bat swoops down, grabs you, and carries you off!\n\n" + g.handleLook()
+				}
+			}
+		}
+	}
+
+	return ""
 }
 
 func (g *GameV2) handleMove(direction string) string {
@@ -1126,6 +1268,99 @@ func (g *GameV2) handlePush(objName string) string {
 
 	// Special cases would go here (buttons, statues, etc.)
 	if strings.Contains(item.ID, "button") {
+		// Dam control buttons
+		if g.Location == "maintenance-room" {
+			switch item.ID {
+			case "yellow-button":
+				// Yellow button opens the dam gates - drains reservoir
+				if g.Flags["dam-open"] {
+					return "Click. The gates are already open."
+				}
+				g.Flags["dam-open"] = true
+				g.Flags["low-tide"] = true
+				return "Click. You hear a rumbling sound in the distance as the dam gates open and water drains from the reservoir."
+
+			case "blue-button":
+				// Blue button closes the dam gates - fills reservoir
+				if !g.Flags["dam-open"] {
+					return "Click. The gates are already closed."
+				}
+				g.Flags["dam-open"] = false
+				g.Flags["low-tide"] = false
+				return "Click. You hear a rushing sound as the dam gates close and water begins to fill the reservoir."
+
+			case "brown-button":
+				return "Click. Nothing seems to happen."
+
+			case "red-button":
+				return "Click. Nothing seems to happen."
+			}
+		}
+
+		// Machine control buttons
+		if g.Location == "machine-room" {
+			switch item.ID {
+			case "lower-button":
+				// Lower the basket from shaft-room to lower-shaft
+				if g.Flags["basket-lowered"] {
+					return "Click. The basket is already at the bottom."
+				}
+
+				// Transfer basket and its contents
+				shaftRoom := g.Rooms["shaft-room"]
+				lowerShaft := g.Rooms["lower-shaft"]
+
+				// Remove raised basket from shaft-room
+				shaftRoom.RemoveItem("raised-basket")
+
+				// Move all items from raised-basket to lowered-basket
+				for _, otherItem := range g.Items {
+					if otherItem.Location == "raised-basket" {
+						otherItem.Location = "lowered-basket"
+					}
+				}
+
+				// Add lowered basket to lower-shaft
+				loweredBasket := g.Items["lowered-basket"]
+				loweredBasket.Location = "lower-shaft"
+				lowerShaft.AddItem("lowered-basket")
+
+				g.Flags["basket-lowered"] = true
+				return "Click. You hear a whirring sound as the basket descends."
+
+			case "start-button":
+				// Raise the basket from lower-shaft to shaft-room
+				if !g.Flags["basket-lowered"] {
+					return "Click. The basket is already at the top."
+				}
+
+				// Transfer basket and its contents
+				shaftRoom := g.Rooms["shaft-room"]
+				lowerShaft := g.Rooms["lower-shaft"]
+
+				// Remove lowered basket from lower-shaft
+				lowerShaft.RemoveItem("lowered-basket")
+
+				// Move all items from lowered-basket to raised-basket
+				for _, otherItem := range g.Items {
+					if otherItem.Location == "lowered-basket" {
+						otherItem.Location = "raised-basket"
+					}
+				}
+
+				// Add raised basket back to shaft-room
+				raisedBasket := g.Items["raised-basket"]
+				raisedBasket.Location = "shaft-room"
+				shaftRoom.AddItem("raised-basket")
+
+				g.Flags["basket-lowered"] = false
+				return "Click. You hear a whirring sound as the basket ascends."
+
+			case "launch-button":
+				return "Click. The machine makes a grinding noise but nothing happens."
+			}
+		}
+
 		return "Click."
 	}
 

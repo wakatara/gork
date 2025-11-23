@@ -506,24 +506,32 @@ func createFixedObjects(g *GameV2) {
 
 	// BUTTONS (control panel)
 	yellowButton := NewItem("yellow-button", "yellow button", "There is a yellow button here.")
-	yellowButton.Aliases = []string{"yellow-button", "yellow", "button"}
+	yellowButton.Aliases = []string{"yellow-button", "yellow button", "yellow"}
+	yellowButton.Location = "maintenance-room"
 	yellowButton.Flags.IsTakeable = false
 	g.Items["yellow-button"] = yellowButton
+	g.Rooms["maintenance-room"].AddItem("yellow-button")
 
 	brownButton := NewItem("brown-button", "brown button", "There is a brown button here.")
-	brownButton.Aliases = []string{"brown-button", "brown", "button"}
+	brownButton.Aliases = []string{"brown-button", "brown button", "brown"}
+	brownButton.Location = "maintenance-room"
 	brownButton.Flags.IsTakeable = false
 	g.Items["brown-button"] = brownButton
+	g.Rooms["maintenance-room"].AddItem("brown-button")
 
 	redButton := NewItem("red-button", "red button", "There is a red button here.")
-	redButton.Aliases = []string{"red-button", "red", "button"}
+	redButton.Aliases = []string{"red-button", "red button", "red"}
+	redButton.Location = "maintenance-room"
 	redButton.Flags.IsTakeable = false
 	g.Items["red-button"] = redButton
+	g.Rooms["maintenance-room"].AddItem("red-button")
 
 	blueButton := NewItem("blue-button", "blue button", "There is a blue button here.")
-	blueButton.Aliases = []string{"blue-button", "blue", "button"}
+	blueButton.Aliases = []string{"blue-button", "blue button", "blue"}
+	blueButton.Location = "maintenance-room"
 	blueButton.Flags.IsTakeable = false
 	g.Items["blue-button"] = blueButton
+	g.Rooms["maintenance-room"].AddItem("blue-button")
 
 	// ALTAR
 	altar := NewItem("altar", "altar", "There is a marble altar here.")
@@ -546,6 +554,29 @@ func createFixedObjects(g *GameV2) {
 	machine.Flags.IsTakeable = false
 	machine.Flags.IsContainer = true
 	g.Items["machine"] = machine
+	g.Rooms["machine-room"].AddItem("machine")
+
+	// Machine control buttons
+	startButton := NewItem("start-button", "start button", "")
+	startButton.Aliases = []string{"start-button", "start button", "start"}
+	startButton.Location = "machine-room"
+	startButton.Flags.IsTakeable = false
+	g.Items["start-button"] = startButton
+	g.Rooms["machine-room"].AddItem("start-button")
+
+	launchButton := NewItem("launch-button", "launch button", "")
+	launchButton.Aliases = []string{"launch-button", "launch button", "launch"}
+	launchButton.Location = "machine-room"
+	launchButton.Flags.IsTakeable = false
+	g.Items["launch-button"] = launchButton
+	g.Rooms["machine-room"].AddItem("launch-button")
+
+	lowerButton := NewItem("lower-button", "lower button", "")
+	lowerButton.Aliases = []string{"lower-button", "lower button", "lower"}
+	lowerButton.Location = "machine-room"
+	lowerButton.Flags.IsTakeable = false
+	g.Items["lower-button"] = lowerButton
+	g.Rooms["machine-room"].AddItem("lower-button")
 
 	// PEDESTAL
 	pedestal := NewItem("pedestal", "pedestal", "There is a pedestal here.")
@@ -685,19 +716,24 @@ func createMiscItems(g *GameV2) {
 	buoy.Flags.IsTakeable = false
 	g.Items["buoy"] = buoy
 
-	// RAISED BASKET
+	// RAISED BASKET (starts at shaft-room, raised to ceiling)
 	raisedBasket := NewItem("raised-basket", "wicker basket", "There is a large wicker basket here, raised to the ceiling.")
 	raisedBasket.Aliases = []string{"basket", "wicker-basket", "raised-basket"}
+	raisedBasket.Location = "shaft-room"
 	raisedBasket.Flags.IsTakeable = false
 	raisedBasket.Flags.IsContainer = true
 	raisedBasket.Flags.IsOpen = true
 	raisedBasket.Flags.IsTransparent = true
 	g.Items["raised-basket"] = raisedBasket
+	g.Rooms["shaft-room"].AddItem("raised-basket")
 
-	// LOWERED BASKET
+	// LOWERED BASKET (appears when basket is lowered)
 	loweredBasket := NewItem("lowered-basket", "wicker basket", "There is a large wicker basket here.")
 	loweredBasket.Aliases = []string{"basket", "wicker-basket", "lowered-basket"}
 	loweredBasket.Flags.IsTakeable = false
+	loweredBasket.Flags.IsContainer = true
+	loweredBasket.Flags.IsOpen = true
+	loweredBasket.Flags.IsTransparent = true
 	g.Items["lowered-basket"] = loweredBasket
 
 	// PRAYER (of protection)
@@ -729,7 +765,23 @@ func createMiscItems(g *GameV2) {
 	matches.Flags.IsReadable = true
 	g.Items["matches"] = matches
 
-	// MIRROR
+	// MIRROR (in mirror-room-1)
+	mirror1 := NewItem("mirror-1", "mirror", "An enormous mirror fills the south wall.")
+	mirror1.Aliases = []string{"mirror", "looking-glass"}
+	mirror1.Location = "mirror-room-1"
+	mirror1.Flags.IsTakeable = false
+	g.Items["mirror-1"] = mirror1
+	g.Rooms["mirror-room-1"].AddItem("mirror-1")
+
+	// MIRROR (in mirror-room-2)
+	mirror2 := NewItem("mirror-2", "mirror", "An enormous mirror fills the north wall.")
+	mirror2.Aliases = []string{"mirror", "looking-glass"}
+	mirror2.Location = "mirror-room-2"
+	mirror2.Flags.IsTakeable = false
+	g.Items["mirror-2"] = mirror2
+	g.Rooms["mirror-room-2"].AddItem("mirror-2")
+
+	// MIRROR (generic - for other uses)
 	mirror := NewItem("mirror", "mirror", "There is a large mirror here.")
 	mirror.Aliases = []string{"mirror", "looking-glass"}
 	mirror.Flags.IsTakeable = false
