@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -241,5 +242,29 @@ func TestMazeRooms(t *testing.T) {
 		if g.Rooms[roomID] == nil {
 			t.Errorf("Dead end room %s does not exist", roomID)
 		}
+	}
+}
+
+// TestWestEastNavigation tests the specific bug reported: west-of-house -> west -> forest-1 -> east should return
+func TestWestEastNavigation(t *testing.T) {
+	g := NewGameV2()
+	g.Location = "west-of-house"
+
+	// Go west to forest
+	result := g.Process("west")
+	if !strings.Contains(result, "Forest") {
+		t.Errorf("Expected to be in forest after going west, got: %s", result)
+	}
+	if g.Location != "forest-1" {
+		t.Errorf("Expected location to be forest-1, got: %s", g.Location)
+	}
+
+	// Go east - should return to west-of-house (the clearing with sunlight)
+	result = g.Process("east")
+	if !strings.Contains(result, "West of House") {
+		t.Errorf("Expected to return to West of House after going east, got: %s", result)
+	}
+	if g.Location != "west-of-house" {
+		t.Errorf("Expected location to be west-of-house, got: %s", g.Location)
 	}
 }
