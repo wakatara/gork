@@ -71,8 +71,8 @@ Have fun and please don't feed the grues.
   - Outdoor/indoor/underground areas
 
 - ✅ **Comprehensive Item System**:
-  - 85+ items across 10 categories
-  - All treasures, weapons, tools, containers
+  - 122 items across 10 categories (100% complete)
+  - All 19 treasures, weapons, tools, containers
   - Light sources with on/off control
   - Readable items (books, maps, leaflets)
   - Container manipulation (open, close, look in)
@@ -142,9 +142,9 @@ You are carrying:
 
 ### Items in the Game
 
-85+ items across 10 categories:
+122 items across 10 categories (ALL items from original Zork I):
 
-- **Treasures** (13): diamond, emerald, chalice, jade, coins, painting, bracelet, scarab, etc.
+- **Treasures** (19): diamond, emerald, chalice, jade, coins, painting, bracelet, scarab, sceptre, egg, pot-of-gold, trident, bauble, platinum bar, sapphire, ivory torch, trunk of jewels, pearl, oriental rug
 - **Weapons** (5): elvish sword, knife, axe, stiletto, trident
 - **Tools** (6): pump, screwdriver, wrench, rope, shovel, putty
 - **Containers** (11): mailbox, trophy case, bottle, coffin, nest, bags
@@ -171,13 +171,13 @@ You are carrying:
 | Type System      | ✅ Complete (Room/Item/NPC)        |
 | Game Engine      | ✅ Core complete                   |
 | Rooms            | ✅ 110/110 rooms (100%)            |
-| Items            | 🚧 85/122 items (70%)              |
-| Treasures        | 🚧 13/19 treasures (70%)           |
-| Verb Handlers    | 🚧 Core verbs implemented (~60%)   |
+| Items            | ✅ 122/122 items (100%)            |
+| Treasures        | ✅ 19/19 treasures (100%)          |
+| Verb Handlers    | ✅ ~30 verbs implemented (83%)     |
 | Light/Darkness   | 🚧 Basic implementation (80%)      |
-| **Overall Game** | **🚧 ~50-55% complete**            |
-| NPCs             | 🚧 In progress (1/5 implemented)   |
-| Combat System    | ⏸️ Planned (0%)                    |
+| **Overall Game** | **🚧 ~75-80% complete**            |
+| NPCs             | ✅ 5/5 NPCs implemented (100%)     |
+| Combat System    | ✅ Basic combat complete           |
 | Puzzles          | ⏸️ Planned (0%)                    |
 | Save/Restore     | ⏸️ Planned (0%)                    |
 | Score System     | ⏸️ Planned (0%)                    |
@@ -199,9 +199,10 @@ Current test coverage:
 
 - `engine/parser_test.go`: 67 test cases covering command parsing
 - `engine/rooms_test.go`: 21 test cases for all 110 rooms
-- `engine/items_test.go`: 10 test cases for 85+ items
+- `engine/items_test.go`: 10 test cases for all 122 items
 - `engine/game_verbs_test.go`: 8 test cases for verb handlers
-- **Total: 106 tests passing, ~80% coverage**
+- `engine/new_verbs_test.go`: 20+ test cases for new verb handlers
+- **Total: 125+ tests passing, ~80% coverage**
 
 ## Architecture
 
@@ -213,7 +214,7 @@ gork/
 │   ├── types.go      # Room, Item, NPC type definitions
 │   ├── game_v2.go    # Game state and command execution
 │   ├── rooms.go      # All 110 rooms from Zork I
-│   └── items.go      # All 85+ items from Zork I
+│   └── items.go      # All 122 items from Zork I
 ├── ui/               # Terminal UI and retro effects
 └── cmd/gork/         # Main entry point
 ```
@@ -318,9 +319,9 @@ educational purposes and preserving gaming history.
 - ✅ ~~Full dungeon implementation~~ **Complete - 110 rooms**
 - ✅ ~~Light and darkness (and the grue!)~~ **Complete - hasLight() with grue warning**
 - ✅ ~~Commands and synonyms (`x`, `i`, `n`, `s`, etc.)~~ **Complete - 684 words**
-- 🚧 All 19 treasures (13/19 implemented - 68% complete)
-- 🚧 Complete item set (85/122 items - 70% complete)
-- [ ] NPCs and combat system (troll, thief, cyclops, bat, ghosts)
+- ✅ ~~All 19 treasures~~ **Complete - 19/19 treasures (100%)**
+- ✅ ~~Complete item set~~ **Complete - 122/122 items (100%)**
+- ✅ ~~NPCs and combat system~~ **Complete - 5/5 NPCs with basic combat**
 - [ ] Puzzle special handlers (dam controls, mirror room, basket/rope, machine)
 - [ ] Save/restore functionality
 - [ ] Score tracking (0/350 points system)
