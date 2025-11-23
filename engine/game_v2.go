@@ -1028,6 +1028,18 @@ func (g *GameV2) handlePut(objName string, prep string, containerName string) st
 
 	// Add to container
 	item.Location = container.ID
+
+	// Special case: Putting treasure in trophy case awards points
+	if container.ID == "trophy-case" && item.Flags.IsTreasure {
+		// Check if this treasure has already been scored
+		scoreFlag := "scored-" + item.ID
+		if !g.Flags[scoreFlag] {
+			g.Flags[scoreFlag] = true
+			g.Score += item.Value
+			return fmt.Sprintf("Done. (%d points awarded)", item.Value)
+		}
+	}
+
 	return "Done."
 }
 
@@ -1744,7 +1756,29 @@ func (g *GameV2) handleKnock(objName string) string {
 
 // handleScore shows the current score (V-SCORE in ZIL)
 func (g *GameV2) handleScore() string {
-	return fmt.Sprintf("Your score is %d (out of 350), in %d move(s).", g.Score, g.Moves)
+	// Determine rank based on score (from original Zork)
+	rank := ""
+	switch {
+	case g.Score >= 350:
+		rank = "Master Adventurer"
+	case g.Score >= 330:
+		rank = "Wizard"
+	case g.Score >= 300:
+		rank = "Master"
+	case g.Score >= 200:
+		rank = "Adventurer"
+	case g.Score >= 100:
+		rank = "Junior Adventurer"
+	case g.Score >= 50:
+		rank = "Novice Adventurer"
+	case g.Score >= 25:
+		rank = "Amateur Adventurer"
+	default:
+		rank = "Beginner"
+	}
+
+	return fmt.Sprintf("Your score is %d (out of 350), in %d move(s).\nThis gives you the rank of %s.",
+		g.Score, g.Moves, rank)
 }
 
 // GetInitialMessage returns the opening text
