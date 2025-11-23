@@ -238,6 +238,12 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleDrink(cmd.DirectObject)
 		case "fill":
 			result = g.handleFill(cmd.DirectObject, cmd.IndirectObject)
+		case "inflate":
+			result = g.handleInflate(cmd.DirectObject, cmd.IndirectObject)
+		case "deflate":
+			result = g.handleDeflate(cmd.DirectObject)
+		case "plug":
+			result = g.handlePlug(cmd.DirectObject, cmd.IndirectObject)
 		case "pour":
 			result = g.handlePour(cmd.DirectObject, cmd.IndirectObject)
 		case "listen":
@@ -1652,10 +1658,171 @@ func (g *GameV2) handlePour(objName string, targetName string) string {
 
 	item := g.findItem(objName)
 	if item == nil {
-		return "You don't have that."
+		return "You don't have that?"
 	}
 
 	return "The " + item.Name + " is empty."
+}
+
+// handleInflate inflates an object (IBOAT-FUNCTION in ZIL)
+func (g *GameV2) handleInflate(objName string, toolName string) string {
+	if objName == "" {
+		return "Inflate what?"
+	}
+
+	// Find the boat
+	boat := g.findItem(objName)
+	if boat == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Only works on inflatable boat (deflated)
+	if boat.ID != "boat" && boat.ID != "inflatable-boat" {
+		return "How can you inflate that?"
+	}
+
+	// Check if boat is already inflated
+	inflatedBoat := g.Items["inflated-boat"]
+	if inflatedBoat != nil && inflatedBoat.Location == g.Location {
+		return "Inflating it further would probably burst it."
+	}
+
+	// Boat must be on the ground
+	if boat.Location != g.Location {
+		return "The boat must be on the ground to be inflated."
+	}
+
+	// Determine what we're inflating with
+	tool := toolName
+	if tool == "" {
+		tool = "lungs" // Default if no tool specified
+	}
+
+	// Check if using pump
+	pump := g.findItem(tool)
+	if pump != nil && (pump.ID == "pump" || pump.ID == "air-pump") {
+		// Success! Inflate the boat
+		room := g.Rooms[g.Location]
+
+		// Remove deflated boat
+		room.RemoveItem(boat.ID)
+		boat.Location = ""
+
+		// Add inflated boat
+		inflatedBoat.Location = g.Location
+		room.AddItem("inflated-boat")
+
+		// Reset deflate flag (allows passage through narrow areas)
+		g.Flags["deflate"] = true
+
+		result := "The boat inflates and appears seaworthy."
+
+		// Check if label hasn't been seen yet
+		label := g.Items["boat-label"]
+		if label != nil && label.Location == "inflated-boat" {
+			result += "\nA tan label is lying inside the boat."
+		}
+
+		return result
+	} else if tool == "lungs" {
+		return "You don't have enough lung power to inflate it."
+	} else {
+		return "With a " + tool + "? Surely you jest!"
+	}
+}
+
+// handleDeflate deflates an object (RBOAT-FUNCTION in ZIL)
+func (g *GameV2) handleDeflate(objName string) string {
+	if objName == "" {
+		return "Deflate what?"
+	}
+
+	boat := g.findItem(objName)
+	if boat == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Only works on inflated boat
+	if boat.ID != "inflated-boat" {
+		return "Come on, now!"
+	}
+
+	// Can't deflate if player is in the boat
+	if g.Location == "inflated-boat" {
+		return "You can't deflate the boat while you're in it."
+	}
+
+	// Boat must be on ground (not in inventory)
+	if boat.Location != g.Location {
+		return "The boat must be on the ground to be deflated."
+	}
+
+	room := g.Rooms[g.Location]
+
+	// Remove inflated boat
+	room.RemoveItem("inflated-boat")
+	boat.Location = ""
+
+	// Add deflated boat back
+	deflatedBoat := g.Items["boat"]
+	if deflatedBoat == nil {
+		deflatedBoat = g.Items["inflatable-boat"]
+	}
+	if deflatedBoat != nil {
+		deflatedBoat.Location = g.Location
+		room.AddItem(deflatedBoat.ID)
+	}
+
+	// Clear deflate flag (blocks passage through narrow areas)
+	g.Flags["deflate"] = false
+
+	return "The boat deflates."
+}
+
+// handlePlug repairs the punctured boat (DBOAT-FUNCTION in ZIL)
+func (g *GameV2) handlePlug(objName string, materialName string) string {
+	if objName == "" {
+		return "Plug what?"
+	}
+
+	boat := g.findItem(objName)
+	if boat == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Only works on punctured boat
+	if boat.ID != "punctured-boat" {
+		return "That doesn't need plugging."
+	}
+
+	// Check for putty
+	if materialName == "" {
+		return "Plug it with what?"
+	}
+
+	material := g.findItem(materialName)
+	if material == nil || material.ID != "putty" {
+		return "That won't work."
+	}
+
+	// Success! Repair the boat
+	room := g.Rooms[g.Location]
+
+	// Remove punctured boat
+	room.RemoveItem("punctured-boat")
+	boat.Location = ""
+
+	// Add deflated boat
+	deflatedBoat := g.Items["boat"]
+	if deflatedBoat == nil {
+		deflatedBoat = g.Items["inflatable-boat"]
+	}
+	if deflatedBoat != nil {
+		deflatedBoat.Location = g.Location
+		room.AddItem(deflatedBoat.ID)
+	}
+
+	return "Well done. The boat is repaired."
 }
 
 // handleListen listens (V-LISTEN in ZIL)
