@@ -192,7 +192,7 @@ func (v *Vocabulary) initObjects() {
 	v.addObject("wall", "wall", "walls")
 	v.addObject("ceiling", "ceiling")
 	v.addObject("forest", "forest", "trees", "woods")
-	v.addObject("river", "river", "stream", "water")
+	v.addObject("river", "river", "stream")
 
 	// Dam/reservoir area
 	v.addObject("dam", "dam")
