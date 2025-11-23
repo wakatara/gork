@@ -251,3 +251,78 @@ func TestMachineBasketPuzzle(t *testing.T) {
 		t.Error("Expected raised-basket back in shaft-room")
 	}
 }
+
+// TestGrueMechanics tests that the grue actually kills the player in darkness
+func TestGrueMechanics(t *testing.T) {
+	g := NewGameV2()
+
+	// Set location to cellar (dark room) without lamp
+	g.Location = "cellar"
+
+	// First look in darkness - should get warning
+	result := g.Process("look")
+	if !strings.Contains(result, "pitch black") {
+		t.Errorf("Expected darkness warning, got: %s", result)
+	}
+	if !strings.Contains(result, "grue") {
+		t.Errorf("Expected grue warning, got: %s", result)
+	}
+
+	// Move around in darkness for several turns
+	// The grue should eventually attack
+	maxTurns := 20
+	grueAttacked := false
+	for i := 0; i < maxTurns; i++ {
+		result = g.Process("look")
+		if strings.Contains(result, "slavering fangs") || strings.Contains(result, "You have died") {
+			grueAttacked = true
+			if !g.GameOver {
+				t.Error("Expected GameOver to be true after grue attack")
+			}
+			break
+		}
+	}
+
+	if !grueAttacked {
+		t.Errorf("Expected grue to attack after %d turns in darkness", maxTurns)
+	}
+}
+
+// TestLampProtectsFromGrue tests that having a lit lamp prevents grue attacks
+func TestLampProtectsFromGrue(t *testing.T) {
+	g := NewGameV2()
+
+	// Get the lamp and light it
+	lamp := g.Items["lamp"]
+	if lamp == nil {
+		t.Fatal("Lamp not found")
+	}
+	lamp.Location = "player-inventory"
+	g.Player.Inventory = append(g.Player.Inventory, "lamp")
+	lamp.Flags.IsLit = true
+
+	// Set location to cellar (dark room) but with lit lamp
+	g.Location = "cellar"
+
+	// Look should work normally with light
+	result := g.Process("look")
+	if strings.Contains(result, "pitch black") {
+		t.Errorf("Should not be dark with lit lamp, got: %s", result)
+	}
+	if strings.Contains(result, "grue") {
+		t.Errorf("Should not warn about grue with lit lamp, got: %s", result)
+	}
+
+	// Move around for many turns - grue should never attack
+	for i := 0; i < 20; i++ {
+		result = g.Process("look")
+		if strings.Contains(result, "slavering fangs") || g.GameOver {
+			t.Errorf("Grue attacked despite having lit lamp after %d turns", i)
+			break
+		}
+	}
+
+	if g.GameOver {
+		t.Error("Game should not be over with lit lamp")
+	}
+}
