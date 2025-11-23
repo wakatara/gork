@@ -49,9 +49,9 @@ func TestRoomConnectivity(t *testing.T) {
 		direction string
 		to        string
 	}{
-		// Around the house
+		// Around the house (per ZIL - intentionally non-bidirectional)
 		{"west-of-house", "north", "north-of-house"},
-		{"north-of-house", "south", "south-of-house"},
+		{"north-of-house", "west", "west-of-house"}, // north-of-house has no south exit per ZIL
 		{"south-of-house", "east", "behind-house"},
 		{"behind-house", "north", "north-of-house"},
 
@@ -259,12 +259,16 @@ func TestWestEastNavigation(t *testing.T) {
 		t.Errorf("Expected location to be forest-1, got: %s", g.Location)
 	}
 
-	// Go east - should return to west-of-house (the clearing with sunlight)
+	// Go east - per ZIL, forest-1 east leads to path (not back to west-of-house)
+	// The forest is intentionally a mild navigation puzzle
 	result = g.Process("east")
-	if !strings.Contains(result, "West of House") {
-		t.Errorf("Expected to return to West of House after going east, got: %s", result)
+	if !strings.Contains(result, "path") && !strings.Contains(result, "Path") {
+		t.Errorf("Expected to be on path after going east from forest-1, got: %s", result)
 	}
-	if g.Location != "west-of-house" {
-		t.Errorf("Expected location to be west-of-house, got: %s", g.Location)
+	if g.Location != "path" {
+		t.Errorf("Expected location to be path, got: %s", g.Location)
 	}
+
+	// To return to west-of-house from forest-1, player must discover the correct route
+	// (This tests that the ZIL non-bidirectional forest topology is implemented correctly)
 }

@@ -218,10 +218,10 @@ func TestCriticalPathsNavigable(t *testing.T) {
 			endRoom:   "west-of-house",
 		},
 		{
-			name:      "West into forest and back",
+			name:      "West into forest leads to path (intentional non-bidirectional)",
 			startRoom: "west-of-house",
 			path:      []string{"west", "east"},
-			endRoom:   "west-of-house",
+			endRoom:   "path", // per ZIL: forest-1 east -> path (not back to west-of-house)
 		},
 		{
 			name:      "North to path and back",
