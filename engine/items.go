@@ -907,14 +907,23 @@ func createMiscItems(g *GameV2) {
 	g.Items["granite-wall"] = graniteWall
 
 	// WOODEN DOOR
+	// NAILED DOOR (gothic door in living room - permanently sealed)
+	nailedDoor := NewItem("door", "wooden door with strange gothic lettering", "The door is solidly nailed shut and cannot be opened.")
+	nailedDoor.Aliases = []string{"door", "front-door", "entrance", "gothic-door", "nailed-door"}
+	nailedDoor.Location = "living-room"
+	nailedDoor.Flags.IsTakeable = false
+	g.Items["door"] = nailedDoor
+	g.Rooms["living-room"].AddItem("door")
+
+	// WOODEN DOOR
 	woodenDoor := NewItem("wooden-door", "wooden door", "There is a wooden door here.")
-	woodenDoor.Aliases = []string{"door", "wooden-door"}
+	woodenDoor.Aliases = []string{"wooden-door"}
 	woodenDoor.Flags.IsTakeable = false
 	g.Items["wooden-door"] = woodenDoor
 
 	// IRON DOOR
 	ironDoor := NewItem("iron-door", "iron door", "There is an iron door here.")
-	ironDoor.Aliases = []string{"door", "iron-door"}
+	ironDoor.Aliases = []string{"iron-door"}
 	ironDoor.Flags.IsTakeable = false
 	g.Items["iron-door"] = ironDoor
 
