@@ -497,12 +497,15 @@ func createFixedObjects(g *GameV2) {
 	trapDoor.Flags.IsOpen = false
 	g.Items["trap-door"] = trapDoor
 
-	// GRATE (above cellar)
+	// GRATE (above cellar) - global object accessible from both grating-clearing and grating-room
 	grate := NewItem("grate", "grating", "There is a grating securely fastened into the ceiling.")
 	grate.Aliases = []string{"grate", "grating"}
-	grate.Location = "grating-room"
+	grate.Location = "GLOBAL" // Special marker for global objects
 	grate.Flags.IsTakeable = false
 	g.Items["grate"] = grate
+	// Add to both rooms so findItem can locate it
+	g.Rooms["grating-clearing"].AddItem("grate")
+	g.Rooms["grating-room"].AddItem("grate")
 
 	// BUTTONS (control panel)
 	yellowButton := NewItem("yellow-button", "yellow button", "There is a yellow button here.")
@@ -793,13 +796,7 @@ func createMiscItems(g *GameV2) {
 	pile.Flags.IsTakeable = false
 	g.Items["pile-of-leaves"] = pile
 
-	// GRATING (metal grating)
-	grating := NewItem("grating", "metal grating", "There is a metal grating here.")
-	grating.Aliases = []string{"grating", "grate", "bars"}
-	grating.Location = "grating-clearing"
-	grating.Flags.IsTakeable = false
-	g.Items["grating"] = grating
-	g.Rooms["grating-clearing"].AddItem("grating")
+	// Note: Grate is a global object defined earlier (line ~501) and accessible from both grating-clearing and grating-room
 
 	// CYCLOPS (as an object, not NPC - for examine purposes)
 	cyclopsCorp := NewItem("cyclops-corpse", "cyclops corpse", "The body of a dead cyclops is here.")

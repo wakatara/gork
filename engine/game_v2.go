@@ -184,6 +184,10 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleOpen(cmd.DirectObject)
 		case "close":
 			result = g.handleClose(cmd.DirectObject)
+		case "unlock":
+			result = g.handleUnlock(cmd.DirectObject, cmd.IndirectObject)
+		case "lock":
+			result = g.handleLock(cmd.DirectObject, cmd.IndirectObject)
 		case "read":
 			result = g.handleRead(cmd.DirectObject)
 		case "turn":
@@ -728,25 +732,47 @@ func (g *GameV2) handleOpen(objName string) string {
 		return "The door reluctantly opens to reveal a rickety staircase descending into darkness."
 	}
 
-	// Special handling for grating
+	// Special handling for grating (GRATE-FUNCTION in ZIL)
 	if item.ID == "grating" || item.ID == "grate" {
-		// Check if player has keys
-		hasKeys := false
-		for _, itemID := range g.Player.Inventory {
-			if itemID == "keys" {
-				hasKeys = true
-				break
-			}
-		}
-		if !hasKeys {
+		// Check if grate is unlocked
+		if !g.Flags["GRUNLOCK"] {
 			return "The grating is locked."
 		}
-		if g.Flags["grate-open"] {
+
+		// Check if already open
+		if item.Flags.IsOpen {
 			return "It's already open."
 		}
-		g.Flags["grate-open"] = true
+
+		// Open the grate
 		item.Flags.IsOpen = true
-		return "The grating is unlocked and opens easily."
+		g.Flags["grate-open"] = true
+
+		// Different messages depending on location
+		var result string
+		if g.Location == "grating-clearing" {
+			result = "The grating opens."
+		} else {
+			result = "The grating opens to reveal trees above you."
+		}
+
+		// If opening from below (grating-room) and leaves haven't been revealed yet
+		if g.Location == "grating-room" && !g.Flags["grate-revealed"] {
+			result += "\nA pile of leaves falls onto your head and to the ground."
+			g.Flags["grate-revealed"] = true
+
+			// Add leaves to the room if they exist
+			leaves := g.Items["pile-of-leaves"]
+			if leaves != nil {
+				leaves.Location = g.Location
+				room := g.Rooms[g.Location]
+				if room != nil {
+					room.AddItem("pile-of-leaves")
+				}
+			}
+		}
+
+		return result
 	}
 
 	if !item.Flags.IsContainer {
@@ -781,6 +807,16 @@ func (g *GameV2) handleClose(objName string) string {
 		return "You close the window."
 	}
 
+	// Special handling for grating (GRATE-FUNCTION in ZIL)
+	if item.ID == "grating" || item.ID == "grate" {
+		if !item.Flags.IsOpen {
+			return "It's already closed."
+		}
+		item.Flags.IsOpen = false
+		g.Flags["grate-open"] = false
+		return "The grating is closed."
+	}
+
 	if !item.Flags.IsContainer {
 		return "You can't close that."
 	}
@@ -791,6 +827,84 @@ func (g *GameV2) handleClose(objName string) string {
 
 	item.Flags.IsOpen = false
 	return "Closed."
+}
+
+// handleUnlock unlocks an object with a tool (GRATE-FUNCTION in ZIL)
+func (g *GameV2) handleUnlock(objName string, toolName string) string {
+	if objName == "" {
+		return "What do you want to unlock?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special handling for grate/grating
+	if item.ID == "grating" || item.ID == "grate" {
+		// Check location - can only unlock from inside (grating-room)
+		if g.Location != "grating-room" {
+			if g.Location == "grating-clearing" {
+				return "You can't reach the lock from here."
+			}
+			return "You can't unlock that from here."
+		}
+
+		// Check for keys
+		if toolName == "" {
+			return "Unlock it with what?"
+		}
+
+		tool := g.findItem(toolName)
+		if tool == nil || tool.ID != "keys" {
+			return "Can you unlock a grating with a " + toolName + "?"
+		}
+
+		// Check if already unlocked
+		if g.Flags["GRUNLOCK"] {
+			return "It's already unlocked."
+		}
+
+		// Success! Unlock the grate
+		g.Flags["GRUNLOCK"] = true
+		return "The grate is unlocked."
+	}
+
+	return "You can't unlock that."
+}
+
+// handleLock locks an object (GRATE-FUNCTION in ZIL)
+func (g *GameV2) handleLock(objName string, toolName string) string {
+	if objName == "" {
+		return "What do you want to lock?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special handling for grate/grating
+	if item.ID == "grating" || item.ID == "grate" {
+		// Check location - can only lock from inside (grating-room)
+		if g.Location != "grating-room" {
+			if g.Location == "grating-clearing" {
+				return "You can't lock it from this side."
+			}
+			return "You can't lock that from here."
+		}
+
+		// Check if already locked
+		if !g.Flags["GRUNLOCK"] {
+			return "It's already locked."
+		}
+
+		// Success! Lock the grate
+		g.Flags["GRUNLOCK"] = false
+		return "The grate is locked."
+	}
+
+	return "You can't lock that."
 }
 
 func (g *GameV2) handleRead(objName string) string {
