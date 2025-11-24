@@ -293,6 +293,12 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		result += "\n\n" + npcResult
 	}
 
+	// Process lamp fuel depletion
+	lampResult := g.processLampFuel()
+	if lampResult != "" {
+		result += "\n\n" + lampResult
+	}
+
 	return result
 }
 
@@ -490,6 +496,43 @@ func (g *GameV2) processGrueBehavior() string {
 			g.Flags["in-darkness"] = false
 			delete(g.Flags, "darkness-turns")
 		}
+	}
+
+	return ""
+}
+
+// processLampFuel handles lamp fuel depletion each turn (I-LANTERN in ZIL)
+func (g *GameV2) processLampFuel() string {
+	lamp := g.Items["lamp"]
+	if lamp == nil || !lamp.Flags.IsLit || lamp.Fuel <= 0 {
+		return ""
+	}
+
+	// Decrement fuel
+	lamp.Fuel--
+
+	// Check for warning messages at specific fuel levels
+	// ZIL LAMP-TABLE: 100, 70, 15, 0
+	switch lamp.Fuel {
+	case 230: // After 100 turns (330 - 100)
+		return "The lamp appears a bit dimmer."
+	case 160: // After 170 turns (330 - 170 = 160)
+		return "The lamp is definitely dimmer now."
+	case 145: // After 185 turns (330 - 185 = 145)
+		return "The lamp is nearly out."
+	case 0:
+		// Lamp has died
+		lamp.Flags.IsLit = false
+		result := "The lamp has gone out."
+
+		// Check if player is now in darkness
+		room := g.Rooms[g.Location]
+		if room != nil && room.Flags.IsDark && !g.hasLight() {
+			result += "\n\nOh, no! You have walked into the slavering fangs of a lurking grue!\n\n****  You have died  ****"
+			g.GameOver = true
+		}
+
+		return result
 	}
 
 	return ""
@@ -1203,16 +1246,37 @@ func (g *GameV2) handleGive(objName string, npcName string) string {
 	// Special cases per NPC
 	switch npc.ID {
 	case "troll":
-		if item.ID == "lunch" || item.ID == "garlic" {
-			// Troll accepts food and leaves
-			g.Flags["troll-satisfied"] = true
+		// Troll accepts treasures as bribes (TROLL-FCN in ZIL lines 709-751)
+		if item.Flags.IsTreasure {
+			// Troll is bribed and leaves
+			g.Flags["troll-dead"] = true // Opens passages (same flag as when killed)
 			room := g.Rooms[npc.Location]
+
+			// Troll drops his axe
+			axe := g.Items["axe"]
+			if axe != nil {
+				axe.Location = npc.Location
+				if room != nil {
+					room.AddItem("axe")
+				}
+			}
+
+			// Remove troll from room
 			if room != nil {
 				room.RemoveNPC("troll")
 			}
-			delete(g.Items, item.ID) // Food is consumed
-			return "The troll grabs the " + item.Name + " and devours it. He looks satisfied and wanders off, leaving the path clear."
+			npc.Location = "" // Troll leaves the dungeon
+
+			// Treasure is consumed (troll eats it)
+			delete(g.Items, item.ID)
+
+			return "The troll, who is not overly proud, graciously accepts the gift and not having the most discriminating tastes, gleefully eats it.\n\nThe troll, satiated, contentedly waddles off into the darkness, his axe clattering to the floor. The passages are now open."
 		}
+
+		// Non-treasure items
+		// In ZIL, troll accepts anything but only leaves for treasures
+		delete(g.Items, item.ID) // Troll eats it anyway
+		return "The troll, who is not overly proud, graciously accepts the gift and not having the most discriminating tastes, gleefully eats it.\n\nHowever, the troll is still blocking the passages."
 
 	case "cyclops":
 		if item.ID == "lunch" {
@@ -1310,14 +1374,24 @@ func (g *GameV2) handleAttack(objName string) string {
 		// Special handling per NPC
 		switch npc.ID {
 		case "troll":
-			// Troll drops treasure and vanishes
+			// Troll drops axe and vanishes (TROLL-FCN F-DEAD in ZIL)
 			g.Flags["troll-dead"] = true
-			// Remove troll from room
 			room := g.Rooms[npc.Location]
+
+			// Troll drops his axe
+			axe := g.Items["axe"]
+			if axe != nil {
+				axe.Location = npc.Location
+				if room != nil {
+					room.AddItem("axe")
+				}
+			}
+
+			// Remove troll from room
 			if room != nil {
 				room.RemoveNPC("troll")
 			}
-			result.WriteString("Almost as soon as the troll breathes his last breath, a cloud of sinister black fog envelops him, and when the fog lifts, the carcass has disappeared.")
+			result.WriteString("Almost as soon as the troll breathes his last breath, a cloud of sinister black fog envelops him, and when the fog lifts, the carcass has disappeared.\n\nThe troll's axe clatters to the floor.")
 
 		case "cyclops":
 			// Cyclops drops treasure

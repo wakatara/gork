@@ -48,7 +48,8 @@ type Item struct {
 	Location    string   // Room ID or "inventory" or container ID
 	Flags       ItemFlags
 	Weight      int
-	Value       int // For treasures (score)
+	Value       int  // For treasures (score)
+	Fuel        int  // For light sources (turns remaining, -1 = infinite)
 	Action      ItemActionHandler
 }
 

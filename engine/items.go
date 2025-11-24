@@ -407,13 +407,14 @@ ZORK is a game of adventure, danger, and low cunning. In it you will explore som
 
 // createLightSources creates items that provide light
 func createLightSources(g *GameV2) {
-	// LAMP (brass lantern)
+	// LAMP (brass lantern) - starts with 330 turns of fuel (ZIL: 100+70+15+145)
 	lamp := NewItem("lamp", "brass lantern", "The brass lantern is on.")
 	lamp.Aliases = []string{"lamp", "lantern", "light"}
 	lamp.Location = "living-room"
 	lamp.Flags.IsTakeable = true
 	lamp.Flags.IsLightSource = true
 	lamp.Flags.IsLit = true
+	lamp.Fuel = 330 // Total turns before lamp dies
 	g.Items["lamp"] = lamp
 	g.Rooms["living-room"].AddItem("lamp")
 
