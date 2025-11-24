@@ -303,6 +303,12 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		result += "\n\n" + lampResult
 	}
 
+	// Process sword glowing
+	swordResult := g.processSwordGlow()
+	if swordResult != "" {
+		result += "\n\n" + swordResult
+	}
+
 	return result
 }
 
@@ -542,6 +548,82 @@ func (g *GameV2) processLampFuel() string {
 	return ""
 }
 
+// processSwordGlow updates sword glow level based on nearby enemies (I-SWORD in ZIL lines 3851-3879)
+func (g *GameV2) processSwordGlow() string {
+	sword := g.Items["sword"]
+	if sword == nil {
+		return ""
+	}
+
+	// Only glow when player is holding it
+	isHolding := false
+	for _, itemID := range g.Player.Inventory {
+		if itemID == "sword" {
+			isHolding = true
+			break
+		}
+	}
+
+	if !isHolding {
+		return ""
+	}
+
+	oldGlow := sword.GlowLevel
+	newGlow := 0
+
+	// Check current room for hostile NPCs
+	if g.isRoomInfested(g.Location) {
+		newGlow = 2 // Very bright
+	} else {
+		// Check adjacent rooms for hostile NPCs
+		currentRoom := g.Rooms[g.Location]
+		if currentRoom != nil {
+			for _, exit := range currentRoom.Exits {
+				if g.isRoomInfested(exit.To) {
+					newGlow = 1 // Faint glow
+					break
+				}
+			}
+		}
+	}
+
+	// Only report changes in glow level
+	if newGlow == oldGlow {
+		return ""
+	}
+
+	sword.GlowLevel = newGlow
+
+	switch newGlow {
+	case 2:
+		return "Your sword has begun to glow very brightly."
+	case 1:
+		return "Your sword is glowing with a faint blue glow."
+	case 0:
+		return "Your sword is no longer glowing."
+	}
+
+	return ""
+}
+
+// isRoomInfested checks if a room has hostile NPCs (INFESTED? in ZIL lines 3881-3886)
+func (g *GameV2) isRoomInfested(roomID string) bool {
+	room := g.Rooms[roomID]
+	if room == nil {
+		return false
+	}
+
+	// Check for hostile NPCs in the room
+	for _, npcID := range room.NPCs {
+		npc := g.NPCs[npcID]
+		if npc != nil && npc.Flags.IsAlive && npc.Hostile {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (g *GameV2) handleMove(direction string) string {
 	currentRoom := g.Rooms[g.Location]
 	if currentRoom == nil {
@@ -628,6 +710,18 @@ func (g *GameV2) handleExamine(objName string) string {
 				return "The mirror is broken into many pieces."
 			}
 			return "There is an ugly person staring back at you."
+		}
+
+		// Special case: examining sword (SWORD-FCN in ZIL lines 2432-2442)
+		if item.ID == "sword" {
+			result := item.Description
+			switch item.GlowLevel {
+			case 1:
+				result += " It is glowing with a faint blue glow."
+			case 2:
+				result += " It is glowing very brightly."
+			}
+			return result
 		}
 
 		result := item.Description

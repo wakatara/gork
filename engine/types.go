@@ -50,6 +50,7 @@ type Item struct {
 	Weight      int
 	Value       int  // For treasures (score)
 	Fuel        int  // For light sources (turns remaining, -1 = infinite)
+	GlowLevel   int  // For sword: 0=not glowing, 1=faint, 2=bright
 	Action      ItemActionHandler
 }
 
