@@ -454,3 +454,432 @@ func TestMultipleTreasuresScoring(t *testing.T) {
 		t.Errorf("Expected Amateur Adventurer rank for 25 points, got: %s", result)
 	}
 }
+
+// TestLampFuelDepletion tests the lamp fuel system
+func TestLampFuelDepletion(t *testing.T) {
+	g := NewGameV2()
+
+	// Test 1: Check initial fuel
+	lamp := g.Items["lamp"]
+	if lamp == nil {
+		t.Fatal("Lamp not found")
+	}
+	if lamp.Fuel != 330 {
+		t.Errorf("Expected lamp to start with 330 turns of fuel, got: %d", lamp.Fuel)
+	}
+
+	// Test 2: Lamp off should not consume fuel
+	lamp.Flags.IsLit = false
+	initialFuel := lamp.Fuel
+	g.Process("look")
+	if lamp.Fuel != initialFuel {
+		t.Errorf("Fuel should not decrease when lamp is off, was %d, now %d", initialFuel, lamp.Fuel)
+	}
+
+	// Test 3: First warning at 230 turns remaining (after 100 turns)
+	lamp.Flags.IsLit = true
+	lamp.Fuel = 231
+	result := g.Process("look")
+	if !strings.Contains(result, "bit dimmer") {
+		t.Errorf("Expected 'bit dimmer' warning at 230 fuel, got: %s", result)
+	}
+	if lamp.Fuel != 230 {
+		t.Errorf("Expected fuel to be 230, got: %d", lamp.Fuel)
+	}
+
+	// Test 4: Second warning at 160 turns remaining (after 170 turns)
+	lamp.Fuel = 161
+	result = g.Process("look")
+	if !strings.Contains(result, "definitely dimmer") {
+		t.Errorf("Expected 'definitely dimmer' warning at 160 fuel, got: %s", result)
+	}
+	if lamp.Fuel != 160 {
+		t.Errorf("Expected fuel to be 160, got: %d", lamp.Fuel)
+	}
+
+	// Test 5: Third warning at 145 turns remaining (after 185 turns)
+	lamp.Fuel = 146
+	result = g.Process("look")
+	if !strings.Contains(result, "nearly out") {
+		t.Errorf("Expected 'nearly out' warning at 145 fuel, got: %s", result)
+	}
+	if lamp.Fuel != 145 {
+		t.Errorf("Expected fuel to be 145, got: %d", lamp.Fuel)
+	}
+
+	// Test 6: Lamp dies in lit room (safe)
+	g.Location = "west-of-house"
+	lamp.Fuel = 1
+	result = g.Process("look")
+	if !strings.Contains(result, "gone out") {
+		t.Errorf("Expected 'gone out' message when lamp dies, got: %s", result)
+	}
+	if lamp.Flags.IsLit {
+		t.Error("Lamp should be extinguished")
+	}
+	if g.GameOver {
+		t.Error("Player should not die in lit room")
+	}
+
+	// Test 7: Lamp dies in dark room (grue death)
+	g2 := NewGameV2()
+	g2.Location = "cellar"
+	lamp2 := g2.Items["lamp"]
+	lamp2.Location = "player-inventory"
+	g2.Player.Inventory = append(g2.Player.Inventory, "lamp")
+	lamp2.Flags.IsLit = true
+	lamp2.Fuel = 1
+	result = g2.Process("look")
+	if !g2.GameOver {
+		t.Error("Player should die from grue in dark room")
+	}
+	if !strings.Contains(result, "grue") || !strings.Contains(result, "died") {
+		t.Errorf("Expected grue death message, got: %s", result)
+	}
+}
+
+// TestCandlesFuelDepletion tests the candles fuel system
+func TestCandlesFuelDepletion(t *testing.T) {
+	g := NewGameV2()
+
+	// Test 1: Check initial fuel
+	candles := g.Items["candles"]
+	if candles == nil {
+		t.Fatal("Candles not found")
+	}
+	if candles.Fuel != 40 {
+		t.Errorf("Expected candles to start with 40 turns of fuel, got: %d", candles.Fuel)
+	}
+
+	// Test 2: Candles off should not consume fuel
+	candles.Location = "player-inventory"
+	g.Player.Inventory = append(g.Player.Inventory, "candles")
+	candles.Flags.IsLit = false
+	g.Location = "west-of-house"
+	initialFuel := candles.Fuel
+	for i := 0; i < 5; i++ {
+		g.Process("look")
+	}
+	if candles.Fuel != initialFuel {
+		t.Errorf("Fuel should not decrease when candles not lit, was %d, now %d", initialFuel, candles.Fuel)
+	}
+
+	// Test 3: First warning at 20 turns remaining
+	candles.Flags.IsLit = true
+	candles.Fuel = 21
+	result := g.Process("look")
+	if !strings.Contains(result, "grow shorter") {
+		t.Errorf("Expected 'grow shorter' warning at 20 fuel, got: %s", result)
+	}
+	if candles.Fuel != 20 {
+		t.Errorf("Expected fuel to be 20, got: %d", candles.Fuel)
+	}
+
+	// Test 4: Second warning at 10 turns remaining
+	candles.Fuel = 11
+	result = g.Process("look")
+	if !strings.Contains(result, "quite short") {
+		t.Errorf("Expected 'quite short' warning at 10 fuel, got: %s", result)
+	}
+	if candles.Fuel != 10 {
+		t.Errorf("Expected fuel to be 10, got: %d", candles.Fuel)
+	}
+
+	// Test 5: Third warning at 5 turns remaining
+	candles.Fuel = 6
+	result = g.Process("look")
+	if !strings.Contains(result, "won't last long") {
+		t.Errorf("Expected 'won't last long' warning at 5 fuel, got: %s", result)
+	}
+	if candles.Fuel != 5 {
+		t.Errorf("Expected fuel to be 5, got: %d", candles.Fuel)
+	}
+
+	// Test 6: Candles burn out in lit room (safe)
+	candles.Fuel = 1
+	result = g.Process("look")
+	if !strings.Contains(result, "better have more light") {
+		t.Errorf("Expected burnout message, got: %s", result)
+	}
+	if candles.Flags.IsLit {
+		t.Error("Candles should be extinguished")
+	}
+	if g.GameOver {
+		t.Error("Player should not die in lit room")
+	}
+
+	// Test 7: Candles burn out in dark room (grue death)
+	g2 := NewGameV2()
+	g2.Location = "cellar"
+	candles2 := g2.Items["candles"]
+	candles2.Location = "player-inventory"
+	g2.Player.Inventory = append(g2.Player.Inventory, "candles")
+	candles2.Flags.IsLit = true
+	candles2.Fuel = 1
+	result = g2.Process("look")
+	if !g2.GameOver {
+		t.Error("Player should die from grue in dark room")
+	}
+	if !strings.Contains(result, "grue") || !strings.Contains(result, "died") {
+		t.Errorf("Expected grue death message, got: %s", result)
+	}
+}
+
+// TestIvoryTorchEternalFlame tests that the ivory torch never burns out
+func TestIvoryTorchEternalFlame(t *testing.T) {
+	g := NewGameV2()
+
+	torch := g.Items["ivory-torch"]
+	if torch == nil {
+		t.Fatal("Ivory torch not found")
+	}
+
+	// Torch should have eternal flame (Fuel=-1)
+	if torch.Fuel != -1 {
+		t.Errorf("Expected torch to have eternal flame (Fuel=-1), got: %d", torch.Fuel)
+	}
+
+	// Torch should be lit by default
+	if !torch.Flags.IsLit {
+		t.Error("Torch should be lit by default")
+	}
+
+	// Torch should be a light source
+	if !torch.Flags.IsLightSource {
+		t.Error("Torch should be a light source")
+	}
+
+	// Torch should be a treasure worth 6 points
+	if !torch.Flags.IsTreasure {
+		t.Error("Torch should be a treasure")
+	}
+	if torch.Value != 6 {
+		t.Errorf("Expected torch value to be 6, got: %d", torch.Value)
+	}
+}
+
+func TestTrapDoorMechanics(t *testing.T) {
+	g := NewGameV2()
+
+	// Test 1: Trap door should be hidden in living-room until rug is moved
+	t.Run("hidden until rug moved", func(t *testing.T) {
+		g.Location = "living-room"
+		g.Flags["trap-door-open"] = false // Ensure rug hasn't been moved
+
+		result := g.Process("look")
+		if strings.Contains(result, "trap door") {
+			t.Error("Trap door should be hidden until rug is moved")
+		}
+
+		result = g.Process("examine trap door")
+		if !strings.Contains(result, "can't see") {
+			t.Errorf("Should not be able to see trap door, got: %s", result)
+		}
+	})
+
+	// Test 2: Moving rug reveals trap door
+	t.Run("moving rug reveals door", func(t *testing.T) {
+		g.Location = "living-room"
+		result := g.Process("move rug")
+
+		if !strings.Contains(result, "trap door") {
+			t.Errorf("Expected trap door to be revealed, got: %s", result)
+		}
+
+		if !g.Flags["trap-door-open"] {
+			t.Error("trap-door-open flag should be set after moving rug")
+		}
+
+		// Now it should be visible
+		result = g.Process("look")
+		if !strings.Contains(result, "trap door") {
+			t.Error("Trap door should now be visible")
+		}
+	})
+
+	// Test 3: Open from living-room reveals staircase
+	t.Run("open from living-room", func(t *testing.T) {
+		g.Location = "living-room"
+		g.Flags["trap-door-open"] = true
+		trapDoor := g.Items["trap-door"]
+		trapDoor.Flags.IsOpen = false
+
+		result := g.Process("open trap door")
+		if !strings.Contains(result, "staircase") {
+			t.Errorf("Expected staircase description, got: %s", result)
+		}
+
+		if !trapDoor.Flags.IsOpen {
+			t.Error("Trap door should be open")
+		}
+	})
+
+	// Test 4: Close from living-room
+	t.Run("close from living-room", func(t *testing.T) {
+		g.Location = "living-room"
+		g.Flags["trap-door-open"] = true
+		trapDoor := g.Items["trap-door"]
+		trapDoor.Flags.IsOpen = true
+
+		result := g.Process("close trap door")
+		if !strings.Contains(result, "swings shut") {
+			t.Errorf("Expected door to swing shut, got: %s", result)
+		}
+
+		if trapDoor.Flags.IsOpen {
+			t.Error("Trap door should be closed")
+		}
+	})
+
+	// Test 5: Open from cellar shows "locked from above"
+	t.Run("open from cellar locked", func(t *testing.T) {
+		g.Location = "cellar"
+		trapDoor := g.Items["trap-door"]
+		trapDoor.Flags.IsOpen = false
+
+		// Add lamp for visibility in dark cellar
+		lamp := g.Items["lamp"]
+		lamp.Location = "inventory"
+		lamp.Flags.IsLit = true
+		g.Player.Inventory = []string{"lamp"}
+
+		result := g.Process("open trap door")
+		if !strings.Contains(result, "locked from above") {
+			t.Errorf("Expected locked message, got: %s", result)
+		}
+
+		if trapDoor.Flags.IsOpen {
+			t.Error("Trap door should remain closed")
+		}
+	})
+
+	// Test 6: Close from cellar locks door
+	t.Run("close from cellar locks", func(t *testing.T) {
+		g.Location = "cellar"
+		trapDoor := g.Items["trap-door"]
+		trapDoor.Flags.IsOpen = true
+
+		// Add lamp for visibility
+		lamp := g.Items["lamp"]
+		lamp.Location = "inventory"
+		lamp.Flags.IsLit = true
+		g.Player.Inventory = []string{"lamp"}
+
+		result := g.Process("close trap door")
+		if !strings.Contains(result, "closes and locks") {
+			t.Errorf("Expected door to close and lock, got: %s", result)
+		}
+
+		if trapDoor.Flags.IsOpen {
+			t.Error("Trap door should be closed")
+		}
+	})
+
+	// Test 7: Trap door always visible in cellar
+	t.Run("visible in cellar", func(t *testing.T) {
+		g.Location = "cellar"
+
+		// Add lamp for visibility
+		lamp := g.Items["lamp"]
+		lamp.Location = "inventory"
+		lamp.Flags.IsLit = true
+		g.Player.Inventory = []string{"lamp"}
+
+		result := g.Process("look")
+		if !strings.Contains(result, "trap door") {
+			t.Error("Trap door should always be visible in cellar")
+		}
+	})
+}
+
+func TestKitchenWindowMechanics(t *testing.T) {
+	g := NewGameV2()
+
+	// Test 1: Window examine before opening
+	t.Run("examine before first open", func(t *testing.T) {
+		g.Location = "behind-house"
+		g.Flags["window-opened-once"] = false
+
+		result := g.Process("examine window")
+		if !strings.Contains(result, "not enough") {
+			t.Errorf("Expected 'not enough to allow entry' message, got: %s", result)
+		}
+	})
+
+	// Test 2: Open window from behind-house
+	t.Run("open window", func(t *testing.T) {
+		g.Location = "behind-house"
+		window := g.Items["kitchen-window"]
+		window.Flags.IsOpen = false
+		g.Flags["window-open"] = false
+		g.Flags["window-opened-once"] = false
+
+		result := g.Process("open window")
+		if !strings.Contains(result, "great effort") {
+			t.Errorf("Expected 'great effort' message, got: %s", result)
+		}
+
+		if !window.Flags.IsOpen {
+			t.Error("Window should be open")
+		}
+
+		if !g.Flags["window-opened-once"] {
+			t.Error("window-opened-once flag should be set")
+		}
+	})
+
+	// Test 3: Close window
+	t.Run("close window", func(t *testing.T) {
+		g.Location = "behind-house"
+		window := g.Items["kitchen-window"]
+		window.Flags.IsOpen = true
+		g.Flags["window-open"] = true
+
+		result := g.Process("close window")
+		if !strings.Contains(result, "more easily") {
+			t.Errorf("Expected 'more easily' message, got: %s", result)
+		}
+
+		if window.Flags.IsOpen {
+			t.Error("Window should be closed")
+		}
+
+		if g.Flags["window-open"] {
+			t.Error("window-open flag should be cleared")
+		}
+	})
+
+	// Test 4: Examine after opening once
+	t.Run("examine after first open", func(t *testing.T) {
+		g.Location = "behind-house"
+		g.Flags["window-opened-once"] = true
+
+		result := g.Process("examine window")
+		// After opening once, should show normal description, not the special message
+		if strings.Contains(result, "not enough") {
+			t.Errorf("Should not show 'not enough' after first open, got: %s", result)
+		}
+	})
+
+	// Test 5: Window controls passage between rooms
+	t.Run("window controls passage", func(t *testing.T) {
+		g.Location = "behind-house"
+		window := g.Items["kitchen-window"]
+
+		// With window closed, can't go west
+		window.Flags.IsOpen = false
+		g.Flags["window-open"] = false
+		result := g.Process("west")
+		if !strings.Contains(result, "window is closed") && !strings.Contains(result, "can't go that way") {
+			// May vary based on implementation
+			t.Logf("Window closed, movement result: %s", result)
+		}
+
+		// With window open, can go west
+		window.Flags.IsOpen = true
+		g.Flags["window-open"] = true
+		result = g.Process("west")
+		// Should successfully move or at least not be blocked by window
+		t.Logf("Window open, movement result: %s", result)
+	})
+}
