@@ -156,6 +156,7 @@ func createTreasures(g *GameV2) {
 	ivoryTorch.Flags.IsTreasure = true
 	ivoryTorch.Flags.IsLightSource = true
 	ivoryTorch.Flags.IsLit = true
+	ivoryTorch.Fuel = -1 // Eternal flame, never burns out
 	ivoryTorch.Value = 6
 	g.Items["ivory-torch"] = ivoryTorch
 
@@ -432,13 +433,14 @@ func createLightSources(g *GameV2) {
 	torch.Flags.IsLit = true
 	g.Items["torch"] = torch
 
-	// CANDLES
+	// CANDLES - burn time from I-CANDLES in ZIL line 2641 (40 turns)
 	candles := NewItem("candles", "pair of candles", "There is a pair of candles here.")
 	candles.Aliases = []string{"candles", "candle"}
 	candles.Location = "entrance-to-hades"
 	candles.Flags.IsTakeable = true
 	candles.Flags.IsLightSource = true
 	candles.Flags.IsLit = false
+	candles.Fuel = 40 // Burns for 40 turns when lit
 	g.Items["candles"] = candles
 
 	// BURNED OUT LANTERN

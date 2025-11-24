@@ -303,6 +303,12 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		result += "\n\n" + lampResult
 	}
 
+	// Process candles fuel depletion
+	candlesResult := g.processCandlesFuel()
+	if candlesResult != "" {
+		result += "\n\n" + candlesResult
+	}
+
 	// Process sword glowing
 	swordResult := g.processSwordGlow()
 	if swordResult != "" {
@@ -534,6 +540,43 @@ func (g *GameV2) processLampFuel() string {
 		// Lamp has died
 		lamp.Flags.IsLit = false
 		result := "The lamp has gone out."
+
+		// Check if player is now in darkness
+		room := g.Rooms[g.Location]
+		if room != nil && room.Flags.IsDark && !g.hasLight() {
+			result += "\n\nOh, no! You have walked into the slavering fangs of a lurking grue!\n\n****  You have died  ****"
+			g.GameOver = true
+		}
+
+		return result
+	}
+
+	return ""
+}
+
+// processCandlesFuel depletes candle fuel each turn (I-CANDLES in ZIL lines 2321-2326)
+func (g *GameV2) processCandlesFuel() string {
+	candles := g.Items["candles"]
+	if candles == nil || !candles.Flags.IsLit || candles.Fuel <= 0 {
+		return ""
+	}
+
+	// Decrement fuel
+	candles.Fuel--
+
+	// Check for warning messages at specific fuel levels
+	// ZIL CANDLE-TABLE (lines 2406-2414): 20, 10, 5, 0
+	switch candles.Fuel {
+	case 20:
+		return "The candles grow shorter."
+	case 10:
+		return "The candles are becoming quite short."
+	case 5:
+		return "The candles won't last long now."
+	case 0:
+		// Candles have burned out
+		candles.Flags.IsLit = false
+		result := "You'd better have more light than from the candles."
 
 		// Check if player is now in darkness
 		room := g.Rooms[g.Location]
