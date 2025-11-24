@@ -90,6 +90,7 @@ func (v *Vocabulary) initVerbs() {
 	v.addVerb("xyzzy", "xyzzy")
 	v.addVerb("plugh", "plugh")
 	v.addVerb("frobozz", "frobozz")
+	v.addVerb("ulysses", "ulysses", "odysseus") // V-ODYSSEUS in ZIL
 
 	// More action verbs from gverbs.zil
 	v.addVerb("climb", "climb", "scale")
