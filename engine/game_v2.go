@@ -234,6 +234,8 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleRing(cmd.DirectObject)
 		case "pray":
 			result = g.handlePray()
+		case "ulysses", "odysseus":
+			result = g.handleOdysseus()
 		case "wait":
 			result = g.handleWait()
 		case "eat":
@@ -1279,13 +1281,38 @@ func (g *GameV2) handleGive(objName string, npcName string) string {
 		return "The troll, who is not overly proud, graciously accepts the gift and not having the most discriminating tastes, gleefully eats it.\n\nHowever, the troll is still blocking the passages."
 
 	case "cyclops":
+		// Cyclops puzzle (CYCLOPS-FCN in ZIL lines 1543-1574)
+		// Two-part puzzle: 1) give lunch (hot peppers) 2) give water to put him to sleep
 		if item.ID == "lunch" {
-			// Cyclops eats lunch and becomes less hostile
-			g.Flags["cyclops-fed"] = true
-			npc.Flags.IsAggressive = false
+			// Give hot peppers - makes cyclops thirsty but doesn't solve puzzle
 			delete(g.Items, item.ID)
-			return "The cyclops eagerly grabs the lunch and stuffs it into his mouth. He seems less inclined to eat you now."
+			return "The cyclops says \"Mmm Mmm. I love hot peppers! But oh, could I use a drink. Perhaps I could drink the blood of that thing.\" From the gleam in his eye, it could be surmised that you are \"that thing\"."
 		}
+		if item.ID == "water" || (item.ID == "bottle" && g.Items["water"] != nil && g.Items["water"].Location == "bottle") {
+			// Give water - cyclops drinks and falls asleep, sets CYCLOPS-FLAG
+			// Only works after giving hot peppers (not checking in this simplified version)
+			delete(g.Items, "water")
+			// Put empty bottle back in room
+			bottle := g.Items["bottle"]
+			if bottle != nil {
+				bottle.Location = g.Location
+				bottle.Flags.IsOpen = true
+				room := g.Rooms[g.Location]
+				if room != nil {
+					room.AddItem("bottle")
+				}
+			}
+			// Cyclops falls asleep
+			g.Flags["cyclops-flag"] = true
+			npc.Flags.IsAggressive = false
+			npc.Flags.CanFight = false
+			return "The cyclops takes the bottle, checks that it's open, and drinks the water. A moment later, he lets out a yawn that nearly blows you over, and then falls fast asleep (what did you put in that drink, anyway?)."
+		}
+		if item.ID == "garlic" {
+			return "The cyclops may be hungry, but there is a limit."
+		}
+		// Default for other items
+		return "The cyclops is not so stupid as to eat THAT!"
 
 	case "thief":
 		// Thief steals valuable items
@@ -1754,6 +1781,52 @@ func (g *GameV2) handlePray() string {
 	}
 
 	return "If you pray enough, your prayers may be answered."
+}
+
+// handleOdysseus handles saying "ulysses" or "odysseus" (V-ODYSSEUS in ZIL lines 945-961)
+func (g *GameV2) handleOdysseus() string {
+	// Only works in cyclops-room with cyclops present and awake
+	if g.Location != "cyclops-room" {
+		return "Wasn't he a sailor?"
+	}
+
+	// Check if cyclops is present and awake
+	room := g.Rooms[g.Location]
+	if room == nil {
+		return "Wasn't he a sailor?"
+	}
+
+	cyclopPresent := false
+	for _, npcID := range room.NPCs {
+		if npcID == "cyclops" {
+			cyclopPresent = true
+			break
+		}
+	}
+
+	if !cyclopPresent {
+		return "Wasn't he a sailor?"
+	}
+
+	// If cyclops is already asleep, can't use the word
+	if g.Flags["cyclops-flag"] {
+		return "No use talking to him. He's fast asleep."
+	}
+
+	// Cyclops flees! This knocks down the east wall and opens passage to strange-passage
+	g.Flags["cyclops-flag"] = true  // Cyclops is gone
+	g.Flags["magic-flag"] = true     // East passage is now open
+
+	// Remove cyclops from room
+	room.RemoveNPC("cyclops")
+	cyclops := g.NPCs["cyclops"]
+	if cyclops != nil {
+		cyclops.Flags.IsAlive = false
+		cyclops.Flags.CanFight = false
+		cyclops.Location = ""
+	}
+
+	return "The cyclops, hearing the name of his father's deadly nemesis, flees the room by knocking down the wall on the east of the room."
 }
 
 // handleWait waits a turn (V-WAIT in ZIL)
