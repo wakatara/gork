@@ -781,8 +781,8 @@ func createHadesArea(g *GameV2) {
 		"You are outside a large gateway, on which is inscribed \"Abandon every hope, all ye who enter here.\" The gate is open; through it you can see a desolation, with a pile of mangled bodies in one corner. Thousands of voices, lamenting some hideous fate, can be heard.",
 	)
 	entranceToHades.AddExit("up", "tiny-cave")
-	entranceToHades.AddConditionalExit("in", "land-of-living-dead", "ghosts-banished", "Some invisible force prevents you from passing through the gate.")
-	entranceToHades.AddConditionalExit("south", "land-of-living-dead", "ghosts-banished", "Some invisible force prevents you from passing through the gate.")
+	entranceToHades.AddConditionalExit("in", "land-of-living-dead", "LLD-FLAG", "Some invisible force prevents you from passing through the gate.")
+	entranceToHades.AddConditionalExit("south", "land-of-living-dead", "LLD-FLAG", "Some invisible force prevents you from passing through the gate.")
 	g.Rooms["entrance-to-hades"] = entranceToHades
 
 	// LAND-OF-LIVING-DEAD

@@ -360,12 +360,23 @@ ZORK is a game of adventure, danger, and low cunning. In it you will explore som
 	leaflet.Flags.IsReadable = true
 	g.Items["leaflet"] = leaflet
 
-	// BOOK (prayer book)
-	book := NewItem("book", "prayer book", "There is a prayer book here.")
-	book.Aliases = []string{"book", "prayer-book"}
+	// BOOK (prayer book) - ZIL lines 212-231
+	book := NewItem("book", "black book", "On the altar is a large black book, open to page 569.")
+	book.Aliases = []string{"book", "prayer-book", "prayer", "black", "black-book"}
 	book.Flags.IsTakeable = true
 	book.Flags.IsReadable = true
-	book.Flags.IsContainer = true
+	book.Flags.IsContainer = false // Not a container
+	book.Flags.IsOpen = true        // Always open to page 569
+	book.Text = `Commandment #12592
+
+Oh ye who go about saying unto each: "Hello sailor":
+Dost thou know the magnitude of thy sin before the gods?
+Yea, verily, thou shalt be ground between two stones.
+Shall the angry gods cast thy body into the whirlpool?
+Surely, thy eye shall be put out with a sharp stick!
+Even unto the ends of the earth shalt thou wander and
+Unto the land of the dead shalt thou be sent at last.
+Surely thou shalt repent of thy cunning.`
 	g.Items["book"] = book
 
 	// ADVERTISEMENT

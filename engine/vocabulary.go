@@ -120,12 +120,14 @@ func (v *Vocabulary) initVerbs() {
 	v.addVerb("untie", "untie", "unfasten", "detach")
 	v.addVerb("blow", "blow")
 	v.addVerb("ring", "ring")
+	v.addVerb("exorcise", "exorcise", "banish")
 	v.addVerb("count", "count")
 	v.addVerb("unlock", "unlock")
 	v.addVerb("lock", "lock")
 	v.addVerb("inflate", "inflate", "blow-up", "fill")
 	v.addVerb("deflate", "deflate")
 	v.addVerb("plug", "plug", "repair", "patch")
+	v.addVerb("burn", "burn", "incinerate")
 }
 
 // initObjects initializes object synonyms from ZIL object definitions (1dungeon.zil, gglobals.zil)
@@ -208,7 +210,7 @@ func (v *Vocabulary) initObjects() {
 	v.addObject("button", "button", "switch")
 
 	// More items from 1dungeon.zil
-	v.addObject("book", "book", "guidebook", "guide")
+	v.addObject("book", "book", "guidebook", "guide", "prayer-book", "black-book", "prayer", "black")
 	v.addObject("bell", "bell")
 	v.addObject("canary", "canary", "bird")
 	v.addObject("garlic", "garlic", "clove")

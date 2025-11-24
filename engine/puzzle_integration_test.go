@@ -883,3 +883,231 @@ func TestKitchenWindowMechanics(t *testing.T) {
 		t.Logf("Window open, movement result: %s", result)
 	})
 }
+
+func TestPrayerBookMechanics(t *testing.T) {
+	g := NewGameV2()
+
+	// Test 1: Prayer book has correct initial state
+	t.Run("initial state", func(t *testing.T) {
+		book := g.Items["book"]
+		if book == nil {
+			t.Fatal("Prayer book not found")
+		}
+
+		if book.Name != "black book" {
+			t.Errorf("Expected 'black book', got '%s'", book.Name)
+		}
+
+		if !book.Flags.IsReadable {
+			t.Error("Book should be readable")
+		}
+
+		if book.Text == "" {
+			t.Error("Book should have text content")
+		}
+	})
+
+	// Test 2: Reading the book shows the commandment text
+	t.Run("reading shows commandment", func(t *testing.T) {
+		g := NewGameV2()
+		book := g.Items["book"]
+		book.Location = "inventory"
+		g.Player.Inventory = append(g.Player.Inventory, "book")
+
+		result := g.Process("read book")
+		if !strings.Contains(result, "Commandment") || !strings.Contains(result, "Hello sailor") {
+			t.Errorf("Expected commandment text, got: %s", result)
+		}
+	})
+
+	// Test 3: Opening the book shows it's already open to page 569
+	t.Run("open shows already open", func(t *testing.T) {
+		g := NewGameV2()
+		book := g.Items["book"]
+		book.Location = "inventory"
+		g.Player.Inventory = append(g.Player.Inventory, "book")
+
+		result := g.Process("open book")
+		if !strings.Contains(result, "already open") || !strings.Contains(result, "page 569") {
+			t.Errorf("Expected 'already open to page 569', got: %s", result)
+		}
+	})
+
+	// Test 4: Closing the book fails
+	t.Run("cannot close", func(t *testing.T) {
+		g := NewGameV2()
+		book := g.Items["book"]
+		book.Location = "inventory"
+		g.Player.Inventory = append(g.Player.Inventory, "book")
+
+		result := g.Process("close book")
+		if !strings.Contains(result, "cannot be closed") {
+			t.Errorf("Expected 'cannot be closed', got: %s", result)
+		}
+	})
+
+	// Test 5: Turning pages shows hint about banishment
+	t.Run("turn pages shows banishment hint", func(t *testing.T) {
+		g := NewGameV2()
+		book := g.Items["book"]
+		book.Location = "inventory"
+		g.Player.Inventory = append(g.Player.Inventory, "book")
+
+		result := g.Process("turn book")
+		if !strings.Contains(result, "banishment") || !strings.Contains(result, "evil") {
+			t.Errorf("Expected banishment hint, got: %s", result)
+		}
+	})
+
+	// Test 6: Burning the book is deadly
+	t.Run("burning is deadly", func(t *testing.T) {
+		g := NewGameV2()
+		book := g.Items["book"]
+		book.Location = "inventory"
+		g.Player.Inventory = append(g.Player.Inventory, "book")
+
+		result := g.Process("burn book")
+		if !g.GameOver {
+			t.Error("Burning book should kill player")
+		}
+
+		if !strings.Contains(result, "cretin") || !strings.Contains(result, "dust") {
+			t.Errorf("Expected death message with 'cretin' and 'dust', got: %s", result)
+		}
+
+		if book.Location != "REMOVED" {
+			t.Error("Book should be removed after burning")
+		}
+	})
+
+	// Test 7: Book aliases work
+	t.Run("aliases work", func(t *testing.T) {
+		g := NewGameV2()
+		book := g.Items["book"]
+		book.Location = "inventory"
+		g.Player.Inventory = append(g.Player.Inventory, "book")
+
+		result := g.Process("read prayer-book")
+		if !strings.Contains(result, "Commandment") {
+			t.Errorf("'prayer-book' alias didn't work, got: %s", result)
+		}
+
+		result = g.Process("examine black-book")
+		if strings.Contains(result, "can't see") {
+			t.Errorf("'black-book' alias didn't work, got: %s", result)
+		}
+	})
+}
+
+func TestBellBookCandleCeremony(t *testing.T) {
+	// Test 1: Ghosts block passage
+	t.Run("ghosts block passage", func(t *testing.T) {
+		g := NewGameV2()
+		g.Location = "entrance-to-hades"
+
+		result := g.Process("in")
+		if !strings.Contains(result, "invisible force") && !strings.Contains(result, "prevents") {
+			t.Errorf("Expected passage blocked, got: %s", result)
+		}
+	})
+
+	// Test 2: Exorcise without items
+	t.Run("exorcise without items", func(t *testing.T) {
+		g := NewGameV2()
+		g.Location = "entrance-to-hades"
+
+		result := g.Process("exorcise")
+		if !strings.Contains(result, "equipped") {
+			t.Errorf("Expected 'not equipped' message, got: %s", result)
+		}
+	})
+
+	// Test 3: Exorcise with all items
+	t.Run("exorcise with all items prompts ceremony", func(t *testing.T) {
+		g := NewGameV2()
+		g.Location = "entrance-to-hades"
+		g.Player.Inventory = []string{"bell", "book", "candles"}
+		g.Items["bell"].Location = "inventory"
+		g.Items["book"].Location = "inventory"
+		g.Items["candles"].Location = "inventory"
+
+		result := g.Process("exorcise")
+		if !strings.Contains(result, "perform the ceremony") {
+			t.Errorf("Expected 'perform ceremony' message, got: %s", result)
+		}
+	})
+
+	// Test 4: Full ceremony sequence
+	t.Run("full ceremony sequence", func(t *testing.T) {
+		g := NewGameV2()
+		g.Location = "entrance-to-hades"
+		g.Player.Inventory = []string{"bell", "book", "candles"}
+		g.Items["bell"].Location = "inventory"
+		g.Items["book"].Location = "inventory"
+		g.Items["candles"].Location = "inventory"
+
+		// Step 1: Ring bell
+		result := g.Process("ring bell")
+		if !strings.Contains(result, "red hot") || !strings.Contains(result, "wraiths") {
+			t.Errorf("Expected bell ceremony start, got: %s", result)
+		}
+
+		// Check bell dropped
+		if g.Items["bell"].Location != "entrance-to-hades" {
+			t.Error("Bell should have dropped to ground")
+		}
+
+		// Check XB flag set
+		if !g.Flags["XB"] {
+			t.Error("XB flag should be set")
+		}
+
+		// Step 2: Pick up and light candles
+		g.Process("take candles")
+		result = g.Process("light candles")
+		if !strings.Contains(result, "flicker") || !strings.Contains(result, "trembles") {
+			t.Errorf("Expected candles ceremony, got: %s", result)
+		}
+
+		// Check XC flag set
+		if !g.Flags["XC"] {
+			t.Error("XC flag should be set")
+		}
+
+		// Step 3: Read book
+		result = g.Process("read book")
+		if !strings.Contains(result, "Begone") || !strings.Contains(result, "flee") {
+			t.Errorf("Expected ceremony completion, got: %s", result)
+		}
+
+		// Check LLD-FLAG set
+		if !g.Flags["LLD-FLAG"] {
+			t.Error("LLD-FLAG should be set")
+		}
+
+		// Check ghosts removed
+		room := g.Rooms["entrance-to-hades"]
+		if room == nil || len(room.NPCs) > 0 {
+			t.Errorf("Ghosts should be removed, NPCs: %v", room.NPCs)
+		}
+
+		// Can now enter land of the dead
+		result = g.Process("in")
+		if strings.Contains(result, "invisible force") {
+			t.Errorf("Passage should be open, got: %s", result)
+		}
+	})
+
+	// Test 5: Ring bell elsewhere
+	t.Run("normal bell ringing elsewhere", func(t *testing.T) {
+		g := NewGameV2()
+		g.Location = "west-of-house"
+		g.Player.Inventory = []string{"bell"}
+		g.Items["bell"].Location = "inventory"
+
+		result := g.Process("ring bell")
+		if !strings.Contains(result, "Ding") && !strings.Contains(result, "echoes") {
+			t.Errorf("Expected normal bell sound, got: %s", result)
+		}
+	})
+}

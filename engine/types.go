@@ -45,6 +45,7 @@ type Item struct {
 	Name        string   // Primary name
 	Aliases     []string // Alternative names (lamp/lantern)
 	Description string   // What you see when examining
+	Text        string   // Text content for readable items (books, scrolls, etc)
 	Location    string   // Room ID or "inventory" or container ID
 	Flags       ItemFlags
 	Weight      int

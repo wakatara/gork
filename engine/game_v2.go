@@ -108,6 +108,22 @@ func (g *GameV2) createNPCs() {
 	g.NPCs["cyclops"] = cyclops
 	g.Rooms["cyclops-room"].AddNPC("cyclops")
 
+	// The Ghosts/Spirits - Block entrance to Land of the Dead (GHOSTS in ZIL 1dungeon.zil lines 109-115)
+	ghosts := NewNPC(
+		"ghosts",
+		"evil spirits",
+		"The way through the gate is barred by evil spirits, who jeer at your attempts to pass.",
+	)
+	ghosts.Location = "entrance-to-hades"
+	ghosts.Strength = 0 // Can't be fought
+	ghosts.Weapon = ""
+	ghosts.Hostile = false // Don't attack, just block passage
+	ghosts.Flags.IsAggressive = false
+	ghosts.Flags.CanFight = false
+	ghosts.Flags.IsAlive = true
+	g.NPCs["ghosts"] = ghosts
+	g.Rooms["entrance-to-hades"].AddNPC("ghosts")
+
 	// The Bat - Carries player to random dark rooms
 	bat := NewNPC(
 		"bat",
@@ -122,21 +138,6 @@ func (g *GameV2) createNPCs() {
 	bat.Flags.CanFight = false    // Can't be fought effectively
 	g.NPCs["bat"] = bat
 	g.Rooms["bat-room"].AddNPC("bat")
-
-	// The Ghosts - Temple spirits, need exorcism
-	ghosts := NewNPC(
-		"ghosts",
-		"evil spirits",
-		"The room is filled with evil spirits. They are making a significant racket.",
-	)
-	ghosts.Location = "entrance-to-hades"
-	ghosts.Strength = 0 // Can't be fought
-	ghosts.Weapon = ""
-	ghosts.Hostile = false
-	ghosts.Flags.IsAggressive = false
-	ghosts.Flags.CanFight = false // Need exorcism, not combat
-	g.NPCs["ghosts"] = ghosts
-	g.Rooms["entrance-to-hades"].AddNPC("ghosts")
 }
 
 // Process handles a command - same interface as before
@@ -197,6 +198,15 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 				objName = cmd.IndirectObject
 			}
 
+			// Special handling for prayer book (BLACK-BOOK in ZIL lines 2192-2200)
+			if objName != "" {
+				item := g.findItem(objName)
+				if item != nil && item.ID == "book" && cmd.Preposition == "" {
+					result = `Beside page 569, there is only one other page with any legible printing on it. Most of it is unreadable, but the subject seems to be the banishment of evil. Apparently, certain noises, lights, and prayers are efficacious in this regard.`
+					break
+				}
+			}
+
 			if cmd.Preposition == "on" {
 				result = g.handleTurnOn(objName)
 			} else if cmd.Preposition == "off" {
@@ -204,6 +214,10 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			} else {
 				result = "Turn it on or off?"
 			}
+		case "light":
+			result = g.handleTurnOn(cmd.DirectObject)
+		case "extinguish":
+			result = g.handleTurnOff(cmd.DirectObject)
 		case "inventory":
 			result = g.handleInventory()
 		case "help":
@@ -232,6 +246,8 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleMoveObject(cmd.DirectObject)
 		case "ring":
 			result = g.handleRing(cmd.DirectObject)
+		case "exorcise":
+			result = g.handleExorcise(cmd.DirectObject)
 		case "pray":
 			result = g.handlePray()
 		case "ulysses", "odysseus":
@@ -260,6 +276,8 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleTouch(cmd.DirectObject)
 		case "break":
 			result = g.handleBreak(cmd.DirectObject)
+		case "burn":
+			result = g.handleBurn(cmd.DirectObject)
 		case "search":
 			result = g.handleSearch(cmd.DirectObject)
 		case "jump":
@@ -911,6 +929,11 @@ func (g *GameV2) handleOpen(objName string) string {
 		return "The door is solidly nailed shut and cannot be opened."
 	}
 
+	// Special handling for prayer book (BLACK-BOOK in ZIL lines 2187-2189)
+	if item.ID == "book" {
+		return "The book is already open to page 569."
+	}
+
 	// Special handling for kitchen window (KITCHEN-WINDOW-F in ZIL lines 242-246)
 	if item.ID == "kitchen-window" {
 		if g.Flags["window-open"] {
@@ -1007,6 +1030,11 @@ func (g *GameV2) handleClose(objName string) string {
 	item := g.findItem(objName)
 	if item == nil {
 		return "You can't see any " + objName + " here."
+	}
+
+	// Special handling for prayer book (BLACK-BOOK in ZIL lines 2190-2191)
+	if item.ID == "book" {
+		return "As hard as you try, the book cannot be closed."
 	}
 
 	// Special handling for kitchen window
@@ -1152,6 +1180,30 @@ func (g *GameV2) handleRead(objName string) string {
 		return "How does one read a " + item.Name + "?"
 	}
 
+	// Special case: reading book during ceremony (LLD-ROOM M-BEG in ZIL lines 1102-1113)
+	if item.ID == "book" && g.Location == "entrance-to-hades" && g.Flags["XC"] && !g.Flags["LLD-FLAG"] {
+		// Complete the ceremony!
+		g.Flags["LLD-FLAG"] = true
+
+		// Remove ghosts
+		ghosts := g.NPCs["ghosts"]
+		if ghosts != nil {
+			ghosts.Flags.IsAlive = false
+			room := g.Rooms["entrance-to-hades"]
+			if room != nil {
+				room.RemoveNPC("ghosts")
+			}
+		}
+
+		return `Each word of the prayer reverberates through the hall in a deafening confusion. As the last word fades, a voice, loud and commanding, speaks: "Begone, fiends!" A heart-stopping scream fills the cavern, and the spirits, sensing a greater power, flee through the walls.`
+	}
+
+	// If item has Text content, return that; otherwise return Description
+	// (V-READ in ZIL gverbs.zil lines 1143-1147)
+	if item.Text != "" {
+		return item.Text
+	}
+
 	return item.Description
 }
 
@@ -1212,6 +1264,14 @@ func (g *GameV2) handleTurnOn(objName string) string {
 	}
 
 	item.Flags.IsLit = true
+
+	// Special case: lighting candles during bell ceremony (LLD-ROOM M-END in ZIL lines 1115-1125)
+	if item.ID == "candles" && g.Location == "entrance-to-hades" && g.Flags["XB"] && !g.Flags["XC"] && !g.Flags["LLD-FLAG"] {
+		g.Flags["XC"] = true
+		g.Flags["candles-ceremony-active"] = true
+		return `The flames flicker wildly and appear to dance. The earth beneath your feet trembles, and your legs nearly buckle beneath you. The spirits cower at your unearthly power.`
+	}
+
 	return "The " + item.Name + " is now on."
 }
 
@@ -1321,6 +1381,15 @@ func (g *GameV2) findItemInInventory(name string) *Item {
 		}
 	}
 	return nil
+}
+
+func (g *GameV2) hasItemInInventory(itemID string) bool {
+	for _, id := range g.Player.Inventory {
+		if id == itemID {
+			return true
+		}
+	}
+	return false
 }
 
 func (g *GameV2) findNPC(name string) *NPC {
@@ -1958,12 +2027,82 @@ func (g *GameV2) handleRing(objName string) string {
 		return "You can't see any " + objName + " here."
 	}
 
-	// Special case: bell
+	// Special case: bell ceremony (LLD-ROOM in ZIL 1actions.zil lines 1083-1101)
 	if item.ID == "bell" {
+		// Check if we're at entrance-to-hades and ceremony not complete
+		if g.Location == "entrance-to-hades" && !g.Flags["LLD-FLAG"] {
+			// Ring bell - Step 1 of ceremony
+			g.Flags["XB"] = true
+			g.Flags["bell-ceremony-active"] = true
+			g.Flags["bell-ceremony-turn"] = true
+
+			// Bell becomes hot and drops
+			item.Location = g.Location
+			room := g.Rooms[g.Location]
+			if room != nil {
+				room.AddItem("bell")
+			}
+			// Remove from inventory
+			for i, id := range g.Player.Inventory {
+				if id == "bell" {
+					g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+					break
+				}
+			}
+
+			// If player has candles, they drop too
+			result := `The bell suddenly becomes red hot and falls to the ground. The wraiths, as if paralyzed, stop their jeering and slowly turn to face you. On their ashen faces, the expression of a long-forgotten terror takes shape.`
+
+			if g.hasItemInInventory("candles") {
+				candles := g.Items["candles"]
+				if candles != nil {
+					candles.Location = g.Location
+					candles.Flags.IsLit = false
+					if room != nil {
+						room.AddItem("candles")
+					}
+					for i, id := range g.Player.Inventory {
+						if id == "candles" {
+							g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+							break
+						}
+					}
+					result += "\nIn your confusion, the candles drop to the ground (and they are out)."
+				}
+			}
+
+			return result
+		}
+
+		// Normal bell ringing elsewhere
 		return "Ding, dong. The bell echoes throughout the dungeon."
 	}
 
 	return "How does one ring a " + item.Name + "?"
+}
+
+// handleExorcise attempts to exorcise spirits (V-EXORCISE in ZIL gverbs.zil lines 643+)
+func (g *GameV2) handleExorcise(objName string) string {
+	// Check if we're at entrance-to-hades
+	if g.Location != "entrance-to-hades" {
+		return "There is nothing here to exorcise."
+	}
+
+	// Check if spirits are already banished
+	if g.Flags["LLD-FLAG"] {
+		return "The spirits have already been banished."
+	}
+
+	// Check if player has all three items (GHOSTS-F and LLD-ROOM in ZIL)
+	hasBook := g.hasItemInInventory("book")
+	hasBell := g.hasItemInInventory("bell")
+	hasCandles := g.hasItemInInventory("candles")
+
+	if hasBook && hasBell && hasCandles {
+		return "You must perform the ceremony."
+	}
+
+	return "You aren't equipped for an exorcism."
 }
 
 // handlePray prays (V-PRAY in ZIL)
@@ -2448,6 +2587,46 @@ func (g *GameV2) handleBreak(objName string) string {
 
 	// Default: can't break most things
 	return "You can't break that."
+}
+
+// handleBurn burns something (BLACK-BOOK burn handling in ZIL lines 2201-2205)
+func (g *GameV2) handleBurn(objName string) string {
+	if objName == "" {
+		return "Burn what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special case: burning the prayer book is DEADLY (BLACK-BOOK in ZIL)
+	if item.ID == "book" {
+		// Remove the book
+		if item.Location == "inventory" {
+			for i, id := range g.Player.Inventory {
+				if id == item.ID {
+					g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+					break
+				}
+			}
+		} else {
+			room := g.Rooms[item.Location]
+			if room != nil {
+				room.RemoveItem(item.ID)
+			}
+		}
+		item.Location = "REMOVED"
+
+		// Game over!
+		g.GameOver = true
+		return `A booming voice says "Wrong, cretin!" and you notice that you have turned into a pile of dust. How, I can't imagine.
+
+****  You have died  ****`
+	}
+
+	// Default: can't burn most things
+	return "You can't burn that."
 }
 
 // handleSearch searches something (V-SEARCH in ZIL)
