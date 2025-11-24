@@ -99,8 +99,10 @@ func createTreasures(g *GameV2) {
 	pot.Location = "end-of-rainbow"
 	pot.Flags.IsTakeable = true
 	pot.Flags.IsTreasure = true
+	pot.Flags.IsInvisible = true // Invisible until rainbow is solidified
 	pot.Value = 10
 	g.Items["pot-of-gold"] = pot
+	g.Rooms["end-of-rainbow"].AddItem("pot-of-gold")
 
 	// TRIDENT - ZIL TVALUE 11
 	trident := NewItem("trident", "crystal trident", "There is a crystal trident here.")

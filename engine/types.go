@@ -67,6 +67,7 @@ type ItemFlags struct {
 	IsLit        bool // For light sources that are on
 	IsTreasure   bool
 	IsWearable   bool
+	IsInvisible  bool // For items that are initially invisible (like pot-of-gold)
 }
 
 // ItemActionHandler handles item-specific interactions

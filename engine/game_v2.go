@@ -598,7 +598,7 @@ func (g *GameV2) handleLook() string {
 	// List items in room
 	for _, itemID := range room.Contents {
 		item := g.Items[itemID]
-		if item != nil {
+		if item != nil && !item.Flags.IsInvisible {
 			result.WriteString("There is a " + item.Name + " here.\n")
 		}
 	}
@@ -1100,7 +1100,7 @@ func (g *GameV2) findItem(name string) *Item {
 	if room != nil {
 		for _, itemID := range room.Contents {
 			item := g.Items[itemID]
-			if item != nil && item.HasAlias(name) {
+			if item != nil && !item.Flags.IsInvisible && item.HasAlias(name) {
 				return item
 			}
 
@@ -1508,9 +1508,47 @@ func (g *GameV2) handleWave(objName string) string {
 		return "You don't have that."
 	}
 
-	// Special case: waving sceptre
+	// Special case: waving sceptre (SCEPTRE-FUNCTION in ZIL lines 2592-2619)
 	if item.ID == "sceptre" {
-		return "The sceptre glows briefly."
+		// At Aragain Falls or End of Rainbow
+		if g.Location == "aragain-falls" || g.Location == "end-of-rainbow" {
+			if !g.Flags["rainbow-flag"] {
+				// Solidify the rainbow
+				g.Flags["rainbow-flag"] = true
+
+				// Make pot-of-gold visible
+				pot := g.Items["pot-of-gold"]
+				if pot != nil {
+					pot.Flags.IsInvisible = false
+				}
+
+				result := "Suddenly, the rainbow appears to become solid and, I venture, walkable (I think the giveaway was the stairs and bannister)."
+
+				// Extra message if at end-of-rainbow and pot is there
+				if g.Location == "end-of-rainbow" && pot != nil && pot.Location == "end-of-rainbow" {
+					result += "\n\nA shimmering pot of gold appears at the end of the rainbow."
+				}
+
+				return result
+			} else {
+				// Make rainbow insubstantial again
+				g.Flags["rainbow-flag"] = false
+
+				// If anyone is on the rainbow, they fall!
+				// For now, just make it insubstantial
+				return "The rainbow seems to have become somewhat run-of-the-mill."
+			}
+		}
+
+		// On the rainbow itself - DEADLY!
+		if g.Location == "on-rainbow" {
+			g.Flags["rainbow-flag"] = false
+			g.GameOver = true
+			return "The structural integrity of the rainbow is severely compromised, leaving you hanging in midair, supported only by water vapor. Bye.\n\n****  You have died  ****"
+		}
+
+		// Anywhere else
+		return "A dazzling display of color briefly emanates from the sceptre."
 	}
 
 	return "You wave the " + item.Name + " around. Nothing happens."

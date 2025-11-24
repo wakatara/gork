@@ -163,6 +163,7 @@ func (v *Vocabulary) initObjects() {
 	v.addObject("egg", "egg", "jeweled-egg")
 	v.addObject("sceptre", "sceptre", "scepter")
 	v.addObject("bracelet", "bracelet")
+	v.addObject("pot-of-gold", "pot", "gold", "pot-of-gold")
 
 	// Enemies and NPCs (from 1actions.zil)
 	v.addObject("troll", "troll", "monster")
