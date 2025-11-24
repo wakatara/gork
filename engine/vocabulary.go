@@ -64,6 +64,7 @@ func (v *Vocabulary) initVerbs() {
 
 	// Combat (V?ATTACK, V?MUNG)
 	v.addVerb("attack", "attack", "fight", "hit", "kill", "strike", "murder")
+	v.addVerb("break", "break", "smash", "mung", "destroy")
 
 	// System commands (V?QUIT, V?RESTART, V?SAVE, V?RESTORE)
 	v.addVerb("quit", "quit", "q", "exit")

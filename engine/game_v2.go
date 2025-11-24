@@ -258,6 +258,8 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleSmell(cmd.DirectObject)
 		case "touch":
 			result = g.handleTouch(cmd.DirectObject)
+		case "break":
+			result = g.handleBreak(cmd.DirectObject)
 		case "search":
 			result = g.handleSearch(cmd.DirectObject)
 		case "jump":
@@ -620,6 +622,14 @@ func (g *GameV2) handleExamine(objName string) string {
 	// Try to find item
 	item := g.findItem(objName)
 	if item != nil {
+		// Special case: examining mirrors (MIRROR-MIRROR in ZIL lines 994-999)
+		if item.ID == "mirror-1" || item.ID == "mirror-2" {
+			if g.Flags["mirror-mung"] {
+				return "The mirror is broken into many pieces."
+			}
+			return "There is an ugly person staring back at you."
+		}
+
 		result := item.Description
 
 		// If it's a container, show if it's open/closed
@@ -664,6 +674,11 @@ func (g *GameV2) handleTake(objName string) string {
 	item := g.findItem(objName)
 	if item == nil {
 		return "You can't see any " + objName + " here."
+	}
+
+	// Special case: taking mirrors (MIRROR-MIRROR in ZIL lines 1000-1002)
+	if item.ID == "mirror-1" || item.ID == "mirror-2" {
+		return "The mirror is many times your size. Give up."
 	}
 
 	if !item.Flags.IsTakeable {
@@ -2122,7 +2137,100 @@ func (g *GameV2) handleTouch(objName string) string {
 		return "You can't see any " + objName + " here."
 	}
 
+	// Special case: rubbing mirrors (MIRROR-MIRROR in ZIL lines 971-1012)
+	if (item.ID == "mirror-1" || item.ID == "mirror-2") && !g.Flags["mirror-mung"] {
+		// Determine the two rooms
+		room1 := "mirror-room-1"
+		room2 := "mirror-room-2"
+
+		// Determine which room we're in and which is the other
+		var fromRoom, toRoom string
+		if g.Location == room1 {
+			fromRoom = room1
+			toRoom = room2
+		} else if g.Location == room2 {
+			fromRoom = room2
+			toRoom = room1
+		} else {
+			return "You feel nothing unexpected."
+		}
+
+		// Swap ALL items between the two rooms (excluding mirrors and NPCs)
+		fromRoomObj := g.Rooms[fromRoom]
+		toRoomObj := g.Rooms[toRoom]
+
+		if fromRoomObj == nil || toRoomObj == nil {
+			return "You feel nothing unexpected."
+		}
+
+		// Collect items to move (excluding mirrors themselves)
+		var fromItems []string
+		for _, itemID := range fromRoomObj.Contents {
+			if itemID != "mirror-1" && itemID != "mirror-2" {
+				fromItems = append(fromItems, itemID)
+			}
+		}
+
+		var toItems []string
+		for _, itemID := range toRoomObj.Contents {
+			if itemID != "mirror-1" && itemID != "mirror-2" {
+				toItems = append(toItems, itemID)
+			}
+		}
+
+		// Move items from fromRoom to toRoom
+		for _, itemID := range fromItems {
+			if item := g.Items[itemID]; item != nil {
+				fromRoomObj.RemoveItem(itemID)
+				item.Location = toRoom
+				toRoomObj.AddItem(itemID)
+			}
+		}
+
+		// Move items from toRoom to fromRoom
+		for _, itemID := range toItems {
+			if item := g.Items[itemID]; item != nil {
+				toRoomObj.RemoveItem(itemID)
+				item.Location = fromRoom
+				fromRoomObj.AddItem(itemID)
+			}
+		}
+
+		// Teleport player to the other room
+		g.Location = toRoom
+
+		return "There is a rumble from deep within the earth and the room shakes.\n\n" + g.handleLook()
+	}
+
 	return "You feel nothing unexpected."
+}
+
+// handleBreak breaks/smashes something (V-MUNG in ZIL)
+func (g *GameV2) handleBreak(objName string) string {
+	if objName == "" {
+		return "Break what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Special case: breaking mirrors (MIRROR-MIRROR in ZIL lines 1003-1012)
+	if item.ID == "mirror-1" || item.ID == "mirror-2" {
+		if g.Flags["mirror-mung"] {
+			return "Haven't you done enough damage already?"
+		}
+
+		// Break the mirror
+		g.Flags["mirror-mung"] = true
+		g.Flags["lucky"] = false
+
+		return "You have broken the mirror. I hope you have a seven years' supply of good luck handy."
+	}
+
+	// Default: can't break most things
+	return "You can't break that."
 }
 
 // handleSearch searches something (V-SEARCH in ZIL)
