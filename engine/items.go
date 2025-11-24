@@ -25,23 +25,23 @@ func createTreasures(g *GameV2) {
 	diamond.Value = 10
 	g.Items["diamond"] = diamond
 
-	// EMERALD - 5 points (in buoy)
+	// EMERALD - 10 points (in buoy) - ZIL TVALUE 10
 	emerald := NewItem("emerald", "large emerald", "There is a large emerald here.")
 	emerald.Aliases = []string{"emerald", "treasure"}
 	emerald.Location = "buoy"
 	emerald.Flags.IsTakeable = true
 	emerald.Flags.IsTreasure = true
-	emerald.Value = 5
+	emerald.Value = 10 // ZIL: 10
 	g.Items["emerald"] = emerald
 
-	// CHALICE - treasure and container
+	// CHALICE - treasure and container - ZIL TVALUE 5
 	chalice := NewItem("chalice", "chalice", "There is a silver chalice, intricately engraved, here.")
 	chalice.Aliases = []string{"chalice", "cup", "silver", "treasure"}
 	chalice.Location = "treasure-room"
 	chalice.Flags.IsTakeable = true
 	chalice.Flags.IsTreasure = true
 	chalice.Flags.IsContainer = true
-	chalice.Value = 10
+	chalice.Value = 5 // ZIL: 5
 	g.Items["chalice"] = chalice
 
 	// JADE FIGURINE
@@ -60,13 +60,13 @@ func createTreasures(g *GameV2) {
 	coins.Value = 5
 	g.Items["coins"] = coins
 
-	// PAINTING
+	// PAINTING - ZIL TVALUE 6
 	painting := NewItem("painting", "painting", "Fortunately, there is still one chance for you to be a vandal, for on the far wall is a painting.")
 	painting.Aliases = []string{"painting", "treasure"}
 	painting.Location = "gallery"
 	painting.Flags.IsTakeable = true
 	painting.Flags.IsTreasure = true
-	painting.Value = 4
+	painting.Value = 6 // ZIL: 6
 	g.Items["painting"] = painting
 
 	// BRACELET
@@ -77,12 +77,12 @@ func createTreasures(g *GameV2) {
 	bracelet.Value = 5
 	g.Items["bracelet"] = bracelet
 
-	// BAUBLE (jeweled egg bauble)
+	// BAUBLE (jeweled egg bauble) - ZIL TVALUE 1
 	bauble := NewItem("bauble", "jeweled bauble", "There is a small jeweled bauble here.")
 	bauble.Aliases = []string{"bauble", "treasure"}
 	bauble.Flags.IsTakeable = true
 	bauble.Flags.IsTreasure = true
-	bauble.Value = 5
+	bauble.Value = 1 // ZIL: 1
 	g.Items["bauble"] = bauble
 
 	// SCARAB
@@ -102,23 +102,23 @@ func createTreasures(g *GameV2) {
 	pot.Value = 10
 	g.Items["pot-of-gold"] = pot
 
-	// TRIDENT
+	// TRIDENT - ZIL TVALUE 11
 	trident := NewItem("trident", "crystal trident", "There is a crystal trident here.")
 	trident.Aliases = []string{"trident", "crystal", "treasure"}
 	trident.Location = "falls"
 	trident.Flags.IsTakeable = true
 	trident.Flags.IsTreasure = true
 	trident.Flags.IsWeapon = true
-	trident.Value = 4
+	trident.Value = 11 // ZIL: 11
 	g.Items["trident"] = trident
 
-	// SCEPTRE
+	// SCEPTRE - ZIL TVALUE 6
 	sceptre := NewItem("sceptre", "sceptre", "There is a sceptre, probably that of ancient Egypt itself, here.")
 	sceptre.Aliases = []string{"sceptre", "scepter", "treasure"}
 	sceptre.Flags.IsTakeable = true
 	sceptre.Flags.IsTreasure = true
 	sceptre.Flags.IsWeapon = true
-	sceptre.Value = 4
+	sceptre.Value = 6 // ZIL: 6
 	g.Items["sceptre"] = sceptre
 
 	// EGG (containing bauble) - treasure
@@ -131,12 +131,12 @@ func createTreasures(g *GameV2) {
 	egg.Value = 5
 	g.Items["egg"] = egg
 
-	// PLATINUM BAR - 10 points
+	// PLATINUM BAR - ZIL TVALUE 5
 	platinumBar := NewItem("platinum-bar", "platinum bar", "There is a bar of platinum here.")
 	platinumBar.Aliases = []string{"bar", "platinum", "platinum-bar", "treasure"}
 	platinumBar.Flags.IsTakeable = true
 	platinumBar.Flags.IsTreasure = true
-	platinumBar.Value = 10
+	platinumBar.Value = 5 // ZIL: 5
 	g.Items["platinum-bar"] = platinumBar
 
 	// SAPPHIRE - 5 points
@@ -157,13 +157,13 @@ func createTreasures(g *GameV2) {
 	ivoryTorch.Value = 6
 	g.Items["ivory-torch"] = ivoryTorch
 
-	// TRUNK OF JEWELS - 15 points
+	// TRUNK OF JEWELS - ZIL TVALUE 5
 	trunkOfJewels := NewItem("trunk-of-jewels", "trunk of jewels", "There is a jewel-encrusted trunk here.")
 	trunkOfJewels.Aliases = []string{"trunk", "jewels", "trunk-of-jewels", "treasure"}
 	trunkOfJewels.Flags.IsTakeable = true
 	trunkOfJewels.Flags.IsTreasure = true
 	trunkOfJewels.Flags.IsContainer = true
-	trunkOfJewels.Value = 15
+	trunkOfJewels.Value = 5 // ZIL: 5
 	g.Items["trunk-of-jewels"] = trunkOfJewels
 
 	// PEARL - 1 point
@@ -287,13 +287,15 @@ func createContainers(g *GameV2) {
 	bottle.Flags.IsTransparent = true
 	g.Items["bottle"] = bottle
 
-	// COFFIN
+	// COFFIN - ZIL TVALUE 15 (treasure!)
 	coffin := NewItem("coffin", "coffin", "There is a coffin here.")
-	coffin.Aliases = []string{"coffin"}
+	coffin.Aliases = []string{"coffin", "treasure"}
 	coffin.Location = "egypt-room"
 	coffin.Flags.IsTakeable = true
 	coffin.Flags.IsContainer = true
 	coffin.Flags.IsOpen = false
+	coffin.Flags.IsTreasure = true
+	coffin.Value = 15 // ZIL: 15
 	g.Items["coffin"] = coffin
 
 	// SANDWICH BAG
@@ -662,10 +664,12 @@ func createMiscItems(g *GameV2) {
 	puncturedBoat.Flags.IsTakeable = true
 	g.Items["punctured-boat"] = puncturedBoat
 
-	// SKULL
+	// SKULL - ZIL TVALUE 10 (treasure!)
 	skull := NewItem("skull", "skull", "There is a skull here.")
-	skull.Aliases = []string{"skull"}
+	skull.Aliases = []string{"skull", "treasure"}
 	skull.Flags.IsTakeable = true
+	skull.Flags.IsTreasure = true
+	skull.Value = 10 // ZIL: 10
 	g.Items["skull"] = skull
 
 	// BONES
