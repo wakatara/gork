@@ -299,6 +299,7 @@ func createContainers(g *GameV2) {
 	coffin.Flags.IsTreasure = true
 	coffin.Value = 15 // ZIL: 15
 	g.Items["coffin"] = coffin
+	g.Rooms["egypt-room"].AddItem("coffin")
 
 	// SANDWICH BAG
 	bag := NewItem("sandwich-bag", "brown bag", "There is a brown bag here.")

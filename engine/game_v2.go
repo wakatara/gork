@@ -1828,6 +1828,15 @@ func (g *GameV2) handlePray() string {
 		}
 	}
 
+	// Special case: praying while holding coffin (coffin puzzle)
+	// Sets coffin-cure flag allowing passage down from south-temple
+	for _, itemID := range g.Player.Inventory {
+		if itemID == "coffin" {
+			g.Flags["coffin-cure"] = true
+			return "Your prayer is answered! You feel a lightness, as if a burden has been lifted."
+		}
+	}
+
 	// Special case: in temple areas
 	if strings.Contains(room.ID, "temple") || strings.Contains(room.ID, "altar") {
 		return "Your prayer is heard, but not answered."
