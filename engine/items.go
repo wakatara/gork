@@ -495,13 +495,16 @@ func createFixedObjects(g *GameV2) {
 	g.Items["rug"] = rug
 	g.Rooms["living-room"].AddItem("rug")
 
-	// TRAP DOOR (under rug)
+	// TRAP DOOR (under rug) - global object accessible from both living-room and cellar
 	trapDoor := NewItem("trap-door", "trap door", "There is a trap door here.")
-	trapDoor.Aliases = []string{"trap-door", "door", "trapdoor"}
-	trapDoor.Location = "living-room"
+	trapDoor.Aliases = []string{"trap-door", "door", "trapdoor", "cover"}
+	trapDoor.Location = "GLOBAL" // Special marker for global objects
 	trapDoor.Flags.IsTakeable = false
 	trapDoor.Flags.IsOpen = false
 	g.Items["trap-door"] = trapDoor
+	// Add to both rooms so findItem can locate it
+	g.Rooms["living-room"].AddItem("trap-door")
+	g.Rooms["cellar"].AddItem("trap-door")
 
 	// GRATE (above cellar) - global object accessible from both grating-clearing and grating-room
 	grate := NewItem("grate", "grating", "There is a grating securely fastened into the ceiling.")

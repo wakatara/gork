@@ -680,6 +680,12 @@ func (g *GameV2) handleLook() string {
 	// List items in room
 	for _, itemID := range room.Contents {
 		item := g.Items[itemID]
+
+		// Special case: trap door is hidden until rug is moved (in living-room only, always visible in cellar)
+		if item != nil && item.ID == "trap-door" && g.Location == "living-room" && !g.Flags["trap-door-open"] {
+			continue // Skip trap door in living-room if rug hasn't been moved
+		}
+
 		if item != nil && !item.Flags.IsInvisible {
 			result.WriteString("There is a " + item.Name + " here.\n")
 		}
@@ -722,6 +728,11 @@ func (g *GameV2) handleExamine(objName string) string {
 				result += " It is glowing very brightly."
 			}
 			return result
+		}
+
+		// Special case: examining kitchen window (KITCHEN-WINDOW-F in ZIL lines 247-250)
+		if item.ID == "kitchen-window" && !g.Flags["window-opened-once"] {
+			return "The window is slightly ajar, but not enough to allow entry."
 		}
 
 		result := item.Description
@@ -782,14 +793,7 @@ func (g *GameV2) handleTake(objName string) string {
 	// Special case: Taking the rug reveals the trap door
 	if item.ID == "rug" && g.Location == "living-room" {
 		g.Flags["trap-door-open"] = true
-		trapDoor := g.Items["trap-door"]
-		if trapDoor != nil {
-			trapDoor.Location = "living-room"
-			room := g.Rooms["living-room"]
-			if room != nil {
-				room.AddItem("trap-door")
-			}
-		}
+		// Trap door is already in the room (global object), just needs to be revealed
 	}
 
 	// Remove from room
@@ -864,26 +868,37 @@ func (g *GameV2) handleOpen(objName string) string {
 		return "The door is solidly nailed shut and cannot be opened."
 	}
 
-	// Special handling for kitchen window
+	// Special handling for kitchen window (KITCHEN-WINDOW-F in ZIL lines 242-246)
 	if item.ID == "kitchen-window" {
 		if g.Flags["window-open"] {
 			return "It's already open."
 		}
 		g.Flags["window-open"] = true
+		g.Flags["window-opened-once"] = true // Track that window has been opened at least once
 		item.Flags.IsOpen = true
 		return "With great effort, you open the window far enough to allow entry."
 	}
 
-	// Special handling for trap door
+	// Special handling for trap door (TRAP-DOOR-FCN in ZIL lines 504-529)
 	if item.ID == "trap-door" {
-		if !g.Flags["trap-door-open"] {
-			return "The rug must be moved first."
-		}
-		if item.Flags.IsOpen {
+		// Can only open from living-room
+		if g.Location == "living-room" {
+			if !g.Flags["trap-door-open"] {
+				return "The rug must be moved first."
+			}
+			if item.Flags.IsOpen {
+				return "It's already open."
+			}
+			item.Flags.IsOpen = true
+			return "The door reluctantly opens to reveal a rickety staircase descending into darkness."
+		} else if g.Location == "cellar" {
+			// From cellar, door is locked from above
+			if !item.Flags.IsOpen {
+				return "The door is locked from above."
+			}
 			return "It's already open."
 		}
-		item.Flags.IsOpen = true
-		return "The door reluctantly opens to reveal a rickety staircase descending into darkness."
+		return "You can't see any trap-door here."
 	}
 
 	// Special handling for grating (GRATE-FUNCTION in ZIL)
@@ -958,7 +973,26 @@ func (g *GameV2) handleClose(objName string) string {
 		}
 		g.Flags["window-open"] = false
 		item.Flags.IsOpen = false
-		return "You close the window."
+		return "The window closes (more easily than it opened)."
+	}
+
+	// Special handling for trap door (TRAP-DOOR-FCN in ZIL lines 504-529)
+	if item.ID == "trap-door" {
+		if g.Location == "living-room" {
+			if !item.Flags.IsOpen {
+				return "It's already closed."
+			}
+			item.Flags.IsOpen = false
+			return "The door swings shut and closes."
+		} else if g.Location == "cellar" {
+			// From cellar, closing also locks it
+			if !item.Flags.IsOpen {
+				return "It's already closed."
+			}
+			item.Flags.IsOpen = false
+			return "The door closes and locks."
+		}
+		return "You can't see any trap-door here."
 	}
 
 	// Special handling for grating (GRATE-FUNCTION in ZIL)
@@ -1194,6 +1228,12 @@ func (g *GameV2) findItem(name string) *Item {
 	if room != nil {
 		for _, itemID := range room.Contents {
 			item := g.Items[itemID]
+
+			// Special case: trap door is hidden until rug is moved (in living-room only)
+			if item != nil && item.ID == "trap-door" && g.Location == "living-room" && !g.Flags["trap-door-open"] {
+				continue // Skip trap door if rug hasn't been moved
+			}
+
 			if item != nil && !item.Flags.IsInvisible && item.HasAlias(name) {
 				return item
 			}
@@ -1857,14 +1897,7 @@ func (g *GameV2) handleMoveObject(objName string) string {
 			return "The rug is already moved, and the trap door is visible."
 		}
 		g.Flags["trap-door-open"] = true
-		trapDoor := g.Items["trap-door"]
-		if trapDoor != nil {
-			trapDoor.Location = "living-room"
-			room := g.Rooms["living-room"]
-			if room != nil {
-				room.AddItem("trap-door")
-			}
-		}
+		// Trap door is already in the room (global object), just needs to be revealed
 		return "With the rug moved aside, you can see a closed trap door beneath it!"
 	}
 
