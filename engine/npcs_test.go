@@ -46,21 +46,25 @@ func TestTrollFood(t *testing.T) {
 	g := NewGameV2()
 	g.Location = "troll-room"
 
-	// Give player lunch
+	// Give player lunch (non-treasure)
 	lunch := g.Items["lunch"]
 	lunch.Location = "inventory"
 	g.Player.Inventory = append(g.Player.Inventory, "lunch")
 
-	// Give lunch to troll
+	// Give lunch to troll - he eats it but doesn't leave (only treasures satisfy him)
 	result := g.Process("give lunch to troll")
 
-	if !strings.Contains(result, "satisfied") || !strings.Contains(result, "wanders off") {
-		t.Errorf("Expected troll to be satisfied, got: %s", result)
+	if !strings.Contains(result, "gleefully eats it") {
+		t.Errorf("Expected troll to eat lunch, got: %s", result)
+	}
+	if !strings.Contains(result, "still blocking") {
+		t.Errorf("Expected troll to still block passages, got: %s", result)
 	}
 
-	// Verify troll is gone
-	if g.Flags["troll-satisfied"] != true {
-		t.Error("Troll should be satisfied")
+	// Verify troll is still there (not satisfied by non-treasures)
+	troll := g.NPCs["troll"]
+	if troll == nil || troll.Location == "" {
+		t.Error("Troll should still be present (non-treasure doesn't satisfy him)")
 	}
 }
 

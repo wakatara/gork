@@ -116,8 +116,8 @@ func TestWaveCommand(t *testing.T) {
 
 	result := g.Process("wave sceptre")
 
-	if !strings.Contains(result, "glow") {
-		t.Errorf("Expected sceptre to glow, got: %s", result)
+	if !strings.Contains(result, "dazzling") && !strings.Contains(result, "display") {
+		t.Errorf("Expected sceptre light display, got: %s", result)
 	}
 }
 

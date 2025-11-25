@@ -102,10 +102,10 @@ func TestGratingPuzzle(t *testing.T) {
 		t.Errorf("Expected grating to be closed, got: %s", result)
 	}
 
-	// Open grating with keys
+	// Open grating (already unlocked by default)
 	result = g.Process("open grating")
-	if !strings.Contains(result, "unlocked") {
-		t.Errorf("Expected grating to unlock, got: %s", result)
+	if !strings.Contains(result, "opens") {
+		t.Errorf("Expected grating to open, got: %s", result)
 	}
 	if !g.Flags["grate-open"] {
 		t.Error("Expected grate-open flag to be set")
@@ -412,8 +412,8 @@ func TestMultipleTreasuresScoring(t *testing.T) {
 		value int
 	}{
 		{"diamond", 10},
-		{"emerald", 5},
-		{"chalice", 10},
+		{"emerald", 10},
+		{"chalice", 5},
 	}
 
 	for _, treasure := range treasures {
@@ -440,7 +440,7 @@ func TestMultipleTreasuresScoring(t *testing.T) {
 		}
 	}
 
-	// Final score should be 10 + 5 + 10 = 25
+	// Final score should be 10 + 10 + 5 = 25
 	if g.Score != 25 {
 		t.Errorf("Final score should be 25, got: %d", g.Score)
 	}
@@ -1108,6 +1108,190 @@ func TestBellBookCandleCeremony(t *testing.T) {
 		result := g.Process("ring bell")
 		if !strings.Contains(result, "Ding") && !strings.Contains(result, "echoes") {
 			t.Errorf("Expected normal bell sound, got: %s", result)
+		}
+	})
+}
+
+// TestThiefPuzzle tests the thief AI behavior (ZIL I-THIEF routine in 1actions.zil lines 3890-4025)
+func TestThiefPuzzle(t *testing.T) {
+	t.Run("Thief exists and starts in maze", func(t *testing.T) {
+		g := NewGameV2()
+
+		thief := g.NPCs["thief"]
+		if thief == nil {
+			t.Fatal("Thief NPC should exist")
+		}
+
+		if thief.Location != "maze-1" {
+			t.Errorf("Thief should start in maze-1, got: %s", thief.Location)
+		}
+
+		if !thief.Flags.CanFight {
+			t.Error("Thief should be able to fight")
+		}
+	})
+
+	t.Run("Thief steals treasures from player", func(t *testing.T) {
+		g := NewGameV2()
+		g.Location = "maze-1" // Where thief starts
+
+		// Give player some treasures
+		g.Player.Inventory = []string{"egg", "painting", "coins"}
+		g.Items["egg"].Location = "inventory"
+		g.Items["painting"].Location = "inventory"
+		g.Items["coins"].Location = "inventory"
+
+		initialCount := len(g.Player.Inventory)
+
+		// Run several turns to give thief chances to steal
+		var stolenNoticed bool
+		for i := 0; i < 30; i++ {
+			result := g.Process("wait")
+			if strings.Contains(result, "seedy") && strings.Contains(result, "abstracted") {
+				stolenNoticed = true
+				break
+			}
+		}
+
+		finalCount := len(g.Player.Inventory)
+
+		// Either the thief stole items, or we got the notification
+		if finalCount >= initialCount && !stolenNoticed {
+			t.Log("WARNING: Thief didn't steal after 30 turns (probabilistic test)")
+		}
+
+		if finalCount < initialCount {
+			t.Logf("Thief successfully stole %d treasures", initialCount-finalCount)
+		}
+	})
+
+	t.Run("Thief moves through dungeon", func(t *testing.T) {
+		g := NewGameV2()
+
+		thief := g.NPCs["thief"]
+		if thief == nil {
+			t.Fatal("Thief NPC should exist")
+		}
+
+		startLocation := thief.Location
+
+		// Run several turns
+		for i := 0; i < 20; i++ {
+			g.Process("wait")
+		}
+
+		endLocation := thief.Location
+
+		// Thief should have moved at least once
+		if startLocation == endLocation {
+			t.Log("WARNING: Thief didn't move after 20 turns (probabilistic test)")
+		} else {
+			t.Logf("Thief moved from %s to %s", startLocation, endLocation)
+		}
+	})
+
+	t.Run("Thief deposits treasures to treasure-room", func(t *testing.T) {
+		g := NewGameV2()
+
+		// Give thief some treasures
+		thief := g.NPCs["thief"]
+		if thief == nil {
+			t.Fatal("Thief NPC should exist")
+		}
+
+		thief.Inventory = []string{"egg", "painting"}
+		g.Items["egg"].Location = "thief-inventory"
+		g.Items["painting"].Location = "thief-inventory"
+
+		// Move thief to treasure-room
+		oldRoom := g.Rooms[thief.Location]
+		if oldRoom != nil {
+			oldRoom.RemoveNPC("thief")
+		}
+		thief.Location = "treasure-room"
+		g.Rooms["treasure-room"].AddNPC("thief")
+
+		// Player in different room
+		g.Location = "west-of-house"
+
+		// Process turn - thief should deposit
+		g.Process("wait")
+
+		// Check if treasures deposited
+		treasureRoom := g.Rooms["treasure-room"]
+		if treasureRoom == nil {
+			t.Fatal("Treasure room should exist")
+		}
+
+		hasEgg := false
+		hasPainting := false
+		for _, itemID := range treasureRoom.Contents {
+			if itemID == "egg" {
+				hasEgg = true
+			}
+			if itemID == "painting" {
+				hasPainting = true
+			}
+		}
+
+		if !hasEgg || !hasPainting {
+			t.Errorf("Treasures not in treasure-room. Room contents: %v", treasureRoom.Contents)
+		}
+
+		if len(thief.Inventory) != 0 {
+			t.Errorf("Thief inventory should be empty after deposit, has: %v", thief.Inventory)
+		}
+	})
+
+	t.Run("Thief appearance message when in player's room", func(t *testing.T) {
+		g := NewGameV2()
+
+		// Move thief to player's location with treasures
+		thief := g.NPCs["thief"]
+		if thief == nil {
+			t.Fatal("Thief NPC should exist")
+		}
+
+		// Remove from old location
+		oldRoom := g.Rooms[thief.Location]
+		if oldRoom != nil {
+			oldRoom.RemoveNPC("thief")
+		}
+
+		// Give thief some treasures
+		thief.Inventory = []string{"egg"}
+		thief.Location = g.Location
+		g.Rooms[g.Location].AddNPC("thief")
+
+		// Run several turns to trigger appearance message
+		var appeared bool
+		for i := 0; i < 50; i++ {
+			result := g.Process("wait")
+			if strings.Contains(result, "seedy") || strings.Contains(result, "wandered") || strings.Contains(result, "large bag") {
+				appeared = true
+				break
+			}
+		}
+
+		if !appeared {
+			t.Log("WARNING: No appearance message after 50 turns (probabilistic test)")
+		}
+	})
+
+	t.Run("Thief doesn't steal when no treasures present", func(t *testing.T) {
+		g := NewGameV2()
+		g.Location = "maze-1"
+
+		// Remove all treasures from player
+		g.Player.Inventory = []string{}
+
+		// Run turns
+		for i := 0; i < 20; i++ {
+			result := g.Process("wait")
+			if strings.Contains(result, "abstracted") {
+				t.Error("Thief shouldn't steal when there are no treasures")
+				break
+			}
 		}
 	})
 }

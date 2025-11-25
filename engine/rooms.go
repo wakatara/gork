@@ -32,6 +32,7 @@ func createAboveGroundRooms(g *GameV2) {
 	westOfHouse.AddExit("ne", "north-of-house") // per ZIL
 	westOfHouse.AddExit("se", "south-of-house") // per ZIL
 	westOfHouse.AddExit("west", "forest-1") // per ZIL
+	// Note: EAST blocked by boarded door
 	westOfHouse.AddConditionalExit("sw", "stone-barrow", "won-flag", "")
 	westOfHouse.AddConditionalExit("in", "stone-barrow", "won-flag", "")
 	g.Rooms["west-of-house"] = westOfHouse
@@ -54,10 +55,11 @@ func createAboveGroundRooms(g *GameV2) {
 	)
 	northOfHouse.Flags.IsOutdoors = true
 	northOfHouse.AddExit("north", "path") // per ZIL
-	northOfHouse.AddExit("sw", "west-of-house") // per ZIL
-	northOfHouse.AddExit("se", "behind-house") // per ZIL
 	northOfHouse.AddExit("west", "west-of-house") // per ZIL
-	northOfHouse.AddExit("east", "behind-house") // per ZIL
+	northOfHouse.AddExit("sw", "west-of-house") // per ZIL
+	northOfHouse.AddExit("east", "behind-house") // per ZIL (EAST-OF-HOUSE)
+	northOfHouse.AddExit("se", "behind-house") // per ZIL
+	// Note: SOUTH blocked by house ("The windows are all boarded.")
 	g.Rooms["north-of-house"] = northOfHouse
 
 	// SOUTH-OF-HOUSE
@@ -68,10 +70,11 @@ func createAboveGroundRooms(g *GameV2) {
 	)
 	southOfHouse.Flags.IsOutdoors = true
 	southOfHouse.AddExit("west", "west-of-house") // per ZIL
-	southOfHouse.AddExit("east", "behind-house") // per ZIL
-	southOfHouse.AddExit("ne", "behind-house") // per ZIL
 	southOfHouse.AddExit("nw", "west-of-house") // per ZIL
+	southOfHouse.AddExit("east", "behind-house") // per ZIL (EAST-OF-HOUSE)
+	southOfHouse.AddExit("ne", "behind-house") // per ZIL
 	southOfHouse.AddExit("south", "forest-3") // per ZIL
+	// Note: NORTH blocked by house ("The windows are all boarded.")
 	g.Rooms["south-of-house"] = southOfHouse
 
 	// BEHIND-HOUSE (EAST-OF-HOUSE in ZIL)
@@ -82,11 +85,12 @@ func createAboveGroundRooms(g *GameV2) {
 	)
 	behindHouse.Flags.IsOutdoors = true
 	behindHouse.AddExit("north", "north-of-house") // per ZIL
+	behindHouse.AddExit("nw", "north-of-house") // per ZIL
 	behindHouse.AddExit("south", "south-of-house") // per ZIL
 	behindHouse.AddExit("sw", "south-of-house") // per ZIL
-	behindHouse.AddExit("nw", "north-of-house") // per ZIL
 	behindHouse.AddExit("east", "clearing") // per ZIL
-	// Kitchen access via window only (in/out when window open)
+	// Kitchen access via window only (per ZIL)
+	behindHouse.AddConditionalExit("west", "kitchen", "window-open", "The window is closed.")
 	behindHouse.AddConditionalExit("in", "kitchen", "window-open", "The window is closed.")
 	g.Rooms["behind-house"] = behindHouse
 
@@ -198,7 +202,7 @@ func createAboveGroundRooms(g *GameV2) {
 	canyonView.AddExit("east", "cliff-middle") // per ZIL
 	canyonView.AddExit("down", "cliff-middle") // per ZIL
 	canyonView.AddExit("nw", "clearing") // per ZIL
-	canyonView.AddExit("west", "forest-3") // per ZIL
+	// Note: ZIL has no west exit - intentionally non-bidirectional with clearing
 	g.Rooms["canyon-view"] = canyonView
 }
 
@@ -909,10 +913,11 @@ func createDamArea(g *GameV2) {
 		"You are at the base of Flood Control Dam #3, which looms above you and to the north. The river Frigid is flowing by here. Along the river are the White Cliffs which seem to form giant walls stretching from north to south along the shores of the river as it winds its way downstream.",
 	)
 	damBase.Flags.IsOutdoors = true
-	damBase.AddExit("north", "dam-room")
-	damBase.AddExit("up", "dam-room")
-	damBase.AddExit("east", "river-1") // ADD: reverse of river-1 west
-	damBase.AddExit("west", "dam-room") // ADD: reverse of dam-room east
+	damBase.AddExit("north", "dam-room") // per ZIL
+	damBase.AddExit("up", "dam-room")    // per ZIL
+	// Note: ZIL has no east or west exits - intentional one-ways:
+	// - dam-room east→dam-base (one-way, return via up/north)
+	// - river-1 west→dam-base (one-way, no return)
 	g.Rooms["dam-base"] = damBase
 }
 
@@ -1223,10 +1228,10 @@ func createCoalMineArea(g *GameV2) {
 		"Coal Mine",
 		"This is a nondescript part of a coal mine.",
 	)
-	mine1.AddExit("north", "gas-room") // matches gas-room south
-	mine1.AddExit("east", "mine-1") // self-loop
-	mine1.AddExit("west", "gas-room") // FIX: matches gas-room east
-	mine1.AddExit("ne", "mine-2")
+	mine1.AddExit("north", "gas-room") // per ZIL
+	mine1.AddExit("east", "mine-1")    // per ZIL (intentional self-loop)
+	mine1.AddExit("ne", "mine-2")      // per ZIL
+	// Note: ZIL has no west exit, gas-room east is one-way
 	g.Rooms["mine-1"] = mine1
 
 	// MINE-2
@@ -1235,11 +1240,10 @@ func createCoalMineArea(g *GameV2) {
 		"Coal Mine",
 		"This is a nondescript part of a coal mine.",
 	)
-	mine2.AddExit("north", "mine-2") // self-loop
-	mine2.AddExit("south", "mine-2") // FIX: self-loop to match north
-	mine2.AddExit("se", "mine-3")
-	mine2.AddExit("sw", "mine-1") // ADD: reverse of mine-1 ne
-	mine2.AddExit("west", "mine-3") // ADD: matches mine-3 east
+	mine2.AddExit("north", "mine-2") // per ZIL (intentional self-loop)
+	mine2.AddExit("south", "mine-1") // per ZIL
+	mine2.AddExit("se", "mine-3")    // per ZIL
+	// Note: ZIL has no sw or west exits - mine is intentionally confusing
 	g.Rooms["mine-2"] = mine2
 
 	// MINE-3

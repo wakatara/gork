@@ -2,7 +2,9 @@ package engine
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 // GameV2 represents the refactored game state with proper types
@@ -18,6 +20,7 @@ type GameV2 struct {
 	Flags     map[string]bool // Global game flags (WINDOW-OPEN, TROLL-DEAD, etc.)
 	GameOver  bool
 	Won       bool
+	rand      *rand.Rand // Random number generator for thief AI
 }
 
 // Player represents the player character
@@ -40,6 +43,7 @@ func NewGameV2() *GameV2 {
 			Health:    100,
 		},
 		Flags: make(map[string]bool),
+		rand:  rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 
 	// Initialize world
@@ -59,6 +63,9 @@ func (g *GameV2) initializeWorld() {
 
 	// Set starting location
 	g.Location = "west-of-house"
+
+	// Initialize game flags
+	g.Flags["GRUNLOCK"] = true // Grating starts unlocked (can be opened from either side)
 }
 
 func (g *GameV2) createNPCs() {
@@ -325,6 +332,12 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 	candlesResult := g.processCandlesFuel()
 	if candlesResult != "" {
 		result += "\n\n" + candlesResult
+	}
+
+	// Process thief behavior
+	thiefResult := g.processThiefTurn()
+	if thiefResult != "" {
+		result += "\n\n" + thiefResult
 	}
 
 	// Process sword glowing
@@ -607,6 +620,171 @@ func (g *GameV2) processCandlesFuel() string {
 	}
 
 	return ""
+}
+
+// processThiefTurn handles thief AI: movement, stealing, depositing treasures (I-THIEF in ZIL lines 3890-3931)
+func (g *GameV2) processThiefTurn() string {
+	thief := g.NPCs["thief"]
+	if thief == nil || !thief.Flags.IsAlive {
+		return ""
+	}
+
+	var result string
+
+	// Check if thief is in player's room
+	thiefInRoom := (thief.Location == g.Location)
+
+	// 1. If thief is at treasure-room and player is not there, deposit treasures
+	if thief.Location == "treasure-room" && !thiefInRoom {
+		// Deposit treasures silently
+		g.depositThiefTreasures()
+	}
+
+	// 2. If thief is in same room as player, handle interactions
+	if thiefInRoom && !g.GameOver {
+		// Random chance to steal from player or room
+		if g.randomChance(40) { // 40% chance to steal
+			stolen := g.thiefStealTreasures()
+			if stolen != "" {
+				result = stolen
+			}
+		}
+	}
+
+	// 3. Move thief to next room
+	g.moveThiefToNextRoom()
+
+	// 4. If thief ended up in player's room after moving, maybe reveal presence
+	if thief.Location == g.Location && g.randomChance(30) {
+		if len(thief.Inventory) > 0 {
+			result += "\nA seedy-looking individual with a large bag just wandered through the room."
+		}
+	}
+
+	return result
+}
+
+// moveThiefToNextRoom moves thief to a random adjacent room
+func (g *GameV2) moveThiefToNextRoom() {
+	thief := g.NPCs["thief"]
+	if thief == nil {
+		return
+	}
+
+	currentRoom := g.Rooms[thief.Location]
+	if currentRoom == nil {
+		return
+	}
+
+	// Get all possible exits
+	var possibleRooms []string
+	for _, exit := range currentRoom.Exits {
+		// Don't go to sacred rooms
+		targetRoom := g.Rooms[exit.To]
+		if targetRoom != nil {
+			possibleRooms = append(possibleRooms, exit.To)
+		}
+	}
+
+	// Pick a random room
+	if len(possibleRooms) > 0 {
+		newRoom := possibleRooms[g.randomInt(len(possibleRooms))]
+
+		// Remove from old room
+		oldRoom := g.Rooms[thief.Location]
+		if oldRoom != nil {
+			oldRoom.RemoveNPC("thief")
+		}
+
+		// Move to new room
+		thief.Location = newRoom
+		newRoomObj := g.Rooms[newRoom]
+		if newRoomObj != nil {
+			newRoomObj.AddNPC("thief")
+		}
+	}
+}
+
+// thiefStealTreasures attempts to steal treasures from room or player
+func (g *GameV2) thiefStealTreasures() string {
+	thief := g.NPCs["thief"]
+	if thief == nil {
+		return ""
+	}
+
+	var stolen []string
+
+	// Try to steal from room first
+	room := g.Rooms[g.Location]
+	if room != nil {
+		for _, itemID := range room.Contents {
+			item := g.Items[itemID]
+			if item != nil && item.Flags.IsTreasure && g.randomChance(75) {
+				// Steal it!
+				item.Location = "thief-inventory"
+				thief.Inventory = append(thief.Inventory, itemID)
+				room.RemoveItem(itemID)
+				stolen = append(stolen, item.Name)
+			}
+		}
+	}
+
+	// Try to steal from player
+	for i := len(g.Player.Inventory) - 1; i >= 0; i-- {
+		itemID := g.Player.Inventory[i]
+		item := g.Items[itemID]
+		if item != nil && item.Flags.IsTreasure && g.randomChance(50) {
+			// Steal it!
+			item.Location = "thief-inventory"
+			thief.Inventory = append(thief.Inventory, itemID)
+			g.Player.Inventory = append(g.Player.Inventory[:i], g.Player.Inventory[i+1:]...)
+			stolen = append(stolen, item.Name)
+		}
+	}
+
+	if len(stolen) > 0 {
+		return `A seedy-looking individual with a large bag just wandered through the room. On the way through, he quietly abstracted some valuables from your possession, mumbling something about "Doing unto others before..."`
+	}
+
+	return ""
+}
+
+// depositThiefTreasures moves treasures from thief to treasure-room
+func (g *GameV2) depositThiefTreasures() {
+	thief := g.NPCs["thief"]
+	if thief == nil {
+		return
+	}
+
+	treasureRoom := g.Rooms["treasure-room"]
+	if treasureRoom == nil {
+		return
+	}
+
+	// Move all treasures from thief to treasure-room
+	for _, itemID := range thief.Inventory {
+		item := g.Items[itemID]
+		if item != nil && item.Flags.IsTreasure {
+			item.Location = "treasure-room"
+			treasureRoom.AddItem(itemID)
+		}
+	}
+
+	// Clear thief inventory
+	thief.Inventory = []string{}
+}
+
+// randomChance returns true with given percentage probability
+func (g *GameV2) randomChance(percent int) bool {
+	return g.randomInt(100) < percent
+}
+
+// randomInt returns a random integer from 0 to n-1
+func (g *GameV2) randomInt(n int) int {
+	if n <= 0 {
+		return 0
+	}
+	return g.rand.Intn(n)
 }
 
 // processSwordGlow updates sword glow level based on nearby enemies (I-SWORD in ZIL lines 3851-3879)

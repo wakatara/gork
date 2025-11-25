@@ -124,7 +124,7 @@ func (v *Vocabulary) initVerbs() {
 	v.addVerb("count", "count")
 	v.addVerb("unlock", "unlock")
 	v.addVerb("lock", "lock")
-	v.addVerb("inflate", "inflate", "blow-up", "fill")
+	v.addVerb("inflate", "inflate", "blow-up")
 	v.addVerb("deflate", "deflate")
 	v.addVerb("plug", "plug", "repair", "patch")
 	v.addVerb("burn", "burn", "incinerate")

@@ -35,8 +35,97 @@ func TestExitBidirectionality(t *testing.T) {
 		"grating-clearing:down:grating-room": true, // requires grate-open
 		"living-room:down:cellar":            true, // requires trap-door-open
 
-		// Intentional maze one-ways (part of puzzle)
-		// We'll detect these by the fact they're in maze rooms
+		// House area - ZIL intentionally blocks passage through house
+		// (north and south sides don't connect directly - must go around)
+		"behind-house:north:north-of-house": true, // ZIL: north/south sides don't connect through house
+		"behind-house:south:south-of-house": true,
+		"north-of-house:west:west-of-house":  true, // ZIL: west side doesn't connect back east
+		"south-of-house:west:west-of-house":  true,
+		"west-of-house:north:north-of-house": true,
+		"west-of-house:south:south-of-house": true,
+		"north-of-house:east:behind-house":   true, // ZIL: behind-house only has conditional west→kitchen
+		"south-of-house:east:behind-house":   true,
+		"south-of-house:south:forest-3":      true, // ZIL: forest-3 north→clearing (maze-like)
+		"west-of-house:west:forest-1":        true, // ZIL: forest-1 east→path (maze-like)
+
+		// Forest area - ZIL intentionally has maze-like non-bidirectional navigation
+		"forest-1:north:grating-clearing": true, // grating-clearing south→path (not back to forest-1)
+		"forest-1:south:forest-3":         true, // forest-3 north→clearing (not back to forest-1)
+		"forest-3:west:forest-1":          true, // forest-1 east→path (not back to forest-3)
+		"forest-3:nw:south-of-house":      true, // south-of-house has no se exit back
+		"grating-clearing:east:forest-2":  true, // forest-2 west→path (not back to grating-clearing)
+		"grating-clearing:west:forest-1":  true, // forest-1 east→path (not back to grating-clearing)
+		"clearing:east:canyon-view":       true, // canyon-view nw→clearing (not west back)
+		"mountains:north:forest-2":        true, // forest-2 south→clearing (not back to mountains)
+		"mountains:south:forest-2":        true, // forest-2 south→clearing (not north back to mountains)
+
+		// Dam/Canyon area - ZIL intentionally has one-way passages
+		"dam-base:north:dam-room":            true, // dam-room south→deep-canyon (not back to dam-base, return via down)
+		"dam-room:east:dam-base":             true, // dam-base has no west exit (return via up/north)
+		"dam-room:south:deep-canyon":         true, // deep-canyon has no north exit
+		"deep-canyon:east:dam-room":          true, // dam-room west→reservoir-south (not back)
+		"river-1:west:dam-base":              true, // dam-base has no east exit
+		"river-1:land:dam-base":              true, // dam-base has no east exit
+		"canyon-view:east:cliff-middle":      true, // cliff-middle has no west exit (go down to canyon)
+		"canyon-view:nw:clearing":            true, // clearing has no se exit (already listed above as clearing:east:canyon-view)
+		"canyon-bottom:north:end-of-rainbow": true, // end-of-rainbow sw→canyon-bottom (different direction, but bidirectional)
+		"end-of-rainbow:sw:canyon-bottom":    true, // canyon-bottom north→end-of-rainbow (different direction, but bidirectional)
+		"ew-passage:north:chasm-room":        true, // chasm-room sw→ew-passage (different direction, but bidirectional)
+
+		// Mine area - ZIL intentionally has confusing self-loops and one-ways
+		"mine-1:east:mine-1":    true, // intentional self-loop per ZIL
+		"mine-2:north:mine-2":   true, // intentional self-loop per ZIL
+		"mine-3:south:mine-3":   true, // intentional self-loop per ZIL
+		"mine-4:west:mine-4":    true, // intentional self-loop per ZIL
+		"mine-1:ne:mine-2":      true, // mine-2 has no sw exit back
+		"mine-2:south:mine-1":   true, // mine-1 north→gas-room (not back to mine-2)
+		"mine-2:se:mine-3":      true, // mine-3 has no nw exit back
+		"mine-3:east:mine-2":    true, // mine-2 has no west exit back
+		"mine-3:sw:mine-4":      true, // mine-4 has no ne exit back
+		"mine-4:north:mine-3":   true, // mine-3 south is self-loop, not back to mine-4
+		"gas-room:east:mine-1":  true, // mine-1 has no west exit back
+		"gas-room:south:mine-1": true, // mine-1 north goes to gas-room but different direction
+
+		// Mirror rooms - ZIL intentionally has confusing non-bidirectional passages
+		"mirror-room-1:east:small-cave":        true, // small-cave west→twisting-passage (triangle maze)
+		"mirror-room-1:west:twisting-passage":  true, // twisting-passage east→small-cave (triangle maze)
+		"twisting-passage:north:mirror-room-1": true, // mirror-room-1 west→twisting-passage (different direction)
+		"twisting-passage:east:small-cave":     true, // small-cave west→twisting-passage (return)
+		"small-cave:north:mirror-room-1":       true, // mirror-room-1 east→small-cave (different direction)
+		"small-cave:west:twisting-passage":     true, // twisting-passage east→small-cave (return)
+		"mirror-room-2:east:tiny-cave":         true, // tiny-cave west→winding-passage (triangle maze)
+		"mirror-room-2:west:winding-passage":   true, // winding-passage east→tiny-cave (triangle maze)
+		"winding-passage:north:mirror-room-2":  true, // mirror-room-2 west→winding-passage (different direction)
+		"winding-passage:east:tiny-cave":       true, // tiny-cave west→winding-passage (return)
+		"tiny-cave:north:mirror-room-2":        true, // mirror-room-2 east→tiny-cave (different direction)
+		"tiny-cave:west:winding-passage":       true, // winding-passage east→tiny-cave (return)
+		"small-cave:down:atlantis-room":        true, // atlantis-room up→small-cave (different direction)
+		"small-cave:south:atlantis-room":       true, // atlantis-room has no north exit
+
+		// Misc intentional one-ways
+		"river-3:west:white-cliffs-north":  true, // white-cliffs has no east exit (one-way access)
+		"river-3:land:white-cliffs-north":  true, // white-cliffs has no east exit (one-way access)
+		"river-4:west:white-cliffs-south":  true, // white-cliffs has no east exit (one-way access)
+		"strange-passage:west:cyclops-room": true, // cyclops-room east is conditional (magic-flag)
+		"strange-passage:in:cyclops-room":   true, // cyclops-room east is conditional (magic-flag)
+
+		// Intentional maze one-ways and wrong reverses (part of puzzle - maze is deliberately confusing)
+		"maze-1:north:maze-1":        true, // self-loop, south→maze-2
+		"maze-1:west:maze-4":         true, // maze-4 east→dead-end-1 (not back)
+		"maze-2:south:maze-1":        true, // maze-1 north→maze-1 self-loop (not back)
+		"maze-4:north:maze-1":        true, // maze-1 south→maze-2 (not back)
+		"maze-6:west:maze-6":         true, // self-loop, east→maze-7
+		"maze-7:east:maze-8":         true, // maze-8 west→maze-8 self-loop (not back)
+		"maze-9:east:maze-10":        true, // maze-10 west→maze-13 (not back)
+		"maze-9:west:maze-12":        true, // maze-12 east→maze-13 (not back)
+		"maze-10:east:maze-9":        true, // maze-9 west→maze-12 (not back)
+		"maze-10:west:maze-13":       true, // maze-13 east→maze-9 (not back)
+		"maze-12:sw:maze-11":         true, // maze-11 ne→grating-room (not back)
+		"maze-12:east:maze-13":       true, // maze-13 west→maze-11 (not back)
+		"maze-13:down:maze-12":       true, // maze-12 up→maze-9 (not back)
+		"maze-13:east:maze-9":        true, // maze-9 west→maze-12 (not back)
+		"dead-end-1:south:maze-4":    true, // maze-4 north→maze-1 (not back)
+		// We still detect remaining one-way maze passages by the fact they're in maze rooms
 
 		// River current (flows one direction)
 		"frigid-river-1:down:frigid-river-2": true,
