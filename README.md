@@ -56,8 +56,8 @@ Have fun and please don't feed the grues.
 - ✅ **Somewhat Sophisticated Parser**: Natural language command processing
   - Handles complex commands like "put letter in mailbox", "look at white house"
   - Multi-word object resolution ("kitchen window", "white house")
-  - "IT" reference tracking (the last mentioned object)
-  - 684 vocabulary words from the original game
+  - "it" reference tracking (the last mentioned object)
+  - ~685 vocabulary words from the original game
   - understands synonyms (and multiple terms for the same object or verb action)
 
 - ✅ **Complete Synonym Support**: All classic shortcuts work
@@ -74,17 +74,14 @@ Have fun and please don't feed the grues.
 
 - ✅ **Complete Game World**:
   - All 110 rooms from original Zork I
-  - Famous locations: West of House, Troll Room, Maze, Cyclops Room, Aragain Falls
-  - Conditional exits (trap door, troll blocking passages)
+  - Famous locations and puzzles: West of House, Trolls, Maze, Cyclops, Canyon
+  - Conditional exits (aka puzzles)
   - Light/dark room mechanics with grue warning
   - Outdoor/indoor/underground areas
-
-- ✅ **Comprehensive Item System**:
-  - 122 items across 10 categories (100% complete)
-  - All 19 treasures, weapons, tools, containers
-  - Light sources with on/off control
-  - Readable items (books, maps, leaflets)
-  - Container manipulation (open, close, look in)
+  - 122 items across 10 categories
+  - All 19 treasures, weapons, tools, and containers
+  - Readable items
+  - And, of course, container maniuplation (open, close, look in, light etc)
 
 - ✅ **Retro Terminal UI**:
   - Optional character-by-character typing effect
