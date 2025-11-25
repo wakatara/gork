@@ -112,13 +112,18 @@ func (p *Parser) Parse(input string) (*Command, error) {
 
 	// Resolve direct object
 	if len(objTokens) > 0 {
-		obj := p.resolveObject(objTokens)
-		if obj == "" {
-			return nil, fmt.Errorf("I don't know the word %q", objTokens[0])
+		// Special case for save/restore commands - allow arbitrary filenames
+		if verb == "save" || verb == "restore" {
+			cmd.DirectObject = strings.Join(objTokens, "_")
+		} else {
+			obj := p.resolveObject(objTokens)
+			if obj == "" {
+				return nil, fmt.Errorf("I don't know the word %q", objTokens[0])
+			}
+			cmd.DirectObject = obj
+			// Track for "it" references (P-IT-OBJECT)
+			p.lastObject = obj
 		}
-		cmd.DirectObject = obj
-		// Track for "it" references (P-IT-OBJECT)
-		p.lastObject = obj
 	}
 
 	// Check for preposition and indirect object

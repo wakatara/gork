@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"math/rand"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -304,9 +305,9 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			g.GameOver = true
 			return "Thanks for playing!"
 		case "save":
-			result = "Save is not yet implemented."
+			result = g.handleSave(cmd)
 		case "restore":
-			result = "Restore is not yet implemented."
+			result = g.handleRestore(cmd)
 		case "score":
 			result = g.handleScore()
 		case "restart":
@@ -2911,4 +2912,58 @@ ZORK is a registered trademark of Infocom, Inc.
 Revision 88 / Serial number 840726
 
 ` + g.handleLook()
+}
+
+// handleSave saves the current game state
+func (g *GameV2) handleSave(cmd *Command) string {
+	// Get filename from direct object (if provided)
+	filename := cmd.DirectObject
+
+	// Save the game
+	if err := g.Save(filename); err != nil {
+		return fmt.Sprintf("Failed to save game: %s", err)
+	}
+
+	// Get the actual save path to show user
+	if filename == "" {
+		filename = fmt.Sprintf("gork_save_%s.json", time.Now().Format("20060102_150405"))
+	}
+	if filepath.Ext(filename) != ".json" {
+		filename += ".json"
+	}
+
+	savePath, _ := GetSavePath(filename)
+	return fmt.Sprintf("Game saved to: %s", savePath)
+}
+
+// handleRestore restores a saved game state
+func (g *GameV2) handleRestore(cmd *Command) string {
+	filename := cmd.DirectObject
+
+	// If no filename provided, list available saves
+	if filename == "" {
+		saves, err := ListSaves()
+		if err != nil {
+			return fmt.Sprintf("Failed to list saves: %s", err)
+		}
+
+		if len(saves) == 0 {
+			return "No saved games found."
+		}
+
+		result := "Available saved games:\n"
+		for i, save := range saves {
+			result += fmt.Sprintf("  %d. %s\n", i+1, save)
+		}
+		result += "\nUse 'restore <filename>' to load a save."
+		return result
+	}
+
+	// Restore the game
+	if err := g.Restore(filename); err != nil {
+		return fmt.Sprintf("Failed to restore game: %s", err)
+	}
+
+	// Return the current room description after restore
+	return fmt.Sprintf("Game restored.\n\n%s", g.handleLook())
 }
