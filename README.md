@@ -2,26 +2,27 @@
 
 > You'll likely be eaten by a grue
 
-A somewhat faithful port of the classic 1980s text adventure game **Zork I: The
+An somewhat faithful port of the classic 1980s text adventure game **Zork I: The
 Great Underground Empire** from Infocom to Go from the original variant of a
-variant of lisp ZIL (Zork Implementation Language) [original Zork I ZIL code
-here](https://github.com/historicalsource/zork1)
+variant of lisp ZIL (Zork Implementation Language) [Zork I ZIL code
+here](https://github.com/historicalsource/zork1).
 
 ## About
 
 Ah, nostalgia... I remember trying to play Zork in the "computer store" in the
 small town I grew up in well before I could even dream of owning my own actual
-computer. I was eaten repeatedly by several grue (grues? gruen? gri?).
+computer. I was eaten repeatedly by grue (grues? gruen? gri?).
 
 Zork was amazingly influential as a piece of interactive fiction and to computer
 gaming in general, and instrumental in Infocom being by Activision. It was also
 a runaway commercial success for video games at that time.
 
-I never really got a chance to play the whole thing. We did not have the kind of
-money to shell out to buy a computer back then. So, was curious how hard this
-would be to actually port since I've been porting a lot of old scientific
-libraries in Astronomy lately, and it's been rather surprisingly educational.
-Also, I kinda wanted to play the whole thing through, ya know?
+I never really got a chance to play the whole thing. I did not have the kind of
+money to shell out to buy a computer back then (my grade school had precisely
+one). So, was curious how hard this would be to actually port since I've been
+porting a lot of old scientific libraries in Astronomy lately, and it's been
+rather surprisingly educational. Also, I kinda wanted to play the whole thing
+through, ya know?
 
 The idea is to recreate the original game experience (as I hazily remember it -
 so please chime in if you see I've messed something up) and just make it fun and
@@ -30,26 +31,34 @@ available for people to try.
 Kinda an early 2025 Xmas gift to the world, if you will.
 
 I had to take some liberties with the original ZIL source code since
-_everything_ was an non-type safe object, so translating to modern computing
-constructs for my own sanity took a bit of overarching redesign. The parser was
+_everything_ was an non-type-safe object, so translating to modern computing
+constructs for my own sanity took a bit of overarching redesign though the
+gameplay _should be_ completely faithful to the original. The ZIL fiels have no
+tests, and while I've created as many as I could, I am flying a bit blind here
+(so please playtest the heck outta this thing for me). The parser was
 trickier than you'd think despite the simplicity of the language commands. Other
 than the underlying internals though, and some affectations with intentionally
 trying to make it "CRT"-y with terminal effects, I _think_ I managed to stick
-the landing.
+the landing. I also ignored the original save and restore custom text format in
+favour of something more modern and Go idiomatic, but other than that, yeah...
+it's Zork I.
 
 Please try it out and let me know what I may have gotten worong. I'm hoping
 there's someone who actually played the whole thing through that can give
-feedback on the port.
+feedback on the port with some proper playtesting.
 
 Have fun and please don't feed the grues.
 
+## Installation
+
 ## Features
 
-- ✅ **Sophisticated Parser**: Natural language command processing with synonym support
-  - Handles complex commands like "put sword in case", "look at white house"
+- ✅ **Somewhat Sophisticated Parser**: Natural language command processing
+  - Handles complex commands like "put letter in mailbox", "look at white house"
   - Multi-word object resolution ("kitchen window", "white house")
   - "IT" reference tracking (the last mentioned object)
   - 684 vocabulary words from the original game
+  - understands synonyms (and multiple terms for the same object or verb action)
 
 - ✅ **Complete Synonym Support**: All classic shortcuts work
   - Movement: `n`, `s`, `e`, `w`, `ne`, `nw`, `se`, `sw`, `u`, `d`
@@ -82,12 +91,6 @@ Have fun and please don't feed the grues.
   - Amber or green CRT monitor color themes
   - ASCII art title screen
   - Classic "> " prompt
-
-- 🚧 **Game World** (~50-55% Complete):
-  - All rooms and most items implemented
-  - Core exploration and item manipulation works
-  - NPCs and combat system in progress
-  - Puzzles and special handlers planned
 
 ## Installation
 
@@ -132,9 +135,12 @@ You are carrying:
 
 ### Common Commands
 
-- **Movement**: `north` (`n`), `south` (`s`), `east` (`e`), `west` (`w`), `up` (`u`), `down` (`d`), `in`, `out`
-- **Examination**: `look` (`l`), `examine <object>` (`x <object>`), `read <object>`
-- **Manipulation**: `take <object>` (`get`), `drop <object>`, `open/close <container>`
+- **Movement**: `north` (`n`), `south` (`s`), `east` (`e`), `west` (`w`), `up`
+  (`u`), `down` (`d`), `in`, `out`
+- **Examination**: `look` (`l`), `examine <object>` (`x <object>`), `read
+<object>`
+- **Manipulation**: `take <object>` (`get`), `drop <object>`, `open/close
+<container>`
 - **Light**: `turn on/off <light>` - Control light sources
 - **Containers**: `look in <container>` - Inspect contents
 - **Interaction**: `put <obj> in <container>`, `give <obj> to <npc>`
@@ -144,7 +150,9 @@ You are carrying:
 
 122 items across 10 categories (ALL items from original Zork I):
 
-- **Treasures** (19): diamond, emerald, chalice, jade, coins, painting, bracelet, scarab, sceptre, egg, pot-of-gold, trident, bauble, platinum bar, sapphire, ivory torch, trunk of jewels, pearl, oriental rug
+- **Treasures** (19): diamond, emerald, chalice, jade, coins, painting,
+  bracelet, scarab, sceptre, egg, pot-of-gold, trident, bauble, platinum bar,
+  sapphire, ivory torch, trunk of jewels, pearl, oriental rug
 - **Weapons** (5): elvish sword, knife, axe, stiletto, trident
 - **Tools** (6): pump, screwdriver, wrench, rope, shovel, putty
 - **Containers** (11): mailbox, trophy case, bottle, coffin, nest, bags
@@ -161,26 +169,6 @@ You are carrying:
 - Try examining everything
 - The white house has a boarded front door, but perhaps there's another way in?
 - The original Zork I has 19 treasures worth 350 points total
-
-## Development Status
-
-| Feature          | Status                             |
-| ---------------- | ---------------------------------- |
-| Parser           | ✅ Complete (106 tests passing)    |
-| Synonyms         | ✅ Complete (684 vocabulary words) |
-| Type System      | ✅ Complete (Room/Item/NPC)        |
-| Game Engine      | ✅ Core complete                   |
-| Rooms            | ✅ 110/110 rooms (100%)            |
-| Items            | ✅ 122/122 items (100%)            |
-| Treasures        | ✅ 19/19 treasures (100%)          |
-| Verb Handlers    | ✅ ~30 verbs implemented (83%)     |
-| Light/Darkness   | 🚧 Basic implementation (80%)      |
-| **Overall Game** | **🚧 ~75-80% complete**            |
-| NPCs             | ✅ 5/5 NPCs implemented (100%)     |
-| Combat System    | ✅ Basic combat complete           |
-| Puzzles          | ⏸️ Planned (0%)                    |
-| Save/Restore     | ⏸️ Planned (0%)                    |
-| Score System     | ⏸️ Planned (0%)                    |
 
 ### Testing
 
@@ -263,7 +251,8 @@ type NPC struct {
 }
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the complete design rationale behind choosing separate structs over ZIL's generic object model.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the complete design rationale behind
+choosing separate structs over ZIL's generic object model.
 
 ### Action Dispatch
 
@@ -313,19 +302,6 @@ educational purposes and preserving gaming history.
 - Marc Blank, Dave Lebling, Bruce Daniels, and Tim Anderson - Original Zork creators
 - Infocom - For creating the ZIL language and Zork
 - The interactive fiction community - For preserving these classics
-
-## Progress
-
-- ✅ ~~Full dungeon implementation~~ **Complete - 110 rooms**
-- ✅ ~~Light and darkness (and the grue!)~~ **Complete - hasLight() with grue warning**
-- ✅ ~~Commands and synonyms (`x`, `i`, `n`, `s`, etc.)~~ **Complete - 684 words**
-- ✅ ~~All 19 treasures~~ **Complete - 19/19 treasures (100%)**
-- ✅ ~~Complete item set~~ **Complete - 122/122 items (100%)**
-- ✅ ~~NPCs and combat system~~ **Complete - 5/5 NPCs with basic combat**
-- [ ] Puzzle special handlers (dam controls, mirror room, basket/rope, machine)
-- [ ] Save/restore functionality
-- [ ] Score tracking (0/350 points system)
-- [ ] Death and resurrection system
 
 ---
 
