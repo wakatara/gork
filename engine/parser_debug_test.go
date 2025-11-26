@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -9,21 +8,21 @@ func TestDebugLookAtWhiteHouse(t *testing.T) {
 	p := NewParser()
 	input := "look at the white house"
 
-	fmt.Printf("\n=== Debugging: %q ===\n", input)
+	t.Logf("\n=== Debugging: %q ===", input)
 
 	// Step 1: Tokenize
 	tokens := p.tokenize(input)
-	fmt.Printf("After tokenize: %v\n", tokens)
+	t.Logf("After tokenize: %v", tokens)
 
 	// Step 2: Resolve synonyms
 	tokens = p.resolveSynonyms(tokens)
-	fmt.Printf("After synonyms: %v\n", tokens)
+	t.Logf("After synonyms: %v", tokens)
 
 	// Step 3: Check multi-word verb
 	if len(tokens) >= 2 {
 		twoWord := tokens[0] + " " + tokens[1]
 		verb := p.vocabulary.GetVerb(twoWord)
-		fmt.Printf("Two-word verb check: %q -> %q\n", twoWord, verb)
+		t.Logf("Two-word verb check: %q -> %q", twoWord, verb)
 	}
 
 	// Full parse
@@ -32,7 +31,7 @@ func TestDebugLookAtWhiteHouse(t *testing.T) {
 		t.Fatalf("Parse error: %v", err)
 	}
 
-	fmt.Printf("Result: verb=%q, obj=%q\n", cmd.Verb, cmd.DirectObject)
+	t.Logf("Result: verb=%q, obj=%q", cmd.Verb, cmd.DirectObject)
 
 	if cmd.Verb != "examine" {
 		t.Errorf("Verb = %q, want examine", cmd.Verb)
