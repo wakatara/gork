@@ -6,7 +6,7 @@ import (
 )
 
 func TestAllNPCsExist(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	expectedNPCs := []string{"troll", "thief", "cyclops", "bat", "ghosts"}
 
@@ -26,7 +26,7 @@ func TestAllNPCsExist(t *testing.T) {
 }
 
 func TestTrollCombat(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "troll-room"
 
 	// Give player a sword
@@ -43,7 +43,7 @@ func TestTrollCombat(t *testing.T) {
 }
 
 func TestTrollFood(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "troll-room"
 
 	// Give player lunch (non-treasure)
@@ -69,7 +69,7 @@ func TestTrollFood(t *testing.T) {
 }
 
 func TestCyclopsCombat(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "cyclops-room"
 
 	// Verify cyclops exists
@@ -84,7 +84,7 @@ func TestCyclopsCombat(t *testing.T) {
 }
 
 func TestThiefStealing(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "maze-1" // Where thief starts
 
 	// Give player a treasure
@@ -115,7 +115,7 @@ func TestThiefStealing(t *testing.T) {
 }
 
 func TestBatExists(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	bat := g.NPCs["bat"]
 	if bat == nil {
@@ -132,7 +132,7 @@ func TestBatExists(t *testing.T) {
 }
 
 func TestGhostsExist(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	ghosts := g.NPCs["ghosts"]
 	if ghosts == nil {
@@ -145,7 +145,7 @@ func TestGhostsExist(t *testing.T) {
 }
 
 func TestNPCLocations(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	tests := []struct {
 		npcID    string

@@ -6,7 +6,7 @@ import (
 )
 
 func TestAllRoomsCreated(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Verify we have exactly 110 rooms
 	if len(g.Rooms) != 110 {
@@ -15,7 +15,7 @@ func TestAllRoomsCreated(t *testing.T) {
 }
 
 func TestKeyRoomsExist(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	keyRooms := []string{
 		"west-of-house",
@@ -42,7 +42,7 @@ func TestKeyRoomsExist(t *testing.T) {
 }
 
 func TestRoomConnectivity(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	tests := []struct {
 		from      string
@@ -101,7 +101,7 @@ func TestRoomConnectivity(t *testing.T) {
 }
 
 func TestDarkRooms(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	darkRooms := []string{
 		"cellar",
@@ -125,7 +125,7 @@ func TestDarkRooms(t *testing.T) {
 }
 
 func TestOutdoorRooms(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	outdoorRooms := []string{
 		"west-of-house",
@@ -150,7 +150,7 @@ func TestOutdoorRooms(t *testing.T) {
 }
 
 func TestConditionalExits(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Troll room east exit should be conditional on troll-dead flag
 	trollRoom := g.Rooms["troll-room"]
@@ -186,7 +186,7 @@ func TestConditionalExits(t *testing.T) {
 }
 
 func TestMazeRooms(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Verify all 15 maze rooms exist
 	for i := 1; i <= 15; i++ {
@@ -247,7 +247,7 @@ func TestMazeRooms(t *testing.T) {
 
 // TestWestEastNavigation tests the specific bug reported: west-of-house -> west -> forest-1 -> east should return
 func TestWestEastNavigation(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "west-of-house"
 
 	// Go west to forest

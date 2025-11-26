@@ -8,7 +8,7 @@ import (
 
 // TestRugTrapDoorPuzzle tests the complete rug/trap door puzzle sequence
 func TestRugTrapDoorPuzzle(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Navigate to living room
 	g.Process("north")
@@ -67,7 +67,7 @@ func TestRugTrapDoorPuzzle(t *testing.T) {
 
 // TestGratingPuzzle tests unlocking the grating with keys
 func TestGratingPuzzle(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Navigate to living room and get keys
 	g.Process("north")
@@ -120,7 +120,7 @@ func TestGratingPuzzle(t *testing.T) {
 
 // TestDamControlsPuzzle tests the dam button mechanics
 func TestDamControlsPuzzle(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Set location to maintenance room for testing
 	g.Location = "maintenance-room"
@@ -172,7 +172,7 @@ func TestDamControlsPuzzle(t *testing.T) {
 
 // TestMachineBasketPuzzle tests the basket raising/lowering mechanism
 func TestMachineBasketPuzzle(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Set location to machine room
 	g.Location = "machine-room"
@@ -255,7 +255,7 @@ func TestMachineBasketPuzzle(t *testing.T) {
 
 // TestGrueMechanics tests that the grue actually kills the player in darkness
 func TestGrueMechanics(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Set location to cellar (dark room) without lamp
 	g.Location = "cellar"
@@ -291,7 +291,7 @@ func TestGrueMechanics(t *testing.T) {
 
 // TestLampProtectsFromGrue tests that having a lit lamp prevents grue attacks
 func TestLampProtectsFromGrue(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Get the lamp and light it
 	lamp := g.Items["lamp"]
@@ -330,7 +330,7 @@ func TestLampProtectsFromGrue(t *testing.T) {
 
 // TestTrophyCaseScoring tests that placing treasures in trophy case awards points
 func TestTrophyCaseScoring(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Navigate to living room where trophy case is
 	g.Process("north")
@@ -394,7 +394,7 @@ func TestTrophyCaseScoring(t *testing.T) {
 
 // TestMultipleTreasuresScoring tests scoring with multiple treasures
 func TestMultipleTreasuresScoring(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Set up in living room
 	g.Location = "living-room"
@@ -457,7 +457,7 @@ func TestMultipleTreasuresScoring(t *testing.T) {
 
 // TestLampFuelDepletion tests the lamp fuel system
 func TestLampFuelDepletion(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Test 1: Check initial fuel
 	lamp := g.Items["lamp"]
@@ -522,7 +522,7 @@ func TestLampFuelDepletion(t *testing.T) {
 	}
 
 	// Test 7: Lamp dies in dark room (grue death)
-	g2 := NewGameV2()
+	g2 := NewGameV2("test")
 	g2.Location = "cellar"
 	lamp2 := g2.Items["lamp"]
 	lamp2.Location = "player-inventory"
@@ -540,7 +540,7 @@ func TestLampFuelDepletion(t *testing.T) {
 
 // TestCandlesFuelDepletion tests the candles fuel system
 func TestCandlesFuelDepletion(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Test 1: Check initial fuel
 	candles := g.Items["candles"]
@@ -609,7 +609,7 @@ func TestCandlesFuelDepletion(t *testing.T) {
 	}
 
 	// Test 7: Candles burn out in dark room (grue death)
-	g2 := NewGameV2()
+	g2 := NewGameV2("test")
 	g2.Location = "cellar"
 	candles2 := g2.Items["candles"]
 	candles2.Location = "player-inventory"
@@ -627,7 +627,7 @@ func TestCandlesFuelDepletion(t *testing.T) {
 
 // TestIvoryTorchEternalFlame tests that the ivory torch never burns out
 func TestIvoryTorchEternalFlame(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	torch := g.Items["ivory-torch"]
 	if torch == nil {
@@ -659,7 +659,7 @@ func TestIvoryTorchEternalFlame(t *testing.T) {
 }
 
 func TestTrapDoorMechanics(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Test 1: Trap door should be hidden in living-room until rug is moved
 	t.Run("hidden until rug moved", func(t *testing.T) {
@@ -793,7 +793,7 @@ func TestTrapDoorMechanics(t *testing.T) {
 }
 
 func TestKitchenWindowMechanics(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Test 1: Window examine before opening
 	t.Run("examine before first open", func(t *testing.T) {
@@ -885,7 +885,7 @@ func TestKitchenWindowMechanics(t *testing.T) {
 }
 
 func TestPrayerBookMechanics(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Test 1: Prayer book has correct initial state
 	t.Run("initial state", func(t *testing.T) {
@@ -909,7 +909,7 @@ func TestPrayerBookMechanics(t *testing.T) {
 
 	// Test 2: Reading the book shows the commandment text
 	t.Run("reading shows commandment", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		book := g.Items["book"]
 		book.Location = "inventory"
 		g.Player.Inventory = append(g.Player.Inventory, "book")
@@ -922,7 +922,7 @@ func TestPrayerBookMechanics(t *testing.T) {
 
 	// Test 3: Opening the book shows it's already open to page 569
 	t.Run("open shows already open", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		book := g.Items["book"]
 		book.Location = "inventory"
 		g.Player.Inventory = append(g.Player.Inventory, "book")
@@ -935,7 +935,7 @@ func TestPrayerBookMechanics(t *testing.T) {
 
 	// Test 4: Closing the book fails
 	t.Run("cannot close", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		book := g.Items["book"]
 		book.Location = "inventory"
 		g.Player.Inventory = append(g.Player.Inventory, "book")
@@ -948,7 +948,7 @@ func TestPrayerBookMechanics(t *testing.T) {
 
 	// Test 5: Turning pages shows hint about banishment
 	t.Run("turn pages shows banishment hint", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		book := g.Items["book"]
 		book.Location = "inventory"
 		g.Player.Inventory = append(g.Player.Inventory, "book")
@@ -961,7 +961,7 @@ func TestPrayerBookMechanics(t *testing.T) {
 
 	// Test 6: Burning the book is deadly
 	t.Run("burning is deadly", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		book := g.Items["book"]
 		book.Location = "inventory"
 		g.Player.Inventory = append(g.Player.Inventory, "book")
@@ -982,7 +982,7 @@ func TestPrayerBookMechanics(t *testing.T) {
 
 	// Test 7: Book aliases work
 	t.Run("aliases work", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		book := g.Items["book"]
 		book.Location = "inventory"
 		g.Player.Inventory = append(g.Player.Inventory, "book")
@@ -1002,7 +1002,7 @@ func TestPrayerBookMechanics(t *testing.T) {
 func TestBellBookCandleCeremony(t *testing.T) {
 	// Test 1: Ghosts block passage
 	t.Run("ghosts block passage", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		g.Location = "entrance-to-hades"
 
 		result := g.Process("in")
@@ -1013,7 +1013,7 @@ func TestBellBookCandleCeremony(t *testing.T) {
 
 	// Test 2: Exorcise without items
 	t.Run("exorcise without items", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		g.Location = "entrance-to-hades"
 
 		result := g.Process("exorcise")
@@ -1024,7 +1024,7 @@ func TestBellBookCandleCeremony(t *testing.T) {
 
 	// Test 3: Exorcise with all items
 	t.Run("exorcise with all items prompts ceremony", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		g.Location = "entrance-to-hades"
 		g.Player.Inventory = []string{"bell", "book", "candles"}
 		g.Items["bell"].Location = "inventory"
@@ -1039,7 +1039,7 @@ func TestBellBookCandleCeremony(t *testing.T) {
 
 	// Test 4: Full ceremony sequence
 	t.Run("full ceremony sequence", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		g.Location = "entrance-to-hades"
 		g.Player.Inventory = []string{"bell", "book", "candles"}
 		g.Items["bell"].Location = "inventory"
@@ -1100,7 +1100,7 @@ func TestBellBookCandleCeremony(t *testing.T) {
 
 	// Test 5: Ring bell elsewhere
 	t.Run("normal bell ringing elsewhere", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		g.Location = "west-of-house"
 		g.Player.Inventory = []string{"bell"}
 		g.Items["bell"].Location = "inventory"
@@ -1115,7 +1115,7 @@ func TestBellBookCandleCeremony(t *testing.T) {
 // TestThiefPuzzle tests the thief AI behavior (ZIL I-THIEF routine in 1actions.zil lines 3890-4025)
 func TestThiefPuzzle(t *testing.T) {
 	t.Run("Thief exists and starts in maze", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 
 		thief := g.NPCs["thief"]
 		if thief == nil {
@@ -1132,7 +1132,7 @@ func TestThiefPuzzle(t *testing.T) {
 	})
 
 	t.Run("Thief steals treasures from player", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		g.Location = "maze-1" // Where thief starts
 
 		// Give player some treasures
@@ -1166,7 +1166,7 @@ func TestThiefPuzzle(t *testing.T) {
 	})
 
 	t.Run("Thief moves through dungeon", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 
 		thief := g.NPCs["thief"]
 		if thief == nil {
@@ -1191,7 +1191,7 @@ func TestThiefPuzzle(t *testing.T) {
 	})
 
 	t.Run("Thief deposits treasures to treasure-room", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 
 		// Give thief some treasures
 		thief := g.NPCs["thief"]
@@ -1244,7 +1244,7 @@ func TestThiefPuzzle(t *testing.T) {
 	})
 
 	t.Run("Thief appearance message when in player's room", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 
 		// Move thief to player's location with treasures
 		thief := g.NPCs["thief"]
@@ -1279,7 +1279,7 @@ func TestThiefPuzzle(t *testing.T) {
 	})
 
 	t.Run("Thief doesn't steal when no treasures present", func(t *testing.T) {
-		g := NewGameV2()
+		g := NewGameV2("test")
 		g.Location = "maze-1"
 
 		// Remove all treasures from player

@@ -9,7 +9,7 @@ import (
 // TestExitBidirectionality performs a comprehensive audit of all room exits
 // to ensure navigational consistency throughout the game world
 func TestExitBidirectionality(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Map of reverse directions
 	reverseDir := map[string]string{
@@ -285,7 +285,7 @@ func TestExitBidirectionality(t *testing.T) {
 
 // TestCriticalPathsNavigable ensures key game locations are reachable and properly connected
 func TestCriticalPathsNavigable(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Test critical navigation paths that must work
 	tests := []struct {

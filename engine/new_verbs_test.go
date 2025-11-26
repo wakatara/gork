@@ -6,7 +6,7 @@ import (
 )
 
 func TestPutCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	tests := []struct {
 		name     string
@@ -63,7 +63,7 @@ func TestPutCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset game
-			g = NewGameV2()
+			g = NewGameV2("test")
 			g.Location = "west-of-house"
 
 			// Run setup
@@ -82,7 +82,7 @@ func TestPutCommand(t *testing.T) {
 }
 
 func TestGiveCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "troll-room"
 
 	// Give food to troll
@@ -97,7 +97,7 @@ func TestGiveCommand(t *testing.T) {
 }
 
 func TestAttackCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "troll-room"
 
 	result := g.Process("attack troll")
@@ -108,7 +108,7 @@ func TestAttackCommand(t *testing.T) {
 }
 
 func TestWaveCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Add sceptre to inventory
 	g.Player.Inventory = append(g.Player.Inventory, "sceptre")
@@ -122,7 +122,7 @@ func TestWaveCommand(t *testing.T) {
 }
 
 func TestClimbCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	result := g.Process("climb tree")
 
@@ -132,7 +132,7 @@ func TestClimbCommand(t *testing.T) {
 }
 
 func TestTieUntieCommands(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Add rope to inventory
 	g.Player.Inventory = append(g.Player.Inventory, "rope")
@@ -150,7 +150,7 @@ func TestTieUntieCommands(t *testing.T) {
 }
 
 func TestDigCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	result := g.Process("dig")
 
@@ -160,7 +160,7 @@ func TestDigCommand(t *testing.T) {
 }
 
 func TestPushPullCommands(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "machine-room"
 
 	// Push button (use start button which is in machine-room)
@@ -177,7 +177,7 @@ func TestPushPullCommands(t *testing.T) {
 }
 
 func TestRingCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Add bell to room
 	bell := g.Items["bell"]
@@ -193,7 +193,7 @@ func TestRingCommand(t *testing.T) {
 }
 
 func TestPrayCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	result := g.Process("pray")
 
@@ -203,7 +203,7 @@ func TestPrayCommand(t *testing.T) {
 }
 
 func TestWaitCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	result := g.Process("wait")
 
@@ -220,7 +220,7 @@ func TestWaitCommand(t *testing.T) {
 }
 
 func TestEatCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	tests := []struct {
 		name     string
@@ -234,7 +234,7 @@ func TestEatCommand(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g = NewGameV2()
+			g = NewGameV2("test")
 
 			// Add item to inventory
 			g.Player.Inventory = append(g.Player.Inventory, tt.item)
@@ -250,7 +250,7 @@ func TestEatCommand(t *testing.T) {
 }
 
 func TestDrinkCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Add water to room
 	water := g.Items["water"]
@@ -266,7 +266,7 @@ func TestDrinkCommand(t *testing.T) {
 }
 
 func TestFillPourCommands(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Add bottle to inventory
 	g.Player.Inventory = append(g.Player.Inventory, "bottle")
@@ -286,7 +286,7 @@ func TestFillPourCommands(t *testing.T) {
 }
 
 func TestListenCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	result := g.Process("listen")
 
@@ -296,7 +296,7 @@ func TestListenCommand(t *testing.T) {
 }
 
 func TestSmellTouchCommands(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "west-of-house"
 
 	result := g.Process("smell mailbox")
@@ -313,7 +313,7 @@ func TestSmellTouchCommands(t *testing.T) {
 }
 
 func TestSearchCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 	g.Location = "west-of-house"
 
 	// Search without object (should be like look)
@@ -332,7 +332,7 @@ func TestSearchCommand(t *testing.T) {
 }
 
 func TestJumpSwimCommands(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	result := g.Process("jump")
 
@@ -348,7 +348,7 @@ func TestJumpSwimCommands(t *testing.T) {
 }
 
 func TestBlowKnockCommands(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	result := g.Process("blow whistle")
 
@@ -370,7 +370,7 @@ func TestBlowKnockCommands(t *testing.T) {
 }
 
 func TestScoreCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	result := g.Process("score")
 

@@ -5,7 +5,7 @@ import (
 )
 
 func TestAllItemsCreated(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Count items
 	itemCount := len(g.Items)
@@ -16,7 +16,7 @@ func TestAllItemsCreated(t *testing.T) {
 }
 
 func TestTreasuresExist(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	treasures := []string{
 		"diamond",
@@ -52,7 +52,7 @@ func TestTreasuresExist(t *testing.T) {
 }
 
 func TestWeaponsExist(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	weapons := []string{"sword", "knife", "rusty-knife", "stiletto", "axe"}
 
@@ -70,7 +70,7 @@ func TestWeaponsExist(t *testing.T) {
 }
 
 func TestContainersExist(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	containers := []string{
 		"mailbox",
@@ -96,7 +96,7 @@ func TestContainersExist(t *testing.T) {
 }
 
 func TestStartingItems(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Test mailbox is in west-of-house
 	mailbox := g.Items["mailbox"]
@@ -136,7 +136,7 @@ func TestStartingItems(t *testing.T) {
 }
 
 func TestItemAliases(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	tests := []struct {
 		itemID string
@@ -172,7 +172,7 @@ func TestItemAliases(t *testing.T) {
 }
 
 func TestLightSources(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	lightSources := []struct {
 		id    string
@@ -201,7 +201,7 @@ func TestLightSources(t *testing.T) {
 }
 
 func TestReadableItems(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	readableItems := []string{
 		"leaflet",
@@ -227,7 +227,7 @@ func TestReadableItems(t *testing.T) {
 }
 
 func TestItemsInRooms(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Check that items are added to their room's Contents
 	westOfHouse := g.Rooms["west-of-house"]

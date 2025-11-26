@@ -40,7 +40,7 @@ func TestOpenCloseCommands(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := NewGameV2()
+			g := NewGameV2("test")
 			var result string
 			for _, cmd := range tt.commands {
 				result = g.Process(cmd)
@@ -77,7 +77,7 @@ func TestReadCommand(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := NewGameV2()
+			g := NewGameV2("test")
 			var result string
 			for _, cmd := range tt.commands {
 				result = g.Process(cmd)
@@ -114,7 +114,7 @@ func TestLookInCommand(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := NewGameV2()
+			g := NewGameV2("test")
 			var result string
 			for _, cmd := range tt.commands {
 				result = g.Process(cmd)
@@ -127,7 +127,7 @@ func TestLookInCommand(t *testing.T) {
 }
 
 func TestHelpCommand(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	result := g.Process("help")
 
@@ -153,7 +153,7 @@ func TestHelpCommand(t *testing.T) {
 }
 
 func TestTurnOnOff(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Note: lamp is in living-room, so we need to navigate there first
 	// For this test, let's temporarily move the lamp to west-of-house
@@ -197,7 +197,7 @@ func TestTurnOnOff(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset lamp state for each test
-			g := NewGameV2()
+			g := NewGameV2("test")
 			lamp := g.Items["lamp"]
 			lamp.Location = "west-of-house"
 			g.Rooms["west-of-house"].AddItem("lamp")
@@ -216,7 +216,7 @@ func TestTurnOnOff(t *testing.T) {
 }
 
 func TestExamineContainer(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Examine open container
 	result := g.Process("examine mailbox")
@@ -241,7 +241,7 @@ func TestExamineContainer(t *testing.T) {
 }
 
 func TestTakeFromContainer(t *testing.T) {
-	g := NewGameV2()
+	g := NewGameV2("test")
 
 	// Should be able to take from open/transparent container
 	result := g.Process("take leaflet")
