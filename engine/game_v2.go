@@ -21,7 +21,8 @@ type GameV2 struct {
 	Flags     map[string]bool // Global game flags (WINDOW-OPEN, TROLL-DEAD, etc.)
 	GameOver  bool
 	Won       bool
-	rand      *rand.Rand // Random number generator for thief AI
+	Version   string         // Game version injected at build time
+	rand      *rand.Rand     // Random number generator for thief AI
 }
 
 // Player represents the player character
@@ -32,19 +33,20 @@ type Player struct {
 }
 
 // NewGameV2 creates a new game with proper type separation
-func NewGameV2() *GameV2 {
+func NewGameV2(version string) *GameV2 {
 	g := &GameV2{
-		Rooms:  make(map[string]*Room),
-		Items:  make(map[string]*Item),
-		NPCs:   make(map[string]*NPC),
-		Parser: NewParser(),
+		Rooms:   make(map[string]*Room),
+		Items:   make(map[string]*Item),
+		NPCs:    make(map[string]*NPC),
+		Parser:  NewParser(),
 		Player: &Player{
 			Inventory: []string{},
 			MaxWeight: 100,
 			Health:    100,
 		},
-		Flags: make(map[string]bool),
-		rand:  rand.New(rand.NewSource(time.Now().UnixNano())),
+		Flags:   make(map[string]bool),
+		Version: version,
+		rand:    rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 
 	// Initialize world
@@ -368,7 +370,7 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		case "diagnose":
 			result = g.handleDiagnose()
 		case "version":
-			result = "ZORK I: The Great Underground Empire\nGo Edition Version 1.0\nOriginal game Copyright (c) 1981, 1982, 1983 Infocom, Inc."
+			result = fmt.Sprintf("ZORK I: The Great Underground Empire\nGo Edition Version %s\nOriginal game Copyright (c) 1981, 1982, 1983 Infocom, Inc.", g.Version)
 		case "say", "speak":
 			result = g.handleSay(cmd)
 		case "find", "where":
