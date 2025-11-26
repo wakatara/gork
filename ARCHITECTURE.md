@@ -15,7 +15,7 @@ sense because:
 ### Why I Chose Dedicated Types in Go
 
 For the purists who might scream about what I've done to the port (though heck,
-you could probably imlement this whole thing easier in elisp).
+you could probably implement this whole thing in emacs):
 
 **I chose separate structs (`Room`, `Item`, `NPC`) instead of a generic `Object`
 because:**
@@ -286,12 +286,13 @@ gork/
 **Don't blindly port old architectures.**
 
 The original Zork used generic objects because Lisp had no type system. Go has
-strong typing - use it! The refactored architecture is:
+strong typing. Use it! (and useful modern consstructs in general!). The
+refactored architecture is:
 
 - More maintainable
 - More performant
 - More Go-idiomatic
-- Easier to understand
+- Easier to understand (at least to me)
 - Safer (compiler catches bugs)
 
 **Modern language features exist for a reason.**
