@@ -5,7 +5,8 @@
 An somewhat faithful port of the classic 1980s text adventure game **Zork I: The
 Great Underground Empire** from Infocom to Go from the original variant of a
 variant of lisp ZIL (Zork Implementation Language) [Zork I ZIL code
-here](https://github.com/historicalsource/zork1).
+here](https://github.com/historicalsource/zork1). If you care about the how and
+changes I made from the ZIL Code, you can find details in [[./ARCHITECTURE.md]]
 
 ## About
 
@@ -19,17 +20,16 @@ runaway commercial success for video games at that time.
 
 I never really got a chance to play the whole thing. I didn't even have my own
 computer (a Vic 20!) until years later. And when the nice people at
-[nixCraft](https://mastodon.social/@nixCraft/115585413690855037) posted about
-the original source code being open sourced. Well, I honestly wodnered how hard
-it would be to port (and have been doing a lot of game dev lately outside of
-scientific work, anyway.). And kinda wanted to play the whol thing through, ya
-know?
+[nixCraft](https://mastodon.social/@nixCraft/115585413690855037) posted on
+Mastodon about the original source code being open sourced. Well, I honestly
+wodnered how hard it would be to port (and have been doing a lot of game dev
+lately outside of scientific work, anyway.). And kinda wanted to play the whol
+thing through, ya know?
 
-The idea is to recreate the original game experience (as I hazily remember it -
-so please chime in if you see I've messed something up) and just make it fun and
-available for people to try.
-
-Kinda an early 2025 Xmas gift to the world, if you will.
+The idea is to recreate the original game experience (as I jazily remember it -
+yell if you see I've messed something up) and just make it fun and available for
+people to try and play through (now, I am wondering about the old Hitchhiker's
+Guide to the Galaxy text games and what happened to them. 🤔).
 
 I had to take some serious liberties with the original ZIL source code since
 _everything_ was an non-type-safe object, so translating to modern computing
@@ -51,9 +51,9 @@ nailed all of those. I'm really hoping there's someone who actually played the
 whole thing through that can give feedback on the port with some proper
 playtesting.
 
-Have fun and please don't feed the grues.
+_Anyways, kinda an early 2025 Xmas gift back to the world, if you will._
 
-## Installation
+**Have fun and please don't feed the grues.**
 
 ## Features
 
@@ -95,18 +95,40 @@ Have fun and please don't feed the grues.
 
 ## Installation
 
-**WIP**: My plan is to make this available via a GoReleaser GH build pipeline
-and available as compiled binaries and at least on the homebrew package manager.
-Other package managers perhaps - depending on how keen folks are.
+### Homebrew (macOS/Linux)
 
-```bash
-# Clone the repository
+```sh
+brew tap wakatara/tap
+brew install gork
+```
+
+### Working Go Environment
+
+If you have Go installed, the simplest method:
+
+```sh
+go install github.com/wakatara/gork/cmd/gork@latest
+```
+
+This will install `gork` to your `$GOPATH/bin` directory. Make sure that directory is in your PATH.
+
+### Pre-built Binaries
+
+Download binaries for your platform from the [releases page](https://github.com/wakatara/gork/releases).
+
+Available formats:
+
+- `.tar.gz` / `.zip` archives (all platforms)
+- `.deb` packages (Debian/Ubuntu)
+- `.rpm` packages (Red Hat/Fedora/CentOS)
+
+### Build from Source
+
+```sh
+git clone https://github.com/wakatara/gork
 cd gork
-
-# Build the game
 go build -o gork ./cmd/gork
 
-# Run
 ./gork
 ```
 
@@ -173,7 +195,8 @@ You are carrying:
 
 ### Testing
 
-**Important:** Always run tests from the project root directory with `./...` to test all packages:
+**Important:** Always run tests from the project root directory with `./...` to
+test all packages:
 
 ```bash
 # Run all tests (from project root)
@@ -203,9 +226,10 @@ Current test coverage:
 - `engine/new_verbs_test.go`: New verb handlers
 - `engine/puzzle_integration_test.go`: Major puzzle sequences
 - `engine/save_test.go`: Save/restore functionality
-- **Total: 200 tests passing, ~80% coverage**
+- **Total: 200 tests passing**
 
-All tests use `t.Logf()` for debug output, so verbose mode (`-v`) will show detailed test information with proper PASS/FAIL indicators.
+All tests use `t.Logf()` for debug output, so verbose mode (`-v`) will show
+detailed test information with proper PASS/FAIL indicators.
 
 ## Architecture
 
