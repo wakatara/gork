@@ -13,16 +13,17 @@ Ah, nostalgia... I remember trying to play Zork in the "computer store" in the
 small town I grew up in well before I could even dream of owning my own actual
 computer. I was eaten repeatedly by grue (grues? gruen? gri?).
 
-Zork was amazingly influential as a piece of interactive fiction and to computer
-gaming in general, and instrumental in Infocom being by Activision. It was also
-a runaway commercial success for video games at that time.
+Zork was incredibly influential as a piece of interactive fiction and to
+computer gaming, and instrumental in Infocom being by Activision. It was also a
+runaway commercial success for video games at that time.
 
-I never really got a chance to play the whole thing. I did not have the kind of
-money to shell out to buy a computer back then (my grade school had precisely
-one). So, was curious how hard this would be to actually port since I've been
-porting a lot of old scientific libraries in Astronomy lately, and it's been
-rather surprisingly educational. Also, I kinda wanted to play the whole thing
-through, ya know?
+I never really got a chance to play the whole thing. I didn't even have my own
+computer (a Vic 20!) until years later. And when the nice people at
+[nixCraft](https://mastodon.social/@nixCraft/115585413690855037) posted about
+the original source code being open sourced. Well, I honestly wodnered how hard
+it would be to port (and have been doing a lot of game dev lately outside of
+scientific work, anyway.). And kinda wanted to play the whol thing through, ya
+know?
 
 The idea is to recreate the original game experience (as I hazily remember it -
 so please chime in if you see I've messed something up) and just make it fun and
@@ -30,22 +31,25 @@ available for people to try.
 
 Kinda an early 2025 Xmas gift to the world, if you will.
 
-I had to take some liberties with the original ZIL source code since
+I had to take some serious liberties with the original ZIL source code since
 _everything_ was an non-type-safe object, so translating to modern computing
 constructs for my own sanity took a bit of overarching redesign though the
 gameplay _should be_ completely faithful to the original. The ZIL fiels have no
 tests, and while I've created as many as I could, I am flying a bit blind here
-(so please playtest the heck outta this thing for me). The parser was
-trickier than you'd think despite the simplicity of the language commands. Other
-than the underlying internals though, and some affectations with intentionally
-trying to make it "CRT"-y with terminal effects, I _think_ I managed to stick
-the landing. I also ignored the original save and restore custom text format in
-favour of something more modern and Go idiomatic, but other than that, yeah...
-it's Zork I.
+(so please playtest the heck outta this thing for me). The parser was trickier
+than you'd think despite the simplicity of the language commands. Other than the
+underlying internals though, and some affectations with intentionally trying to
+make it "CRT"-y with terminal effects, I _think_ I managed to stick the landing.
+I also ignored the original save and restore custom text format in favour of
+something more modern (json) and Go idiomatic, but other than that, yeah... it
+should be a rather faitful rendition of Zork I.
 
-Please try it out and let me know what I may have gotten worong. I'm hoping
-there's someone who actually played the whole thing through that can give
-feedback on the port with some proper playtesting.
+Please try it out and let me know what I may have gotten worong. I'm sure there
+must be bugs - even with using an AI to list and trace all room exissts and
+entrances, I ran across from serious DAG problems early on, though think I
+nailed all of those. I'm really hoping there's someone who actually played the
+whole thing through that can give feedback on the port with some proper
+playtesting.
 
 Have fun and please don't feed the grues.
 
@@ -169,25 +173,39 @@ You are carrying:
 
 ### Testing
 
+**Important:** Always run tests from the project root directory with `./...` to test all packages:
+
 ```bash
-# Run all tests
+# Run all tests (from project root)
 go test ./...
 
-# Run with verbose output
+# Run all tests with verbose output
+go test ./... -v
+
+# Run only engine tests with verbose output
 go test ./engine -v
 
 # Run specific test
 go test ./engine -run TestParser
+
+# Run with coverage report
+go test ./engine -cover
 ```
+
+**Note:** Running `go test -v` without `./...` from the root will fail because the root directory has no Go files. Always use `go test ./...` to test all packages recursively.
 
 Current test coverage:
 
-- `engine/parser_test.go`: 67 test cases covering command parsing
-- `engine/rooms_test.go`: 21 test cases for all 110 rooms
-- `engine/items_test.go`: 10 test cases for all 122 items
-- `engine/game_verbs_test.go`: 8 test cases for verb handlers
-- `engine/new_verbs_test.go`: 20+ test cases for new verb handlers
-- **Total: 125+ tests passing, ~80% coverage**
+- `engine/parser_test.go`: Parser and command processing
+- `engine/rooms_test.go`: All 110 rooms and navigation
+- `engine/items_test.go`: All 122 items
+- `engine/game_verbs_test.go`: Verb handlers
+- `engine/new_verbs_test.go`: New verb handlers
+- `engine/puzzle_integration_test.go`: Major puzzle sequences
+- `engine/save_test.go`: Save/restore functionality
+- **Total: 200 tests passing, ~80% coverage**
+
+All tests use `t.Logf()` for debug output, so verbose mode (`-v`) will show detailed test information with proper PASS/FAIL indicators.
 
 ## Architecture
 
