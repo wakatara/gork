@@ -1,0 +1,102 @@
+project_name: gork
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - binary: gork
+    main: ./cmd/gork
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    goos:
+      - linux
+      - darwin
+      - freebsd
+      - openbsd
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      # Windows doesn't need all architectures
+      - goos: windows
+        goarch: arm
+      - goos: windows
+        goarch: 386
+
+archives:
+  - name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - ARCHITECTURE.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - name: gork
+    repository:
+      owner: wakatara
+      name: homebrew-tap
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    description: "ZORK I: The Great Underground Empire - Classic 1980s text adventure game ported to Go"
+    homepage: https://github.com/wakatara/gork
+    license: MIT
+    test: |
+      system "#{bin}/gork --version"
+    install: |
+      bin.install "gork"
+
+# Linux packages (RPM, DEB)
+nfpms:
+  - id: gork
+    package_name: gork
+    vendor: wakatara
+    homepage: https://github.com/wakatara/gork
+    maintainer: Daryl Manning <https://github.com/wakatara>
+    description: |
+      ZORK I: The Great Underground Empire - A somewhat faithful Go port of the classic
+      1980s text adventure game from Infocom.
+
+      Experience the original game with all 110 rooms, 122 items, 19 treasures,
+      and face the infamous grue in this modern port written in Go.
+    license: MIT
+    formats:
+      - deb # Debian/Ubuntu
+      - rpm # Red Hat/Fedora/CentOS/openSUSE
+    bindir: /usr/bin
+    section: games
+    priority: optional
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
+    rpm:
+      group: Amusements/Games
+      summary: Classic text adventure game ZORK I ported to Go
+      compression: lzma
