@@ -357,12 +357,12 @@ func TestBlowKnockCommands(t *testing.T) {
 	}
 
 	// Add wooden door to room for knock test
-	woodenDoor := g.Items["wooden-door"]
+	woodenDoor := g.Items["door"]
 	woodenDoor.Location = g.Location
 	room := g.Rooms[g.Location]
-	room.AddItem("wooden-door")
+	room.AddItem("door")
 
-	result = g.Process("knock on wooden door")
+	result = g.Process("knock on door")
 
 	if !strings.Contains(result, "No one answers") {
 		t.Errorf("Expected no answer, got: %s", result)
