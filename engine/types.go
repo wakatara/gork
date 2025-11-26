@@ -41,35 +41,38 @@ type Exit struct {
 
 // Item represents a takeable object in the game
 type Item struct {
-	ID          string
-	Name        string   // Primary name
-	Aliases     []string // Alternative names (lamp/lantern)
-	Description string   // What you see when examining
-	Text        string   // Text content for readable items (books, scrolls, etc)
-	Location    string   // Room ID or "inventory" or container ID
-	Flags       ItemFlags
-	Weight      int
-	Value       int  // For treasures (score)
-	Fuel        int  // For light sources (turns remaining, -1 = infinite)
-	GlowLevel   int  // For sword: 0=not glowing, 1=faint, 2=bright
-	Action      ItemActionHandler
+	ID              string
+	Name            string   // Primary name
+	Aliases         []string // Alternative names (lamp/lantern)
+	Description     string   // What you see when examining (LDESC in ZIL)
+	RoomDescription string   // How it appears in room listing (FDESC in ZIL)
+	Text            string   // Text content for readable items (books, scrolls, etc)
+	Location        string   // Room ID or "inventory" or container ID
+	Flags           ItemFlags
+	Weight          int
+	Value           int  // For treasures (score)
+	Fuel            int  // For light sources (turns remaining, -1 = infinite)
+	GlowLevel       int  // For sword: 0=not glowing, 1=faint, 2=bright
+	Action          ItemActionHandler
 }
 
 // ItemFlags holds boolean flags for items
 type ItemFlags struct {
-	IsTakeable   bool
-	IsContainer  bool
-	IsOpen       bool // For containers
+	IsTakeable    bool
+	IsContainer   bool
+	IsOpen        bool // For containers
 	IsTransparent bool // Can see contents when closed
-	IsReadable   bool
-	IsEdible     bool
-	IsDrinkable  bool
-	IsWeapon     bool
+	IsReadable    bool
+	IsEdible      bool
+	IsDrinkable   bool
+	IsWeapon      bool
 	IsLightSource bool
-	IsLit        bool // For light sources that are on
-	IsTreasure   bool
-	IsWearable   bool
-	IsInvisible  bool // For items that are initially invisible (like pot-of-gold)
+	IsLit         bool // For light sources that are on
+	IsTreasure    bool
+	IsWearable    bool
+	IsInvisible   bool // For items that are initially invisible (like pot-of-gold)
+	NoRoomListing bool // NDESCBIT in ZIL - don't list in room desc (already mentioned in room text)
+	IsBurnable    bool // BURNBIT in ZIL - can be burned
 }
 
 // ItemActionHandler handles item-specific interactions
