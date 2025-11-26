@@ -17,86 +17,98 @@ func InitializeItems(g *GameV2) {
 
 // createTreasures creates all treasure items (VALUE > 0)
 func createTreasures(g *GameV2) {
-	// DIAMOND - 10 points
-	diamond := NewItem("diamond", "huge diamond", "There is an enormous diamond here!")
-	diamond.Aliases = []string{"diamond", "treasure"}
+	// DIAMOND - 10 points - LDESC from ZIL
+	diamond := NewItem("diamond", "huge diamond", "The diamond is perfectly cut and huge.")
+	diamond.Aliases = []string{"diamond", "treasure", "huge", "enormous"}
+	diamond.RoomDescription = "There is an enormous diamond (perfectly cut) here."
 	diamond.Flags.IsTakeable = true
 	diamond.Flags.IsTreasure = true
 	diamond.Value = 10
 	g.Items["diamond"] = diamond
 
 	// EMERALD - 10 points (in buoy) - ZIL TVALUE 10
-	emerald := NewItem("emerald", "large emerald", "There is a large emerald here.")
-	emerald.Aliases = []string{"emerald", "treasure"}
+	emerald := NewItem("emerald", "large emerald", "The emerald is large and beautifully cut.")
+	emerald.Aliases = []string{"emerald", "treasure", "large"}
 	emerald.Location = "buoy"
+	emerald.RoomDescription = "There is a large emerald here."
 	emerald.Flags.IsTakeable = true
 	emerald.Flags.IsTreasure = true
 	emerald.Value = 10 // ZIL: 10
 	g.Items["emerald"] = emerald
 
-	// CHALICE - treasure and container - ZIL TVALUE 5
-	chalice := NewItem("chalice", "chalice", "There is a silver chalice, intricately engraved, here.")
-	chalice.Aliases = []string{"chalice", "cup", "silver", "treasure"}
+	// CHALICE - treasure and container - ZIL TVALUE 5, LDESC from ZIL
+	chalice := NewItem("chalice", "silver chalice", "The chalice is made of silver and intricately engraved.")
+	chalice.Aliases = []string{"chalice", "cup", "silver", "treasure", "engravings"}
 	chalice.Location = "treasure-room"
+	chalice.RoomDescription = "There is a silver chalice, intricately engraved, here."
 	chalice.Flags.IsTakeable = true
 	chalice.Flags.IsTreasure = true
 	chalice.Flags.IsContainer = true
 	chalice.Value = 5 // ZIL: 5
 	g.Items["chalice"] = chalice
 
-	// JADE FIGURINE
-	jade := NewItem("jade", "jade figurine", "There is a precious jade figurine here!")
-	jade.Aliases = []string{"jade", "figurine", "treasure"}
+	// JADE FIGURINE - LDESC from ZIL
+	jade := NewItem("jade", "jade figurine", "The figurine is carved from exquisite jade.")
+	jade.Aliases = []string{"jade", "figurine", "treasure", "exquisite"}
+	jade.RoomDescription = "There is an exquisite jade figurine here."
 	jade.Flags.IsTakeable = true
 	jade.Flags.IsTreasure = true
 	jade.Value = 5
 	g.Items["jade"] = jade
 
-	// BAG OF COINS
-	coins := NewItem("coins", "bag of coins", "There is a bag of coins here.")
-	coins.Aliases = []string{"coins", "bag", "bag-of-coins", "treasure"}
+	// BAG OF COINS - LDESC from ZIL (also known as BAG-OF-COINS in ZIL)
+	coins := NewItem("coins", "bag of coins", "The leather bag is old and bulging with coins.")
+	coins.Aliases = []string{"coins", "bag", "bag-of-coins", "treasure", "leather"}
+	coins.RoomDescription = "An old leather bag, bulging with coins, is here."
 	coins.Flags.IsTakeable = true
 	coins.Flags.IsTreasure = true
 	coins.Value = 5
 	g.Items["coins"] = coins
+	g.Items["bag-of-coins"] = coins // ZIL uses BAG-OF-COINS
 
-	// PAINTING - ZIL TVALUE 6
-	painting := NewItem("painting", "painting", "Fortunately, there is still one chance for you to be a vandal, for on the far wall is a painting.")
-	painting.Aliases = []string{"painting", "treasure"}
+	// PAINTING - ZIL TVALUE 6, FDESC/LDESC from ZIL
+	painting := NewItem("painting", "painting", "It's a painting of unparalleled beauty by a neglected genius.")
+	painting.Aliases = []string{"painting", "treasure", "art", "canvas"}
 	painting.Location = "gallery"
+	painting.RoomDescription = "A painting by a neglected genius is here."
 	painting.Flags.IsTakeable = true
 	painting.Flags.IsTreasure = true
+	painting.Flags.IsBurnable = true // BURNBIT in ZIL
 	painting.Value = 6 // ZIL: 6
 	g.Items["painting"] = painting
 
-	// BRACELET
-	bracelet := NewItem("bracelet", "sapphire bracelet", "There is a sapphire bracelet here.")
-	bracelet.Aliases = []string{"bracelet", "sapphire", "treasure"}
+	// BRACELET - sapphire-encrusted from ZIL
+	bracelet := NewItem("bracelet", "sapphire-encrusted bracelet", "The bracelet is encrusted with sapphires.")
+	bracelet.Aliases = []string{"bracelet", "sapphire", "treasure", "jewel"}
+	bracelet.RoomDescription = "There is a sapphire-encrusted bracelet here."
 	bracelet.Flags.IsTakeable = true
 	bracelet.Flags.IsTreasure = true
 	bracelet.Value = 5
 	g.Items["bracelet"] = bracelet
 
-	// BAUBLE (jeweled egg bauble) - ZIL TVALUE 1
-	bauble := NewItem("bauble", "jeweled bauble", "There is a small jeweled bauble here.")
-	bauble.Aliases = []string{"bauble", "treasure"}
+	// BAUBLE (brass bauble) - ZIL TVALUE 1
+	bauble := NewItem("bauble", "brass bauble", "It's a beautiful brass bauble.")
+	bauble.Aliases = []string{"bauble", "treasure", "brass"}
+	bauble.RoomDescription = "There is a beautiful brass bauble here."
 	bauble.Flags.IsTakeable = true
 	bauble.Flags.IsTreasure = true
 	bauble.Value = 1 // ZIL: 1
 	g.Items["bauble"] = bauble
 
 	// SCARAB
-	scarab := NewItem("scarab", "beautiful scarab", "There is a beautiful scarab here.")
+	scarab := NewItem("scarab", "beautiful scarab", "The scarab is beautifully carved.")
 	scarab.Aliases = []string{"scarab", "treasure"}
+	scarab.RoomDescription = "There is a beautiful scarab here."
 	scarab.Flags.IsTakeable = true
 	scarab.Flags.IsTreasure = true
 	scarab.Value = 5
 	g.Items["scarab"] = scarab
 
-	// POT OF GOLD
-	pot := NewItem("pot-of-gold", "pot of gold", "At the end of the rainbow is a pot of gold.")
+	// POT OF GOLD - FDESC from ZIL, invisible until rainbow solid
+	pot := NewItem("pot-of-gold", "pot of gold", "It's a pot full of gold coins.")
 	pot.Aliases = []string{"pot", "gold", "pot-of-gold", "treasure"}
 	pot.Location = "end-of-rainbow"
+	pot.RoomDescription = "At the end of the rainbow is a pot of gold."
 	pot.Flags.IsTakeable = true
 	pot.Flags.IsTreasure = true
 	pot.Flags.IsInvisible = true // Invisible until rainbow is solidified
@@ -104,10 +116,11 @@ func createTreasures(g *GameV2) {
 	g.Items["pot-of-gold"] = pot
 	g.Rooms["end-of-rainbow"].AddItem("pot-of-gold")
 
-	// TRIDENT - ZIL TVALUE 11
-	trident := NewItem("trident", "crystal trident", "There is a crystal trident here.")
-	trident.Aliases = []string{"trident", "crystal", "treasure"}
+	// TRIDENT - ZIL TVALUE 11, FDESC from ZIL
+	trident := NewItem("trident", "crystal trident", "It's Poseidon's own crystal trident, a weapon of great power.")
+	trident.Aliases = []string{"trident", "crystal", "treasure", "fork", "poseidon"}
 	trident.Location = "falls"
+	trident.RoomDescription = "On the shore lies Poseidon's own crystal trident."
 	trident.Flags.IsTakeable = true
 	trident.Flags.IsTreasure = true
 	trident.Flags.IsWeapon = true
@@ -115,43 +128,49 @@ func createTreasures(g *GameV2) {
 	g.Items["trident"] = trident
 
 	// SCEPTRE - ZIL TVALUE 6
-	sceptre := NewItem("sceptre", "sceptre", "There is a sceptre, probably that of ancient Egypt itself, here.")
+	sceptre := NewItem("sceptre", "sceptre", "The sceptre is encrusted with jewels and appears to be from ancient Egypt.")
 	sceptre.Aliases = []string{"sceptre", "scepter", "treasure"}
+	sceptre.RoomDescription = "There is a sceptre, probably that of ancient Egypt itself, here."
 	sceptre.Flags.IsTakeable = true
 	sceptre.Flags.IsTreasure = true
 	sceptre.Flags.IsWeapon = true
 	sceptre.Value = 6 // ZIL: 6
 	g.Items["sceptre"] = sceptre
 
-	// EGG (containing bauble) - treasure
-	egg := NewItem("egg", "jeweled egg", "There is a large nest here, with a jeweled egg resting in it.")
-	egg.Aliases = []string{"egg", "treasure"}
+	// EGG (containing bauble) - treasure, FDESC from ZIL
+	egg := NewItem("egg", "jewel-encrusted egg", "The egg is covered with jewels and has a golden clasp. It appears extremely fragile.")
+	egg.Aliases = []string{"egg", "treasure", "jeweled", "encrusted", "birds"}
 	egg.Location = "nest"
+	egg.RoomDescription = "There is a jewel-encrusted egg here."
 	egg.Flags.IsTakeable = true
 	egg.Flags.IsContainer = true
 	egg.Flags.IsTreasure = true
 	egg.Value = 5
 	g.Items["egg"] = egg
 
-	// PLATINUM BAR - ZIL TVALUE 5
-	platinumBar := NewItem("platinum-bar", "platinum bar", "There is a bar of platinum here.")
-	platinumBar.Aliases = []string{"bar", "platinum", "platinum-bar", "treasure"}
+	// PLATINUM BAR - ZIL TVALUE 5, LDESC from ZIL (also known as BAR in ZIL)
+	platinumBar := NewItem("platinum-bar", "platinum bar", "It's a large bar of solid platinum.")
+	platinumBar.Aliases = []string{"bar", "platinum", "platinum-bar", "treasure", "large"}
+	platinumBar.RoomDescription = "On the ground is a large platinum bar."
 	platinumBar.Flags.IsTakeable = true
 	platinumBar.Flags.IsTreasure = true
 	platinumBar.Value = 5 // ZIL: 5
 	g.Items["platinum-bar"] = platinumBar
+	g.Items["bar"] = platinumBar // ZIL uses BAR
 
 	// SAPPHIRE - 5 points
-	sapphire := NewItem("sapphire", "large sapphire", "There is a large sapphire here.")
-	sapphire.Aliases = []string{"sapphire", "gem", "treasure"}
+	sapphire := NewItem("sapphire", "large sapphire", "It's a large, brilliantly cut sapphire.")
+	sapphire.Aliases = []string{"sapphire", "gem", "treasure", "large"}
+	sapphire.RoomDescription = "There is a large sapphire here."
 	sapphire.Flags.IsTakeable = true
 	sapphire.Flags.IsTreasure = true
 	sapphire.Value = 5
 	g.Items["sapphire"] = sapphire
 
-	// IVORY TORCH - 6 points
-	ivoryTorch := NewItem("ivory-torch", "ivory torch", "There is an ivory torch here.")
-	ivoryTorch.Aliases = []string{"ivory-torch", "ivory", "torch", "treasure"}
+	// IVORY TORCH - 6 points, FDESC from ZIL
+	ivoryTorch := NewItem("ivory-torch", "ivory torch", "The torch is made of ivory and burns with an eternal flame.")
+	ivoryTorch.Aliases = []string{"ivory-torch", "ivory", "torch", "treasure", "flaming"}
+	ivoryTorch.RoomDescription = "Sitting on the pedestal is a flaming torch, made of ivory."
 	ivoryTorch.Flags.IsTakeable = true
 	ivoryTorch.Flags.IsTreasure = true
 	ivoryTorch.Flags.IsLightSource = true
@@ -160,18 +179,21 @@ func createTreasures(g *GameV2) {
 	ivoryTorch.Value = 6
 	g.Items["ivory-torch"] = ivoryTorch
 
-	// TRUNK OF JEWELS - ZIL TVALUE 5
-	trunkOfJewels := NewItem("trunk-of-jewels", "trunk of jewels", "There is a jewel-encrusted trunk here.")
-	trunkOfJewels.Aliases = []string{"trunk", "jewels", "trunk-of-jewels", "treasure"}
+	// TRUNK OF JEWELS - ZIL TVALUE 5, FDESC/LDESC from ZIL
+	trunkOfJewels := NewItem("trunk-of-jewels", "trunk of jewels", "The old trunk is bulging with assorted jewels.")
+	trunkOfJewels.Aliases = []string{"trunk", "jewels", "trunk-of-jewels", "treasure", "old"}
+	trunkOfJewels.RoomDescription = "There is an old trunk here, bulging with assorted jewels."
 	trunkOfJewels.Flags.IsTakeable = true
 	trunkOfJewels.Flags.IsTreasure = true
 	trunkOfJewels.Flags.IsContainer = true
+	trunkOfJewels.Flags.IsInvisible = true // INVISIBLE in ZIL initially
 	trunkOfJewels.Value = 5 // ZIL: 5
 	g.Items["trunk-of-jewels"] = trunkOfJewels
 
 	// PEARL - 1 point
-	pearl := NewItem("pearl", "large pearl", "There is an enormous pearl resting in an open clam here.")
-	pearl.Aliases = []string{"pearl", "treasure"}
+	pearl := NewItem("pearl", "large pearl", "It's an enormous, lustrous pearl.")
+	pearl.Aliases = []string{"pearl", "treasure", "large", "enormous"}
+	pearl.RoomDescription = "There is an enormous pearl resting in an open clam here."
 	pearl.Flags.IsTakeable = true
 	pearl.Flags.IsTreasure = true
 	pearl.Value = 1
@@ -183,25 +205,29 @@ func createTreasures(g *GameV2) {
 
 // createWeapons creates all weapon items
 func createWeapons(g *GameV2) {
-	// SWORD (elvish)
-	sword := NewItem("sword", "elvish sword", "There is an elvish sword here.")
-	sword.Aliases = []string{"sword", "blade", "elvish"}
+	// SWORD (elvish) - FDESC from ZIL line 923, SWORD-FCN shows glow when examining
+	sword := NewItem("sword", "elvish sword", "The sword is well crafted.")
+	sword.Aliases = []string{"sword", "blade", "elvish", "orcrist", "glamdring"}
+	sword.RoomDescription = "Above the trophy case hangs an elvish sword of great antiquity."
 	sword.Location = "living-room"
 	sword.Flags.IsTakeable = true
 	sword.Flags.IsWeapon = true
 	g.Items["sword"] = sword
 	g.Rooms["living-room"].AddItem("sword")
 
-	// KNIFE
-	knife := NewItem("knife", "knife", "There is a knife here.")
-	knife.Aliases = []string{"knife"}
+	// KNIFE - FDESC from ZIL, nasty-looking knife on attic table (container item)
+	knife := NewItem("knife", "nasty knife", "It's a nasty-looking knife.")
+	knife.Aliases = []string{"knife", "knives", "blade", "nasty", "unrusty"}
+	knife.Location = "attic-table" // IN attic-table container
+	knife.RoomDescription = "On a table is a nasty-looking knife."
 	knife.Flags.IsTakeable = true
 	knife.Flags.IsWeapon = true
 	g.Items["knife"] = knife
 
-	// RUSTY KNIFE
-	rustyKnife := NewItem("rusty-knife", "rusty knife", "There is a rusty knife here.")
-	rustyKnife.Aliases = []string{"rusty-knife", "knife", "rusty"}
+	// RUSTY KNIFE - FDESC from ZIL, beside skeleton in maze
+	rustyKnife := NewItem("rusty-knife", "rusty knife", "It's an old rusty knife.")
+	rustyKnife.Aliases = []string{"rusty-knife", "knife", "rusty", "knives"}
+	rustyKnife.RoomDescription = "Beside the skeleton is a rusty knife."
 	rustyKnife.Flags.IsTakeable = true
 	rustyKnife.Flags.IsWeapon = true
 	g.Items["rusty-knife"] = rustyKnife
@@ -253,9 +279,11 @@ func createTools(g *GameV2) {
 	shovel.Flags.IsTakeable = true
 	g.Items["shovel"] = shovel
 
-	// ROPE
-	rope := NewItem("rope", "rope", "There is a rope here.")
-	rope.Aliases = []string{"rope"}
+	// ROPE - FDESC from ZIL, large coil in attic corner
+	rope := NewItem("rope", "rope", "It's a large coil of strong hemp rope.")
+	rope.Aliases = []string{"rope", "hemp", "coil", "large"}
+	rope.Location = "attic"
+	rope.RoomDescription = "A large coil of rope is lying in the corner."
 	rope.Flags.IsTakeable = true
 	g.Items["rope"] = rope
 }
@@ -272,28 +300,32 @@ func createContainers(g *GameV2) {
 	g.Items["mailbox"] = mailbox
 	g.Rooms["west-of-house"].AddItem("mailbox")
 
-	// TROPHY CASE (in living room)
-	trophyCase := NewItem("trophy-case", "trophy case", "There is a trophy case here.")
+	// TROPHY CASE (in living room) - NDESCBIT means it's described in room description
+	trophyCase := NewItem("trophy-case", "trophy case", "The trophy case is securely fastened to the wall.")
 	trophyCase.Aliases = []string{"case", "trophy-case", "trophy"}
 	trophyCase.Location = "living-room"
 	trophyCase.Flags.IsContainer = true
 	trophyCase.Flags.IsOpen = false
 	trophyCase.Flags.IsTransparent = true
+	trophyCase.Flags.NoRoomListing = true // NDESCBIT - don't list separately, it's mentioned in room desc
 	g.Items["trophy-case"] = trophyCase
 	g.Rooms["living-room"].AddItem("trophy-case")
 
-	// BOTTLE (glass bottle)
-	bottle := NewItem("bottle", "glass bottle", "There is a glass bottle here.")
-	bottle.Aliases = []string{"bottle", "glass"}
+	// BOTTLE (glass bottle) - FDESC from ZIL, on kitchen table
+	bottle := NewItem("bottle", "glass bottle", "It's a clear glass bottle that can hold liquids.")
+	bottle.Aliases = []string{"bottle", "glass", "clear", "container"}
+	bottle.Location = "kitchen-table"
+	bottle.RoomDescription = "A bottle is sitting on the table."
 	bottle.Flags.IsTakeable = true
 	bottle.Flags.IsContainer = true
 	bottle.Flags.IsTransparent = true
 	g.Items["bottle"] = bottle
 
-	// COFFIN - ZIL TVALUE 15 (treasure!)
-	coffin := NewItem("coffin", "coffin", "There is a coffin here.")
-	coffin.Aliases = []string{"coffin", "treasure"}
+	// COFFIN - ZIL TVALUE 15 (treasure!), LDESC from ZIL
+	coffin := NewItem("coffin", "gold coffin", "The solid-gold coffin is used for the burial of Ramses II and is intricately decorated.")
+	coffin.Aliases = []string{"coffin", "treasure", "casket", "solid", "gold"}
 	coffin.Location = "egypt-room"
+	coffin.RoomDescription = "The solid-gold coffin used for the burial of Ramses II is here."
 	coffin.Flags.IsTakeable = true
 	coffin.Flags.IsContainer = true
 	coffin.Flags.IsOpen = false
@@ -316,10 +348,11 @@ func createContainers(g *GameV2) {
 	largeBag.Flags.IsContainer = true
 	g.Items["large-bag"] = largeBag
 
-	// NEST (bird's nest containing egg)
-	nest := NewItem("nest", "bird's nest", "There is a bird's nest here.")
-	nest.Aliases = []string{"nest"}
+	// NEST (bird's nest containing egg) - FDESC from ZIL
+	nest := NewItem("nest", "bird's nest", "It's a small bird's nest.")
+	nest.Aliases = []string{"nest", "birds"}
 	nest.Location = "up-a-tree"
+	nest.RoomDescription = "Beside you on the branch is a small bird's nest."
 	nest.Flags.IsTakeable = true
 	nest.Flags.IsContainer = true
 	nest.Flags.IsOpen = true
@@ -350,12 +383,13 @@ func createContainers(g *GameV2) {
 
 // createReadableItems creates all readable items
 func createReadableItems(g *GameV2) {
-	// LEAFLET (in mailbox)
+	// LEAFLET (in mailbox) - LDESC from ZIL
 	leaflet := NewItem("leaflet", "leaflet", `"WELCOME TO ZORK!
 
 ZORK is a game of adventure, danger, and low cunning. In it you will explore some of the most amazing territory ever seen by mortals. No computer should be without one!"`)
-	leaflet.Aliases = []string{"leaflet", "pamphlet", "booklet"}
+	leaflet.Aliases = []string{"leaflet", "pamphlet", "booklet", "advertisement", "mail", "small"}
 	leaflet.Location = "mailbox"
+	leaflet.RoomDescription = "A small leaflet is on the ground."
 	leaflet.Flags.IsTakeable = true
 	leaflet.Flags.IsReadable = true
 	g.Items["leaflet"] = leaflet
@@ -424,9 +458,10 @@ Surely thou shalt repent of thy cunning.`
 
 // createLightSources creates items that provide light
 func createLightSources(g *GameV2) {
-	// LAMP (brass lantern) - starts with 330 turns of fuel (ZIL: 100+70+15+145)
-	lamp := NewItem("lamp", "brass lantern", "The brass lantern is on.")
+	// LAMP (brass lantern) - FDESC/LDESC from ZIL, starts with 330 turns of fuel
+	lamp := NewItem("lamp", "brass lantern", "The brass lantern is battery-powered. It is currently on.")
 	lamp.Aliases = []string{"lamp", "lantern", "light"}
+	lamp.RoomDescription = "A battery-powered brass lantern is on the trophy case."
 	lamp.Location = "living-room"
 	lamp.Flags.IsTakeable = true
 	lamp.Flags.IsLightSource = true
@@ -444,10 +479,11 @@ func createLightSources(g *GameV2) {
 	torch.Flags.IsLit = true
 	g.Items["torch"] = torch
 
-	// CANDLES - burn time from I-CANDLES in ZIL line 2641 (40 turns)
-	candles := NewItem("candles", "pair of candles", "There is a pair of candles here.")
-	candles.Aliases = []string{"candles", "candle"}
+	// CANDLES - FDESC from ZIL, burn time from I-CANDLES in ZIL line 2641 (40 turns)
+	candles := NewItem("candles", "pair of candles", "They are burning candles.")
+	candles.Aliases = []string{"candles", "candle", "pair", "burning"}
 	candles.Location = "entrance-to-hades"
+	candles.RoomDescription = "On the two ends of the altar are burning candles."
 	candles.Flags.IsTakeable = true
 	candles.Flags.IsLightSource = true
 	candles.Flags.IsLit = false
@@ -498,12 +534,13 @@ func createFixedObjects(g *GameV2) {
 	g.Items["kitchen-window"] = window
 	g.Rooms["behind-house"].AddItem("kitchen-window")
 
-	// RUG (conceals trap door)
-	rug := NewItem("rug", "oriental rug", "There is a large oriental rug here.")
-	rug.Aliases = []string{"rug", "oriental-rug", "treasure"}
+	// RUG (conceals trap door) - NDESCBIT, mentioned in room description
+	rug := NewItem("rug", "oriental rug", "The rug is extremely heavy and cannot be carried.")
+	rug.Aliases = []string{"rug", "oriental-rug", "carpet", "treasure"}
 	rug.Location = "living-room"
 	rug.Flags.IsTakeable = true // Can be taken once trap door is opened
 	rug.Flags.IsTreasure = true
+	rug.Flags.NoRoomListing = true // NDESCBIT - mentioned in room description
 	rug.Value = 15
 	g.Items["rug"] = rug
 	g.Rooms["living-room"].AddItem("rug")
@@ -624,11 +661,12 @@ func createSceneryObjects(g *GameV2) {
 	forest.Flags.IsTakeable = false
 	g.Items["forest"] = forest
 
-	// MOUNTAIN RANGE
+	// MOUNTAIN RANGE (also MOUNTAIN-RANGE in ZIL)
 	mountains := NewItem("mountains", "mountain range", "The mountains are impassable.")
-	mountains.Aliases = []string{"mountains", "mountain", "range"}
+	mountains.Aliases = []string{"mountains", "mountain", "range", "mountain-range"}
 	mountains.Flags.IsTakeable = false
 	g.Items["mountains"] = mountains
+	g.Items["mountain-range"] = mountains // ZIL uses MOUNTAIN-RANGE
 
 	// RAINBOW
 	rainbow := NewItem("rainbow", "rainbow", "The rainbow seems to have its foot in the vicinity of the building.")
@@ -661,15 +699,221 @@ func createSceneryObjects(g *GameV2) {
 	sand.Aliases = []string{"sand"}
 	sand.Flags.IsTakeable = false
 	g.Items["sand"] = sand
+
+	// CHIMNEY - LOCAL-GLOBALS object (accessible from kitchen and living room)
+	chimney := NewItem("chimney", "chimney", "The chimney is dark and narrow. It leads downward into darkness.")
+	chimney.Aliases = []string{"chimney", "dark", "narrow"}
+	chimney.Location = "GLOBAL" // Global object
+	chimney.Flags.IsTakeable = false
+	chimney.Flags.NoRoomListing = true // NDESCBIT - mentioned in room descriptions
+	g.Items["chimney"] = chimney
+	// Add to both kitchen and living-room
+	g.Rooms["kitchen"].AddItem("chimney")
+	g.Rooms["living-room"].AddItem("chimney")
+
+	// KITCHEN TABLE - NDESCBIT, mentioned in room description
+	kitchenTable := NewItem("kitchen-table", "kitchen table", "It's an ordinary kitchen table.")
+	kitchenTable.Aliases = []string{"table", "kitchen-table", "kitchen"}
+	kitchenTable.Location = "kitchen"
+	kitchenTable.Flags.IsTakeable = false
+	kitchenTable.Flags.IsContainer = true
+	kitchenTable.Flags.IsOpen = true
+	kitchenTable.Flags.NoRoomListing = true // NDESCBIT - mentioned in room description
+	g.Items["kitchen-table"] = kitchenTable
+	g.Rooms["kitchen"].AddItem("kitchen-table")
+
+	// ATTIC TABLE - NDESCBIT
+	atticTable := NewItem("attic-table", "table", "It's a small wooden table.")
+	atticTable.Aliases = []string{"table", "attic-table"}
+	atticTable.Location = "attic"
+	atticTable.Flags.IsTakeable = false
+	atticTable.Flags.IsContainer = true
+	atticTable.Flags.IsOpen = true
+	atticTable.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["attic-table"] = atticTable
+	g.Rooms["attic"].AddItem("attic-table")
+
+	// BOARD - LOCAL-GLOBALS scenery object
+	board := NewItem("board", "board", "The boards appear to be nailed securely across the windows.")
+	board.Aliases = []string{"boards", "board"}
+	board.Location = "GLOBAL"
+	board.Flags.IsTakeable = false
+	board.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["board"] = board
+
+	// TREE - LOCAL-GLOBALS scenery object
+	tree := NewItem("tree", "tree", "The trees are large and storm-tossed.")
+	tree.Aliases = []string{"tree", "branch", "trees", "large", "storm"}
+	tree.Location = "GLOBAL"
+	tree.Flags.IsTakeable = false
+	tree.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["tree"] = tree
+
+	// CRACK - LOCAL-GLOBALS scenery object
+	crack := NewItem("crack", "crack", "It's a narrow crack in the wall.")
+	crack.Aliases = []string{"crack", "narrow"}
+	crack.Location = "GLOBAL"
+	crack.Flags.IsTakeable = false
+	crack.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["crack"] = crack
+
+	// CLIMBABLE-CLIFF - LOCAL-GLOBALS scenery object
+	climbableCliff := NewItem("climbable-cliff", "cliff", "The rocky cliff face is steep but appears climbable.")
+	climbableCliff.Aliases = []string{"wall", "cliff", "walls", "ledge", "rocky", "sheer"}
+	climbableCliff.Location = "GLOBAL"
+	climbableCliff.Flags.IsTakeable = false
+	climbableCliff.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["climbable-cliff"] = climbableCliff
+
+	// WHITE-CLIFF - LOCAL-GLOBALS scenery object
+	whiteCliff := NewItem("white-cliff", "white cliffs", "The White Cliffs of Quendor are massive ramparts of white stone.")
+	whiteCliff.Aliases = []string{"cliff", "cliffs", "white"}
+	whiteCliff.Location = "GLOBAL"
+	whiteCliff.Flags.IsTakeable = false
+	whiteCliff.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["white-cliff"] = whiteCliff
+
+	// WALL - GLOBAL-OBJECTS scenery
+	wall := NewItem("wall", "surrounding wall", "The walls surround you on all sides.")
+	wall.Aliases = []string{"wall", "walls", "surrounding"}
+	wall.Location = "GLOBAL"
+	wall.Flags.IsTakeable = false
+	wall.Flags.NoRoomListing = true
+	g.Items["wall"] = wall
+
+	// SONGBIRD - LOCAL-GLOBALS scenery object
+	songbird := NewItem("songbird", "songbird", "It's a beautiful songbird, singing merrily.")
+	songbird.Aliases = []string{"bird", "songbird", "song"}
+	songbird.Location = "GLOBAL"
+	songbird.Flags.IsTakeable = false
+	songbird.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["songbird"] = songbird
+
+	// BOARDED-WINDOW - LOCAL-GLOBALS scenery object
+	boardedWindow := NewItem("boarded-window", "boarded window", "The window is boarded up securely.")
+	boardedWindow.Aliases = []string{"window", "boarded"}
+	boardedWindow.Location = "GLOBAL"
+	boardedWindow.Flags.IsTakeable = false
+	boardedWindow.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["boarded-window"] = boardedWindow
+
+	// FRONT-DOOR - At west-of-house
+	frontDoor := NewItem("front-door", "door", "The front door is boarded and can't be opened.")
+	frontDoor.Aliases = []string{"door", "front", "boarded", "front-door"}
+	frontDoor.Location = "west-of-house"
+	frontDoor.Flags.IsTakeable = false
+	frontDoor.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["front-door"] = frontDoor
+	g.Rooms["west-of-house"].AddItem("front-door")
+
+	// BARROW-DOOR - At stone-barrow
+	barrowDoor := NewItem("barrow-door", "stone door", "It's a huge stone door.")
+	barrowDoor.Aliases = []string{"door", "huge", "stone", "barrow-door"}
+	barrowDoor.Flags.IsTakeable = false
+	barrowDoor.Flags.IsOpen = true
+	barrowDoor.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["barrow-door"] = barrowDoor
+
+	// BARROW - At stone-barrow
+	barrow := NewItem("barrow", "stone barrow", "The barrow is a massive stone structure.")
+	barrow.Aliases = []string{"barrow", "tomb", "massive", "stone"}
+	barrow.Flags.IsTakeable = false
+	barrow.Flags.NoRoomListing = true // NDESCBIT
+	g.Items["barrow"] = barrow
+
+	// Additional scenery objects from ZIL
+
+	// TEETH - GLOBAL-OBJECTS
+	teeth := NewItem("teeth", "set of teeth", "They're a set of sharp, menacing teeth.")
+	teeth.Aliases = []string{"teeth", "overboard"}
+	teeth.Location = "GLOBAL"
+	teeth.Flags.IsTakeable = false
+	teeth.Flags.NoRoomListing = true
+	g.Items["teeth"] = teeth
+
+	// GLOBAL-WATER - LOCAL-GLOBALS water (different from bottle water)
+	globalWater := NewItem("global-water", "water", "The water is flowing and appears drinkable.")
+	globalWater.Aliases = []string{"water", "stream"}
+	globalWater.Location = "GLOBAL"
+	globalWater.Flags.IsTakeable = false
+	globalWater.Flags.NoRoomListing = true
+	g.Items["global-water"] = globalWater
+
+	// BODIES - LOCAL-GLOBALS pile of bodies
+	bodies := NewItem("bodies", "pile of bodies", "It's a gruesome pile of bodies.")
+	bodies.Aliases = []string{"bodies", "pile", "corpses"}
+	bodies.Location = "GLOBAL"
+	bodies.Flags.IsTakeable = false
+	bodies.Flags.NoRoomListing = true
+	g.Items["bodies"] = bodies
+
+	// DAM - DAM-ROOM scenery
+	dam := NewItem("dam", "dam", "The dam is a massive structure controlling the flow of water.")
+	dam.Aliases = []string{"dam", "structure"}
+	dam.Flags.IsTakeable = false
+	dam.Flags.NoRoomListing = true
+	g.Items["dam"] = dam
+
+	// LEAK - MAINTENANCE-ROOM scenery
+	leak := NewItem("leak", "leak", "There's a small leak dripping water.")
+	leak.Aliases = []string{"leak", "drip"}
+	leak.Flags.IsTakeable = false
+	leak.Flags.NoRoomListing = true
+	g.Items["leak"] = leak
+
+	// CONTROL-PANEL - DAM-ROOM scenery
+	controlPanel := NewItem("control-panel", "control panel", "The control panel has various buttons and switches.")
+	controlPanel.Aliases = []string{"control-panel", "panel", "controls"}
+	controlPanel.Flags.IsTakeable = false
+	controlPanel.Flags.NoRoomListing = true
+	g.Items["control-panel"] = controlPanel
+
+	// MACHINE-SWITCH - MACHINE-ROOM
+	machineSwitch := NewItem("machine-switch", "switch", "It's a large switch on the machine.")
+	machineSwitch.Aliases = []string{"switch", "machine-switch"}
+	machineSwitch.Flags.IsTakeable = false
+	machineSwitch.Flags.NoRoomListing = true
+	g.Items["machine-switch"] = machineSwitch
+
+	// BOLT - DAM-ROOM
+	bolt := NewItem("bolt", "bolt", "It's a large metal bolt.")
+	bolt.Aliases = []string{"bolt"}
+	bolt.Flags.IsTakeable = true
+	g.Items["bolt"] = bolt
+
+	// BUBBLE - DAM-ROOM
+	bubble := NewItem("bubble", "green bubble", "It's a strange green bubble.")
+	bubble.Aliases = []string{"bubble", "green"}
+	bubble.Flags.IsTakeable = false
+	g.Items["bubble"] = bubble
+
+	// BROKEN-LAMP
+	brokenLamp := NewItem("broken-lamp", "broken lantern", "The lantern is broken and useless.")
+	brokenLamp.Aliases = []string{"broken-lamp", "broken", "lantern"}
+	brokenLamp.Flags.IsTakeable = true
+	g.Items["broken-lamp"] = brokenLamp
+
+	// HOT-BELL
+	hotBell := NewItem("hot-bell", "red hot brass bell", "The bell is glowing red hot. Don't touch it!")
+	hotBell.Aliases = []string{"hot-bell", "bell", "red", "hot", "brass"}
+	hotBell.Flags.IsTakeable = false
+	g.Items["hot-bell"] = hotBell
+
+	// GUNK
+	gunk := NewItem("gunk", "small piece of vitreous slag", "It's a small, glassy piece of slag.")
+	gunk.Aliases = []string{"gunk", "slag", "vitreous"}
+	gunk.Flags.IsTakeable = true
+	g.Items["gunk"] = gunk
 }
 
 // createMiscItems creates various other items
 func createMiscItems(g *GameV2) {
-	// INFLATABLE BOAT
+	// INFLATABLE BOAT (also INFLATABLE-BOAT in ZIL)
 	boat := NewItem("boat", "inflatable boat", "There is an inflatable boat here.")
-	boat.Aliases = []string{"boat", "inflatable-boat", "raft"}
+	boat.Aliases = []string{"boat", "inflatable-boat", "raft", "pile", "plastic"}
 	boat.Flags.IsTakeable = true
 	g.Items["boat"] = boat
+	g.Items["inflatable-boat"] = boat // ZIL uses INFLATABLE-BOAT
 
 	// INFLATED BOAT (boat when inflated)
 	inflatedBoat := NewItem("inflated-boat", "inflated boat", "There is an inflated boat here.")
@@ -683,9 +927,10 @@ func createMiscItems(g *GameV2) {
 	puncturedBoat.Flags.IsTakeable = true
 	g.Items["punctured-boat"] = puncturedBoat
 
-	// SKULL - ZIL TVALUE 10 (treasure!)
-	skull := NewItem("skull", "skull", "There is a skull here.")
-	skull.Aliases = []string{"skull", "treasure"}
+	// SKULL - ZIL TVALUE 10 (treasure!) - crystal skull from LAND-OF-LIVING-DEAD
+	skull := NewItem("skull", "crystal skull", "The crystal skull is beautifully carved and grinning rather nastily.")
+	skull.Aliases = []string{"skull", "head", "treasure", "crystal"}
+	skull.RoomDescription = "Lying in one corner of the room is a beautifully carved crystal skull. It appears to be grinning at you rather nastily."
 	skull.Flags.IsTakeable = true
 	skull.Flags.IsTreasure = true
 	skull.Value = 10 // ZIL: 10
@@ -743,10 +988,11 @@ func createMiscItems(g *GameV2) {
 	buoy.Flags.IsTakeable = false
 	g.Items["buoy"] = buoy
 
-	// RAISED BASKET (starts at shaft-room, raised to ceiling)
-	raisedBasket := NewItem("raised-basket", "wicker basket", "There is a large wicker basket here, raised to the ceiling.")
-	raisedBasket.Aliases = []string{"basket", "wicker-basket", "raised-basket"}
+	// RAISED BASKET (starts at shaft-room, raised to ceiling) - LDESC from ZIL
+	raisedBasket := NewItem("raised-basket", "basket", "It's a wicker basket suspended from a chain.")
+	raisedBasket.Aliases = []string{"basket", "wicker-basket", "raised-basket", "cage", "dumbwaiter"}
 	raisedBasket.Location = "shaft-room"
+	raisedBasket.RoomDescription = "At the end of the chain is a basket."
 	raisedBasket.Flags.IsTakeable = false
 	raisedBasket.Flags.IsContainer = true
 	raisedBasket.Flags.IsOpen = true
@@ -754,9 +1000,10 @@ func createMiscItems(g *GameV2) {
 	g.Items["raised-basket"] = raisedBasket
 	g.Rooms["shaft-room"].AddItem("raised-basket")
 
-	// LOWERED BASKET (appears when basket is lowered)
-	loweredBasket := NewItem("lowered-basket", "wicker basket", "There is a large wicker basket here.")
-	loweredBasket.Aliases = []string{"basket", "wicker-basket", "lowered-basket"}
+	// LOWERED BASKET (appears when basket is lowered) - LDESC from ZIL
+	loweredBasket := NewItem("lowered-basket", "basket", "It's a wicker basket suspended from a chain.")
+	loweredBasket.Aliases = []string{"basket", "wicker-basket", "lowered-basket", "cage", "dumbwaiter"}
+	loweredBasket.RoomDescription = "From the chain is suspended a basket."
 	loweredBasket.Flags.IsTakeable = false
 	loweredBasket.Flags.IsContainer = true
 	loweredBasket.Flags.IsOpen = true
@@ -771,8 +1018,9 @@ func createMiscItems(g *GameV2) {
 	g.Items["prayer"] = prayer
 
 	// KEYS
-	keys := NewItem("keys", "set of keys", "There is a set of keys here.")
+	keys := NewItem("keys", "set of keys", "It's just a normal set of keys.")
 	keys.Aliases = []string{"keys", "key"}
+	keys.RoomDescription = "There is a set of keys here."
 	keys.Flags.IsTakeable = true
 	keys.Location = "living-room"
 	g.Items["keys"] = keys
@@ -927,20 +1175,17 @@ func createMiscItems(g *GameV2) {
 	graniteWall.Flags.IsTakeable = false
 	g.Items["granite-wall"] = graniteWall
 
-	// WOODEN DOOR
-	// NAILED DOOR (gothic door in living room - permanently sealed)
-	nailedDoor := NewItem("door", "wooden door with strange gothic lettering", "The door is solidly nailed shut and cannot be opened.")
-	nailedDoor.Aliases = []string{"door", "front-door", "entrance", "gothic-door", "nailed-door"}
-	nailedDoor.Location = "living-room"
-	nailedDoor.Flags.IsTakeable = false
-	g.Items["door"] = nailedDoor
-	g.Rooms["living-room"].AddItem("door")
-
-	// WOODEN DOOR
-	woodenDoor := NewItem("wooden-door", "wooden door", "There is a wooden door here.")
-	woodenDoor.Aliases = []string{"wooden-door"}
+	// WOODEN DOOR with gothic lettering (in living room) - NDESCBIT, mentioned in room description
+	woodenDoor := NewItem("door", "wooden door with strange gothic lettering", "The engravings translate to \"This space intentionally left blank.\"")
+	woodenDoor.Aliases = []string{"wooden-door", "door", "lettering", "writing", "front-door", "entrance", "gothic-door"}
+	woodenDoor.Location = "living-room"
 	woodenDoor.Flags.IsTakeable = false
-	g.Items["wooden-door"] = woodenDoor
+	woodenDoor.Flags.IsReadable = true
+	woodenDoor.Flags.NoRoomListing = true // NDESCBIT - mentioned in room description
+	woodenDoor.Text = "The engravings translate to \"This space intentionally left blank.\""
+	g.Items["door"] = woodenDoor
+	g.Items["wooden-door"] = woodenDoor // ZIL uses WOODEN-DOOR
+	g.Rooms["living-room"].AddItem("door")
 
 	// IRON DOOR
 	ironDoor := NewItem("iron-door", "iron door", "There is an iron door here.")
