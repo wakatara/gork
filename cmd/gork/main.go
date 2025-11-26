@@ -10,12 +10,38 @@ import (
 	"github.com/wakatara/gork/ui"
 )
 
+// version is set by GoReleaser at build time
+var version = "dev"
+
 func main() {
+	// Handle flags
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "--version", "-version", "-v":
+			fmt.Printf("gork version %s\n", version)
+			fmt.Println("ZORK I: The Great Underground Empire")
+			fmt.Println("Go Edition - https://github.com/wakatara/gork")
+			return
+		case "--help", "-help", "-h":
+			fmt.Println("GORK - ZORK I: The Great Underground Empire (Go Edition)")
+			fmt.Println()
+			fmt.Println("Usage:")
+			fmt.Println("  gork              Start the game")
+			fmt.Println("  gork --version    Show version information")
+			fmt.Println("  gork --help       Show this help message")
+			fmt.Println()
+			fmt.Println("In-game commands:")
+			fmt.Println("  Type 'help' in the game for available commands")
+			fmt.Println("  Type 'quit' to exit the game")
+			return
+		}
+	}
+
 	// Display title
 	ui.PrintTitle()
 
 	// Create new game with refactored types
-	game := engine.NewGameV2()
+	game := engine.NewGameV2(version)
 
 	// Display initial message
 	ui.PrintSlow(game.GetInitialMessage())
