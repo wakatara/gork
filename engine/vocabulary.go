@@ -28,106 +28,184 @@ func NewVocabulary() *Vocabulary {
 }
 
 // initVerbs initializes verb synonyms from ZIL's syntax definitions (gsyntax.zil)
+// Complete implementation with all ZIL verb synonyms
 func (v *Vocabulary) initVerbs() {
-	// Movement verbs (V?WALK)
-	v.addVerb("walk", "walk", "go", "run", "proceed")
-
-	// Manipulation verbs (V?TAKE, V?DROP, etc.)
-	v.addVerb("take", "take", "get", "grab", "carry", "hold")
-	v.addVerb("take", "pick up") // multi-word: "pick up" -> "take"
-	v.addVerb("drop", "drop", "release", "discard")
-	v.addVerb("drop", "put down") // multi-word: "put down" -> "drop"
-
-	// Examination verbs (V?EXAMINE, V?LOOK)
-	v.addVerb("examine", "examine", "x", "inspect", "describe", "what")
-	v.addVerb("examine", "look at") // multi-word: "look at" -> "examine"
-	v.addVerb("look", "look", "l")
-
-	// Container interaction (V?OPEN, V?CLOSE)
-	v.addVerb("open", "open", "unlock")
-	v.addVerb("close", "close", "shut")
-
-	// Reading (V?READ)
-	v.addVerb("read", "read", "peruse")
-
-	// Inventory (V?INVENTORY)
+	// System commands (V-VERBOSE, V-BRIEF, V-SUPER-BRIEF, etc.)
+	v.addVerb("verbose", "verbose", "long")
+	v.addVerb("brief", "brief", "normal")
+	v.addVerb("superbrief", "superbrief", "super", "short", "terse")
+	v.addVerb("diagnose", "diagnose")
 	v.addVerb("inventory", "inventory", "i", "inv")
-
-	// Giving (V?GIVE)
-	v.addVerb("give", "give", "offer", "hand")
-	v.addVerb("put", "put", "place", "insert", "set")
-
-	// Light control (V?LAMP-ON, V?LAMP-OFF)
-	v.addVerb("light", "light", "ignite")
-	v.addVerb("extinguish", "extinguish", "douse", "put-out")
-	v.addVerb("turn", "turn", "switch", "rotate")
-
-	// Combat (V?ATTACK, V?MUNG)
-	v.addVerb("attack", "attack", "fight", "hit", "kill", "strike", "murder")
-	v.addVerb("break", "break", "smash", "mung", "destroy")
-
-	// System commands (V?QUIT, V?RESTART, V?SAVE, V?RESTORE)
-	v.addVerb("quit", "quit", "q", "exit")
+	v.addVerb("quit", "quit", "q")
 	v.addVerb("restart", "restart")
-	v.addVerb("save", "save")
 	v.addVerb("restore", "restore", "load")
+	v.addVerb("save", "save")
 	v.addVerb("score", "score")
+	v.addVerb("script", "script")
+	v.addVerb("unscript", "unscript")
 	v.addVerb("version", "version")
 	v.addVerb("help", "help", "?")
 
-	// Verbosity commands (V?VERBOSE, V?BRIEF, V?SUPER-BRIEF)
-	v.addVerb("verbose", "verbose", "long")
-	v.addVerb("brief", "brief", "normal")
-	v.addVerb("superbrief", "superbrief", "short", "terse")
+	// Movement (V-WALK, V-ENTER, V-EXIT, V-CLIMB, etc.)
+	v.addVerb("walk", "walk", "go", "run", "proceed", "step")
+	v.addVerb("enter", "enter")
+	v.addVerb("exit", "exit", "leave")
+	v.addVerb("climb", "climb", "sit")
+	v.addVerb("climb-up", "climb up") // multi-word
+	v.addVerb("climb-down", "climb down") // multi-word
+	v.addVerb("climb-on", "climb on") // multi-word
+	v.addVerb("board", "board")
+	v.addVerb("disembark", "disembark")
+	v.addVerb("jump", "jump", "leap", "dive")
+	v.addVerb("cross", "cross", "ford")
+	v.addVerb("follow", "follow", "pursue", "chase", "come")
+	v.addVerb("back", "back")
+	v.addVerb("skip", "skip", "hop")
+	v.addVerb("swim", "swim", "bathe", "wade")
+	v.addVerb("stand", "stand")
+	v.addVerb("stay", "stay")
 
-	// Communication (V?TELL, V?HELLO)
-	v.addVerb("tell", "tell", "say", "speak")
-	v.addVerb("hello", "hello", "hi", "greet")
+	// Manipulation (V-TAKE, V-DROP, V-PUT, etc.)
+	v.addVerb("take", "take", "get", "hold", "carry", "remove", "grab", "catch")
+	v.addVerb("take", "pick up") // multi-word
+	v.addVerb("drop", "drop", "release", "discard")
+	v.addVerb("drop", "put down") // multi-word
+	v.addVerb("put", "put", "stuff", "insert", "place", "hide")
+	v.addVerb("put-on", "put on") // multi-word
+	v.addVerb("give", "give", "donate", "offer", "feed")
+	v.addVerb("throw", "throw", "hurl", "chuck", "toss")
+	v.addVerb("move", "move", "shift")
+	v.addVerb("raise", "raise", "lift")
+	v.addVerb("lower", "lower")
 
-	// Waiting (V?WAIT)
-	v.addVerb("wait", "wait", "z")
-
-	// Magic words and special commands
-	v.addVerb("xyzzy", "xyzzy")
-	v.addVerb("plugh", "plugh")
-	v.addVerb("frobozz", "frobozz")
-	v.addVerb("ulysses", "ulysses", "odysseus") // V-ODYSSEUS in ZIL
-
-	// More action verbs from gverbs.zil
-	v.addVerb("climb", "climb", "scale")
-	v.addVerb("drink", "drink", "quaff", "sip")
-	v.addVerb("eat", "eat", "consume", "devour")
-	v.addVerb("fill", "fill")
-	v.addVerb("pour", "pour", "empty")
+	// Examination (V-EXAMINE, V-LOOK, V-READ, V-SEARCH, etc.)
+	v.addVerb("examine", "examine", "x", "inspect", "describe", "what", "whats")
+	v.addVerb("examine", "look at") // multi-word
+	v.addVerb("look", "look", "l", "stare", "gaze")
+	v.addVerb("look-in", "look in") // multi-word
+	v.addVerb("look-on", "look on") // multi-word
+	v.addVerb("read", "read", "skim")
+	v.addVerb("search", "search")
+	v.addVerb("find", "find", "where", "seek", "see")
+	v.addVerb("count", "count")
 	v.addVerb("listen", "listen", "hear")
 	v.addVerb("smell", "smell", "sniff")
-	v.addVerb("touch", "touch", "feel", "rub")
-	v.addVerb("wave", "wave", "brandish")
-	v.addVerb("pull", "pull", "tug")
-	v.addVerb("push", "push", "press")
-	v.addVerb("move", "move", "shift")
-	v.addVerb("turn-on", "turn-on", "activate", "switch-on")
-	v.addVerb("turn-off", "turn-off", "deactivate", "switch-off")
-	v.addVerb("enter", "enter", "board", "climb-in")
-	v.addVerb("exit", "exit", "leave", "disembark", "climb-out")
-	v.addVerb("search", "search")
-	v.addVerb("jump", "jump", "leap")
-	v.addVerb("knock", "knock", "rap")
-	v.addVerb("pray", "pray")
-	v.addVerb("dig", "dig", "excavate")
-	v.addVerb("swim", "swim")
-	v.addVerb("tie", "tie", "attach", "fasten")
-	v.addVerb("untie", "untie", "unfasten", "detach")
-	v.addVerb("blow", "blow")
-	v.addVerb("ring", "ring")
-	v.addVerb("exorcise", "exorcise", "banish")
-	v.addVerb("count", "count")
-	v.addVerb("unlock", "unlock")
+	v.addVerb("touch", "touch", "feel", "rub", "pat", "pet")
+
+	// Container interaction (V-OPEN, V-CLOSE, V-LOCK, V-UNLOCK)
+	v.addVerb("open", "open")
+	v.addVerb("close", "close", "shut")
 	v.addVerb("lock", "lock")
-	v.addVerb("inflate", "inflate", "blow-up")
+	v.addVerb("unlock", "unlock")
+
+	// Light and fire (V-LAMP-ON, V-LAMP-OFF, V-BURN, etc.)
+	v.addVerb("light", "light", "ignite")
+	v.addVerb("turn", "turn", "set", "flip")
+	v.addVerb("turn-on", "turn on", "switch on", "activate") // multi-word
+	v.addVerb("turn-off", "turn off", "switch off", "deactivate") // multi-word
+	v.addVerb("extinguish", "extinguish", "douse")
+	v.addVerb("burn", "burn", "incinerate", "ignite")
+	v.addVerb("melt", "melt", "liquify")
+
+	// Combat and destruction (V-ATTACK, V-KILL, V-CUT, V-BREAK, etc.)
+	v.addVerb("attack", "attack", "fight", "hurt", "injure", "hit")
+	v.addVerb("kill", "kill", "murder", "slay", "dispatch")
+	v.addVerb("break", "break", "smash", "mung", "destroy", "damage", "block")
+	v.addVerb("cut", "cut", "slice", "pierce")
+	v.addVerb("kick", "kick", "taunt")
+	v.addVerb("stab", "stab")
+	v.addVerb("strike", "strike")
+	v.addVerb("swing", "swing", "thrust")
+	v.addVerb("blast", "blast")
+
+	// Consumption (V-EAT, V-DRINK)
+	v.addVerb("drink", "drink", "imbibe", "swallow", "quaff", "sip")
+	v.addVerb("drink-from", "drink from") // multi-word
+	v.addVerb("eat", "eat", "consume", "taste", "bite", "devour")
+
+	// Fluids (V-POUR, V-FILL, V-INFLATE, V-DEFLATE)
+	v.addVerb("pour", "pour", "spill", "empty")
+	v.addVerb("fill", "fill")
+	v.addVerb("inflate", "inflate")
 	v.addVerb("deflate", "deflate")
-	v.addVerb("plug", "plug", "repair", "patch")
-	v.addVerb("burn", "burn", "incinerate")
+	v.addVerb("pump", "pump")
+	v.addVerb("spray", "spray")
+	v.addVerb("squeeze", "squeeze")
+
+	// Physical manipulation (V-PUSH, V-PULL, V-RUB, V-TIE, etc.)
+	v.addVerb("push", "push", "press")
+	v.addVerb("pull", "pull", "tug", "yank")
+	v.addVerb("tie", "tie", "fasten", "secure", "attach")
+	v.addVerb("untie", "untie", "free", "release", "unfasten", "unattach", "unhook")
+	v.addVerb("wave", "wave", "brandish")
+	v.addVerb("shake", "shake")
+	v.addVerb("knock", "knock", "rap")
+	v.addVerb("ring", "ring", "peal")
+	v.addVerb("brush", "brush", "clean")
+	v.addVerb("lubricate", "lubricate", "oil", "grease")
+	v.addVerb("plug", "plug", "glue", "patch", "repair", "fix")
+	v.addVerb("puncture", "puncture")
+	v.addVerb("dig", "dig", "excavate")
+	v.addVerb("poke", "poke")
+	v.addVerb("roll", "roll")
+	v.addVerb("spin", "spin")
+	v.addVerb("slide", "slide")
+	v.addVerb("lean", "lean")
+	v.addVerb("blow", "blow")
+	v.addVerb("blow-out", "blow out") // multi-word
+	v.addVerb("blow-up", "blow up") // multi-word
+	v.addVerb("blow-in", "blow in") // multi-word
+
+	// Wearing and equipment
+	v.addVerb("wear", "wear")
+
+	// Communication (V-TELL, V-HELLO, V-YELL, V-ANSWER, etc.)
+	v.addVerb("tell", "tell", "ask")
+	v.addVerb("say", "say", "speak")
+	v.addVerb("hello", "hello", "hi")
+	v.addVerb("yell", "yell", "scream", "shout")
+	v.addVerb("answer", "answer", "reply")
+	v.addVerb("command", "command")
+	v.addVerb("curse", "curse", "shit", "fuck", "damn")
+
+	// Magic and special (V-EXORCISE, V-PRAY, V-WISH, etc.)
+	v.addVerb("exorcise", "exorcise", "banish", "cast", "drive", "begone")
+	v.addVerb("pray", "pray")
+	v.addVerb("wish", "wish")
+	v.addVerb("incant", "incant", "chant")
+	v.addVerb("enchant", "enchant")
+	v.addVerb("disenchant", "disenchant")
+	v.addVerb("mumble", "mumble", "sigh")
+	v.addVerb("repent", "repent")
+
+	// Time and state
+	v.addVerb("wait", "wait", "z")
+	v.addVerb("wake", "wake", "awake", "surprise", "startle")
+	v.addVerb("sleep", "sleep")
+
+	// Easter eggs and magic words
+	v.addVerb("xyzzy", "xyzzy", "plugh") // plugh synonymous per ZIL
+	v.addVerb("frobozz", "frobozz")
+	v.addVerb("ulysses", "ulysses", "odysseus")
+	v.addVerb("zork", "zork")
+	v.addVerb("win", "win", "winnage")
+	v.addVerb("echo", "echo")
+	v.addVerb("chomp", "chomp", "lose", "barf")
+	v.addVerb("bug", "bug")
+	v.addVerb("treasure", "treasure", "temple")
+
+	// Miscellaneous actions
+	v.addVerb("apply", "apply")
+	v.addVerb("make", "make")
+	v.addVerb("hatch", "hatch")
+	v.addVerb("launch", "launch")
+	v.addVerb("activate", "activate")
+	v.addVerb("send", "send")
+	v.addVerb("talk", "talk")
+	v.addVerb("play", "play")
+	v.addVerb("wind", "wind")
+	v.addVerb("pick", "pick")
+	v.addVerb("rape", "rape", "molest")
 }
 
 // initObjects initializes object synonyms from ZIL object definitions (1dungeon.zil, gglobals.zil)

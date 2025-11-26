@@ -183,6 +183,9 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			} else {
 				result = g.handleLook()
 			}
+		case "look-in", "look-on":
+			// Multi-word verb "look in" or "look on"
+			result = g.handleLookIn(cmd.DirectObject)
 		case "examine":
 			result = g.handleExamine(cmd.DirectObject)
 		case "take":
@@ -222,6 +225,12 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			} else {
 				result = "Turn it on or off?"
 			}
+		case "turn-on":
+			// Multi-word verb "turn on"
+			result = g.handleTurnOn(cmd.DirectObject)
+		case "turn-off":
+			// Multi-word verb "turn off"
+			result = g.handleTurnOff(cmd.DirectObject)
 		case "light":
 			result = g.handleTurnOn(cmd.DirectObject)
 		case "extinguish":
@@ -232,6 +241,9 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleHelp()
 		case "put":
 			result = g.handlePut(cmd.DirectObject, cmd.Preposition, cmd.IndirectObject)
+		case "put-on":
+			// Multi-word "put on"
+			result = g.handlePut(cmd.DirectObject, "on", cmd.IndirectObject)
 		case "give":
 			result = g.handleGive(cmd.DirectObject, cmd.IndirectObject)
 		case "attack":
@@ -240,6 +252,15 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleWave(cmd.DirectObject)
 		case "climb":
 			result = g.handleClimb(cmd.DirectObject)
+		case "climb-up":
+			// Multi-word "climb up"
+			result = "You can't climb that."
+		case "climb-down":
+			// Multi-word "climb down"
+			result = "You can't climb down that."
+		case "climb-on":
+			// Multi-word "climb on"
+			result = "You can't climb on that."
 		case "tie":
 			result = g.handleTie(cmd.DirectObject, cmd.IndirectObject)
 		case "untie":
@@ -265,6 +286,9 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		case "eat":
 			result = g.handleEat(cmd.DirectObject)
 		case "drink":
+			result = g.handleDrink(cmd.DirectObject)
+		case "drink-from":
+			// Multi-word "drink from"
 			result = g.handleDrink(cmd.DirectObject)
 		case "fill":
 			result = g.handleFill(cmd.DirectObject, cmd.IndirectObject)
@@ -294,6 +318,15 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleSwim()
 		case "blow":
 			result = g.handleBlow(cmd.DirectObject)
+		case "blow-out":
+			// Multi-word "blow out"
+			result = g.handleTurnOff(cmd.DirectObject)
+		case "blow-up":
+			// Multi-word "blow up"
+			result = "That would be dangerous."
+		case "blow-in":
+			// Multi-word "blow in"
+			result = "That doesn't help."
 		case "knock":
 			// Handle both "knock door" and "knock on door"
 			objName := cmd.DirectObject
@@ -312,6 +345,68 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = g.handleScore()
 		case "restart":
 			result = "Restart is not yet implemented."
+		case "enter":
+			result = g.handleEnter(cmd)
+		case "exit", "leave":
+			result = g.handleMove("out")
+		case "throw":
+			result = g.handleThrow(cmd)
+		case "kill":
+			result = g.handleAttack(cmd.DirectObject)
+		case "yell", "scream", "shout":
+			result = g.handleYell()
+		case "board":
+			result = g.handleBoard(cmd.DirectObject)
+		case "disembark":
+			result = g.handleMove("out")
+		case "brief":
+			result = "Brief mode is now on."
+		case "verbose":
+			result = "Verbose mode is now on."
+		case "superbrief":
+			result = "Superbrief mode is now on."
+		case "diagnose":
+			result = g.handleDiagnose()
+		case "version":
+			result = "ZORK I: The Great Underground Empire\nGo Edition Version 1.0\nOriginal game Copyright (c) 1981, 1982, 1983 Infocom, Inc."
+		case "say", "speak":
+			result = g.handleSay(cmd)
+		case "find", "where":
+			result = "You'll have to find it yourself."
+		case "curse", "damn", "shit", "fuck":
+			result = "Such language in a high-class establishment like this!"
+		case "xyzzy", "plugh":
+			result = "A hollow voice says \"Fool.\""
+		case "win":
+			result = "Preposterous!"
+		case "bug":
+			result = "No bugs here. This is a feature-complete implementation."
+		case "chomp":
+			result = "I don't think the dungeon master would approve."
+		case "zork":
+			result = "At your service!"
+		case "echo":
+			result = g.handleEcho()
+		case "script":
+			result = "Scripting is not implemented in this version."
+		case "unscript":
+			result = "Scripting is not implemented in this version."
+		case "cross", "ford":
+			result = "You can't cross that."
+		case "kick", "taunt":
+			result = "Kicking things won't help."
+		case "melt", "liquify":
+			result = "You have nothing to melt it with."
+		case "repent", "sigh":
+			result = "It's a bit late for that."
+		case "sleep":
+			result = "This is no time for sleeping!"
+		case "wake":
+			result = "The dungeon master does not allow sleeping in the dungeon."
+		case "wish":
+			result = "You have been granted 1 wish. Too bad you just used it up."
+		case "mumble":
+			result = "You mumble to yourself. Nothing happens."
 		default:
 			result = "I don't understand how to \"" + cmd.Verb + "\" something."
 		}
@@ -2966,4 +3061,113 @@ func (g *GameV2) handleRestore(cmd *Command) string {
 
 	// Return the current room description after restore
 	return fmt.Sprintf("Game restored.\n\n%s", g.handleLook())
+}
+
+// handleEnter handles the ENTER command (V-ENTER in ZIL)
+// ENTER alone tries to go IN
+// ENTER <object> tries to go through/board the object
+func (g *GameV2) handleEnter(cmd *Command) string {
+	if cmd.DirectObject == "" {
+		// ENTER alone = try to go IN
+		return g.handleMove("in")
+	}
+
+	// ENTER <object> = try to go through it or board it
+	// This is like V-THROUGH in ZIL
+	item := g.findItem(cmd.DirectObject)
+	if item == nil {
+		return "You can't see any " + cmd.DirectObject + " here."
+	}
+
+	// For now, just try to move through it as a direction
+	// In full ZIL this would handle boats, vehicles, etc.
+	return "You can't enter that."
+}
+
+// handleThrow handles throwing objects (V-THROW in ZIL)
+func (g *GameV2) handleThrow(cmd *Command) string {
+	if cmd.DirectObject == "" {
+		return "Throw what?"
+	}
+
+	// Find the object
+	item := g.findItem(cmd.DirectObject)
+	if item == nil {
+		return "You don't have that."
+	}
+
+	if item.Location != "inventory" {
+		return "You're not holding the " + item.Name + "."
+	}
+
+	// Special case: throwing at something
+	if cmd.IndirectObject != "" {
+		return fmt.Sprintf("The %s bounces harmlessly off the %s.", item.Name, cmd.IndirectObject)
+	}
+
+	// Just drop it
+	return g.handleDrop(cmd.DirectObject)
+}
+
+// handleYell handles yelling (V-YELL in ZIL)
+func (g *GameV2) handleYell() string {
+	// Check if we're in the echo room (canyon-view in Zork I)
+	if g.Location == "canyon-view" {
+		return "Your voice echoes back: \"HELLO!\""
+	}
+
+	return "You scream loudly. Nothing happens."
+}
+
+// handleBoard handles boarding vehicles (V-BOARD in ZIL)
+func (g *GameV2) handleBoard(objName string) string {
+	if objName == "" {
+		return "Board what?"
+	}
+
+	item := g.findItem(objName)
+	if item == nil {
+		return "You can't see any " + objName + " here."
+	}
+
+	// Check if it's the boat
+	if objName == "boat" || objName == "raft" {
+		if item.Location != g.Location && item.Location != "inventory" {
+			return "The boat isn't here."
+		}
+		return "You are now in the boat."
+	}
+
+	return "You can't board that."
+}
+
+// handleDiagnose handles the DIAGNOSE command (V-DIAGNOSE in ZIL)
+func (g *GameV2) handleDiagnose() string {
+	// In original Zork, this would report health status
+	// For now, simple implementation
+	return "You are in perfect health."
+}
+
+// handleSay handles SAY command (V-SAY in ZIL)
+func (g *GameV2) handleSay(cmd *Command) string {
+	if cmd.DirectObject == "" {
+		return "Say what?"
+	}
+
+	word := strings.ToLower(cmd.DirectObject)
+
+	// Magic words
+	switch word {
+	case "xyzzy", "plugh":
+		return "A hollow voice says \"Fool.\""
+	case "hello":
+		return g.handleYell()
+	default:
+		return "Nothing happens."
+	}
+}
+
+// handleEcho handles ECHO command (V-ECHO in ZIL)
+func (g *GameV2) handleEcho() string {
+	return g.handleYell()
 }
