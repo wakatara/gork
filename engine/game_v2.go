@@ -253,7 +253,12 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 		case "wave":
 			result = g.handleWave(cmd.DirectObject)
 		case "climb":
-			result = g.handleClimb(cmd.DirectObject)
+			// Handle "climb through window" - when "through" is preposition, object is in IndirectObject
+			objName := cmd.DirectObject
+			if objName == "" && cmd.Preposition == "through" {
+				objName = cmd.IndirectObject
+			}
+			result = g.handleClimb(objName)
 		case "climb-up":
 			// Multi-word "climb up"
 			result = "You can't climb that."
@@ -1023,8 +1028,13 @@ func (g *GameV2) handleLook() string {
 			continue // Skip trap door in living-room if rug hasn't been moved
 		}
 
-		if item != nil && !item.Flags.IsInvisible {
-			result.WriteString("There is a " + item.Name + " here.\n")
+		if item != nil && !item.Flags.IsInvisible && !item.Flags.NoRoomListing {
+			// Use RoomDescription (FDESC) if available, otherwise generic description
+			if item.RoomDescription != "" {
+				result.WriteString(item.RoomDescription + "\n")
+			} else {
+				result.WriteString("There is a " + item.Name + " here.\n")
+			}
 		}
 	}
 
@@ -2087,6 +2097,11 @@ func (g *GameV2) handleClimb(objName string) string {
 		return "You can't see any " + objName + " here."
 	}
 
+	// Special case: climbing through the window at behind-house
+	if item.ID == "kitchen-window" && g.Location == "behind-house" {
+		return g.handleMove("in")
+	}
+
 	// Special cases would go here (ladder, tree, etc.)
 	if item.ID == "ladder" {
 		return "The ladder is lying on the ground. You can't climb it."
@@ -3074,11 +3089,27 @@ func (g *GameV2) handleEnter(cmd *Command) string {
 		return g.handleMove("in")
 	}
 
+	// Special case: "enter house" or "enter window" at behind-house should go IN
+	if g.Location == "behind-house" {
+		if cmd.DirectObject == "white-house" || cmd.DirectObject == "kitchen-window" {
+			return g.handleMove("in")
+		}
+	}
+
 	// ENTER <object> = try to go through it or board it
 	// This is like V-THROUGH in ZIL
 	item := g.findItem(cmd.DirectObject)
 	if item == nil {
+		// Special fallback: if they're trying to enter "house" anywhere near it, try IN
+		if cmd.DirectObject == "white-house" {
+			return g.handleMove("in")
+		}
 		return "You can't see any " + cmd.DirectObject + " here."
+	}
+
+	// If it's the window and we're behind the house, go IN
+	if item.ID == "kitchen-window" && g.Location == "behind-house" {
+		return g.handleMove("in")
 	}
 
 	// For now, just try to move through it as a direction
