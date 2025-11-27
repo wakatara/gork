@@ -378,6 +378,10 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = fmt.Sprintf("ZORK I: The Great Underground Empire\nGo Edition Version %s\nOriginal game Copyright (c) 1981, 1982, 1983 Infocom, Inc.", g.Version)
 		case "say", "speak":
 			result = g.handleSay(cmd)
+		case "tell", "talk", "ask":
+			result = g.handleTalk(cmd)
+		case "hello", "hi":
+			result = g.handleHello(cmd)
 		case "find", "where":
 			result = "You'll have to find it yourself."
 		case "curse", "damn", "shit", "fuck":
@@ -1125,6 +1129,14 @@ func (g *GameV2) handleExamine(objName string) string {
 func (g *GameV2) handleTake(objName string) string {
 	item := g.findItem(objName)
 	if item == nil {
+		// Check if it's an NPC
+		npc := g.findNPC(objName)
+		if npc != nil {
+			if npc.Flags.IsAlive {
+				return "The " + npc.Name + " wouldn't hear of it."
+			}
+			return "The " + npc.Name + " is too heavy to carry."
+		}
 		return "You can't see any " + objName + " here."
 	}
 
@@ -2766,11 +2778,33 @@ func (g *GameV2) handleSmell(objName string) string {
 	}
 
 	item := g.findItem(objName)
-	if item == nil {
-		return "You can't see any " + objName + " here."
+	if item != nil {
+		return "It doesn't smell unusual."
 	}
 
-	return "It doesn't smell unusual."
+	// Check for NPCs
+	npc := g.findNPC(objName)
+	if npc != nil {
+		switch npc.ID {
+		case "troll":
+			return "The troll smells like a mixture of rotten meat and wet dog. Disgusting."
+		case "thief":
+			return "The thief smells of sweat and greed."
+		case "cyclops":
+			return "The cyclops reeks of garlic and peppers."
+		case "bat":
+			return "The bat smells like... bat guano. Lovely."
+		case "ghosts":
+			return "The spirits have no smell, being incorporeal."
+		default:
+			if !npc.Flags.IsAlive {
+				return "The " + npc.Name + " smells like death."
+			}
+			return "The " + npc.Name + " doesn't smell unusual."
+		}
+	}
+
+	return "You can't see any " + objName + " here."
 }
 
 // handleTouch touches something (V-TOUCH in ZIL)
@@ -2780,11 +2814,8 @@ func (g *GameV2) handleTouch(objName string) string {
 	}
 
 	item := g.findItem(objName)
-	if item == nil {
-		return "You can't see any " + objName + " here."
-	}
-
-	// Special case: rubbing mirrors (MIRROR-MIRROR in ZIL lines 971-1012)
+	if item != nil {
+		// Special case: rubbing mirrors (MIRROR-MIRROR in ZIL lines 971-1012)
 	if (item.ID == "mirror-1" || item.ID == "mirror-2") && !g.Flags["mirror-mung"] {
 		// Determine the two rooms
 		room1 := "mirror-room-1"
@@ -2847,9 +2878,24 @@ func (g *GameV2) handleTouch(objName string) string {
 		g.Location = toRoom
 
 		return "There is a rumble from deep within the earth and the room shakes.\n\n" + g.handleLook()
+		}
+
+		return "You feel nothing unexpected."
 	}
 
-	return "You feel nothing unexpected."
+	// Check for NPCs
+	npc := g.findNPC(objName)
+	if npc != nil {
+		if npc.Flags.IsAlive && npc.Flags.IsAggressive {
+			return "That would be extremely dangerous."
+		}
+		if !npc.Flags.IsAlive {
+			return "You feel the " + npc.Name + ". It's quite dead."
+		}
+		return "The " + npc.Name + " shies away from your touch."
+	}
+
+	return "You can't see any " + objName + " here."
 }
 
 // handleBreak breaks/smashes something (V-MUNG in ZIL)
@@ -2927,16 +2973,49 @@ func (g *GameV2) handleSearch(objName string) string {
 		return g.handleLook()
 	}
 
+	// First check items
 	item := g.findItem(objName)
-	if item == nil {
-		return "You can't see any " + objName + " here."
+	if item != nil {
+		if item.Flags.IsContainer {
+			return g.handleLookIn(item.ID)
+		}
+		return "You find nothing special."
 	}
 
-	if item.Flags.IsContainer {
-		return g.handleLookIn(item.ID)
+	// Then check NPCs
+	npc := g.findNPC(objName)
+	if npc != nil {
+		if npc.Flags.IsAlive {
+			return "The " + npc.Name + " wouldn't appreciate that."
+		}
+
+		// Search dead NPC's inventory
+		if len(npc.Inventory) == 0 {
+			return "The " + npc.Name + " has nothing of interest."
+		}
+
+		var itemNames []string
+		for _, itemID := range npc.Inventory {
+			if foundItem := g.Items[itemID]; foundItem != nil {
+				itemNames = append(itemNames, foundItem.Name)
+				// Move item to current room
+				foundItem.Location = g.Location
+				room := g.Rooms[g.Location]
+				if room != nil {
+					room.AddItem(itemID)
+				}
+			}
+		}
+		npc.Inventory = []string{} // Clear inventory
+
+		if len(itemNames) == 0 {
+			return "The " + npc.Name + " has nothing of interest."
+		}
+
+		return "Searching the " + npc.Name + ", you find:\n  " + strings.Join(itemNames, "\n  ")
 	}
 
-	return "You find nothing special."
+	return "You can't see any " + objName + " here."
 }
 
 // handleJump jumps (V-JUMP in ZIL)
@@ -3135,7 +3214,26 @@ func (g *GameV2) handleThrow(cmd *Command) string {
 
 	// Special case: throwing at something
 	if cmd.IndirectObject != "" {
-		return fmt.Sprintf("The %s bounces harmlessly off the %s.", item.Name, cmd.IndirectObject)
+		// Check if target exists (item or NPC)
+		targetItem := g.findItem(cmd.IndirectObject)
+		targetNPC := g.findNPC(cmd.IndirectObject)
+
+		if targetItem == nil && targetNPC == nil {
+			return "You can't see any " + cmd.IndirectObject + " here."
+		}
+
+		// Special case: throwing at NPCs
+		if targetNPC != nil {
+			if targetNPC.Flags.IsAlive && targetNPC.Flags.IsAggressive {
+				// Drop the item and trigger combat
+				g.handleDrop(cmd.DirectObject)
+				return fmt.Sprintf("The %s bounces harmlessly off the %s, who looks very angry!", item.Name, targetNPC.Name)
+			}
+			return fmt.Sprintf("The %s bounces harmlessly off the %s.", item.Name, targetNPC.Name)
+		}
+
+		// Throwing at an item
+		return fmt.Sprintf("The %s bounces harmlessly off the %s.", item.Name, targetItem.Name)
 	}
 
 	// Just drop it
@@ -3203,4 +3301,70 @@ func (g *GameV2) handleSay(cmd *Command) string {
 // handleEcho handles ECHO command (V-ECHO in ZIL)
 func (g *GameV2) handleEcho() string {
 	return g.handleYell()
+}
+
+// handleTalk handles talking to NPCs (V-TELL in ZIL)
+func (g *GameV2) handleTalk(cmd *Command) string {
+	targetName := cmd.DirectObject
+	if cmd.IndirectObject != "" {
+		targetName = cmd.IndirectObject
+	}
+
+	if targetName == "" {
+		return "Talk to whom?"
+	}
+
+	// Check if target is an NPC
+	npc := g.findNPC(targetName)
+	if npc == nil {
+		return "You can't talk to that."
+	}
+
+	if !npc.Flags.IsAlive {
+		return "The " + npc.Name + " is dead and cannot respond."
+	}
+
+	// NPC-specific responses (from ZIL TELL-FCN)
+	switch npc.ID {
+	case "troll":
+		// TROLL-FUNCTION in ZIL - troll doesn't talk, just grunts
+		return "The troll grunts and waves his axe menacingly. He doesn't seem interested in conversation."
+
+	case "thief":
+		// THIEF-FUNCTION in ZIL - thief is too busy
+		if len(npc.Inventory) > 0 {
+			return "The thief sneers at you and clutches his bag of loot. \"I'm busy,\" he hisses."
+		}
+		return "The thief eyes you suspiciously. \"I have nothing to say to you.\""
+
+	case "cyclops":
+		// CYCLOPS-FUNCTION in ZIL
+		if g.Flags["cyclops-flag"] {
+			// Asleep after drinking water
+			return "The cyclops snores loudly. He's fast asleep."
+		}
+		return "The cyclops looks at you hungrily. \"Me eat you!\" he roars."
+
+	case "bat":
+		// BAT-FUNCTION in ZIL - bat doesn't talk
+		return "The bat screeches at you and continues circling the room."
+
+	case "ghosts":
+		// GHOSTS in ZIL - spirits moan
+		return "The spirits moan and wail, blocking your passage. They seem to be trying to warn you of something."
+
+	default:
+		return "The " + npc.Name + " has nothing to say."
+	}
+}
+
+// handleHello handles saying hello (V-HELLO in ZIL)
+func (g *GameV2) handleHello(cmd *Command) string {
+	// If no target specified, just yell hello
+	if cmd.DirectObject == "" && cmd.IndirectObject == "" {
+		return g.handleYell()
+	}
+
+	// Otherwise, talk to the NPC
+	return g.handleTalk(cmd)
 }
