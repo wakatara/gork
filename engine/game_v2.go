@@ -27,9 +27,10 @@ type GameV2 struct {
 
 // Player represents the player character
 type Player struct {
-	Inventory []string // Item IDs
-	MaxWeight int
-	Health    int
+	Inventory        []string // Item IDs
+	MaxWeight        int
+	Health           int
+	StrengthModifier int // ZIL P?STRENGTH modifier (reduced by wounds)
 }
 
 // NewGameV2 creates a new game with proper type separation
@@ -73,13 +74,14 @@ func (g *GameV2) initializeWorld() {
 
 func (g *GameV2) createNPCs() {
 	// The Troll - Blocks passages, guards treasure
+	// ZIL STRENGTH: 2 (1dungeon.zil:1046)
 	troll := NewNPC(
 		"troll",
 		"nasty troll",
 		"A nasty-looking troll, brandishing a bloody axe, blocks all passages out of the room.",
 	)
 	troll.Location = "troll-room"
-	troll.Strength = 20
+	troll.Strength = 2 // ZIL-faithful value
 	troll.Weapon = "axe"
 	troll.Hostile = true
 	troll.Flags.IsAggressive = true
@@ -88,13 +90,14 @@ func (g *GameV2) createNPCs() {
 	g.Rooms["troll-room"].AddNPC("troll")
 
 	// The Thief - Steals treasures, moves around dungeon
+	// ZIL STRENGTH: 5 (1dungeon.zil:978) - TOUGHER THAN TROLL!
 	thief := NewNPC(
 		"thief",
 		"shady thief",
 		"A suspicious-looking individual with a bag of stolen goods eyes you warily.",
 	)
 	thief.Location = "maze-1" // Starts in maze
-	thief.Strength = 15
+	thief.Strength = 5 // ZIL-faithful value - much stronger than troll!
 	thief.Weapon = "stiletto"
 	thief.Hostile = false // Only hostile if attacked or has loot
 	thief.Flags.IsAggressive = false
@@ -104,13 +107,14 @@ func (g *GameV2) createNPCs() {
 	g.Rooms["maze-1"].AddNPC("thief")
 
 	// The Cyclops - Guards treasure room
+	// ZIL STRENGTH: 10000 (1dungeon.zil:394) - PUZZLE-ONLY DEFEAT!
 	cyclops := NewNPC(
 		"cyclops",
 		"cyclops",
 		"A cyclops, who looks prepared to eat you, blocks the way. He seems to have been eating, for on the ground is a lot of refuse.",
 	)
 	cyclops.Location = "cyclops-room"
-	cyclops.Strength = 30
+	cyclops.Strength = 10000 // ZIL-faithful value - cannot be killed in normal combat!
 	cyclops.Weapon = "" // Uses fists
 	cyclops.Hostile = true
 	cyclops.Flags.IsAggressive = true
@@ -135,13 +139,14 @@ func (g *GameV2) createNPCs() {
 	g.Rooms["entrance-to-hades"].AddNPC("ghosts")
 
 	// The Bat - Carries player to random dark rooms
+	// ZIL: No STRENGTH property (1dungeon.zil:155) - special handler, not combatable
 	bat := NewNPC(
 		"bat",
 		"vampire bat",
 		"A vampire bat is circling overhead, its beady eyes fixed on you.",
 	)
 	bat.Location = "bat-room"
-	bat.Strength = 5
+	bat.Strength = 0 // Not combatable - flies away when attacked
 	bat.Weapon = ""
 	bat.Hostile = false // Not directly hostile, just annoying
 	bat.Flags.IsAggressive = true // Will grab you
@@ -398,6 +403,8 @@ func (g *GameV2) executeCommand(cmd *Command) string {
 			result = "At your service!"
 		case "echo":
 			result = g.handleEcho()
+		case "clear", "cls", "refresh":
+			result = g.handleClear()
 		case "script":
 			result = "Scripting is not implemented in this version."
 		case "unscript":
@@ -1045,8 +1052,13 @@ func (g *GameV2) handleLook() string {
 	// List NPCs in room
 	for _, npcID := range room.NPCs {
 		npc := g.NPCs[npcID]
-		if npc != nil && npc.Flags.IsAlive {
-			result.WriteString(npc.Description + "\n")
+		if npc != nil {
+			if npc.Flags.IsAlive {
+				result.WriteString(npc.Description + "\n")
+			} else {
+				// Show corpse description for dead NPCs
+				result.WriteString("The body of a dead " + npc.Name + " is here.\n")
+			}
 		}
 	}
 
@@ -1890,18 +1902,19 @@ func (g *GameV2) handleGive(objName string, npcName string) string {
 }
 
 // handleAttack attacks an NPC or object (V-ATTACK in ZIL)
+// handleAttack implements ZIL-faithful combat (V-ATTACK, gverbs.zil:176-190)
 func (g *GameV2) handleAttack(objName string) string {
 	if objName == "" {
 		return "Attack what?"
 	}
 
-	// Check for NPC
+	// Check for NPC (ZIL: FSET? PRSO ACTORBIT)
 	npc := g.findNPC(objName)
 	if npc == nil {
 		// Check for item
 		item := g.findItem(objName)
 		if item != nil {
-			return "Violence isn't the answer to this one."
+			return "I've known strange people, but fighting a " + objName + "?"
 		}
 		return "You can't see any " + objName + " here."
 	}
@@ -1914,131 +1927,112 @@ func (g *GameV2) handleAttack(objName string) string {
 		return "The " + npc.Name + " is already dead."
 	}
 
-	// Check if player has a weapon
-	var playerWeapon *Item
-	var playerDamage int = 5 // Base damage with bare hands
-
-	for _, itemID := range g.Player.Inventory {
-		item := g.Items[itemID]
-		if item != nil && item.Flags.IsWeapon {
-			playerWeapon = item
-			// Different weapons have different damage
-			switch itemID {
-			case "sword":
-				playerDamage = 20
-			case "axe":
-				playerDamage = 15
-			case "knife", "stiletto", "rusty-knife":
-				playerDamage = 10
-			case "trident":
-				playerDamage = 12
-			default:
-				playerDamage = 8
-			}
-			break
-		}
-	}
-
+	// Check if player has a weapon (ZIL: can't use bare hands)
+	playerWeapon := g.findPlayerWeapon()
 	if playerWeapon == nil {
-		return "Attacking the " + npc.Name + " with your bare hands is suicidal."
+		return fmt.Sprintf("Trying to attack a %s with your bare hands is suicidal.", npc.Name)
 	}
 
-	// Combat! Player attacks first
+	// Check if player is holding the weapon (ZIL: IN? PRSI WINNER)
+	// (This is already guaranteed by findPlayerWeapon, but kept for ZIL fidelity)
+
+	// ZIL-faithful combat system (HERO-BLOW)
 	var result strings.Builder
-	result.WriteString("You attack the " + npc.Name + " with your " + playerWeapon.Name + "!\n")
+	result.WriteString(fmt.Sprintf("You attack the %s with your %s!\n", npc.Name, playerWeapon.Name))
 
-	// Player hits NPC
-	npc.Strength -= playerDamage
+	// Player attacks (HERO-BLOW routine)
+	outcome, message := g.heroBlow(npc, playerWeapon)
+	result.WriteString(message + "\n")
 
-	if npc.Strength <= 0 {
-		// NPC is defeated!
-		npc.Flags.IsAlive = false
-		npc.Flags.IsAggressive = false
+	// Apply outcome to NPC
+	g.applyHeroOutcome(npc, outcome)
 
-		result.WriteString("The " + npc.Name + " is defeated!\n")
-
-		// Special handling per NPC
-		switch npc.ID {
-		case "troll":
-			// Troll drops axe and vanishes (TROLL-FCN F-DEAD in ZIL)
-			g.Flags["troll-dead"] = true
-			room := g.Rooms[npc.Location]
-
-			// Troll drops his axe
-			axe := g.Items["axe"]
-			if axe != nil {
-				axe.Location = npc.Location
-				if room != nil {
-					room.AddItem("axe")
-				}
-			}
-
-			// Remove troll from room
-			if room != nil {
-				room.RemoveNPC("troll")
-			}
-			result.WriteString("Almost as soon as the troll breathes his last breath, a cloud of sinister black fog envelops him, and when the fog lifts, the carcass has disappeared.\n\nThe troll's axe clatters to the floor.")
-
-		case "cyclops":
-			// Cyclops drops treasure
-			g.Flags["cyclops-dead"] = true
-			// Add treasure to room
-			if treasure := g.Items["cyclops-treasure"]; treasure != nil {
-				treasure.Location = npc.Location
-				if room := g.Rooms[npc.Location]; room != nil {
-					room.AddItem("cyclops-treasure")
-				}
-			}
-			// Replace with corpse
-			room := g.Rooms[npc.Location]
-			if room != nil {
-				room.RemoveNPC("cyclops")
-			}
-			result.WriteString("The cyclops falls with a thunderous crash. His treasures are now yours!")
-
-		case "thief":
-			// Thief drops stolen items
-			g.Flags["thief-dead"] = true
-			for _, itemID := range npc.Inventory {
-				if item := g.Items[itemID]; item != nil {
-					item.Location = npc.Location
-					if room := g.Rooms[npc.Location]; room != nil {
-						room.AddItem(itemID)
-					}
-				}
-			}
-			npc.Inventory = []string{}
-			// Remove thief from room
-			room := g.Rooms[npc.Location]
-			if room != nil {
-				room.RemoveNPC("thief")
-			}
-			result.WriteString("The thief falls, and his stolen loot spills across the floor.")
-		}
-
+	// Check if NPC died
+	if !npc.Flags.IsAlive {
+		result.WriteString(g.handleNPCDeath(npc))
 		return strings.TrimSpace(result.String())
 	}
 
-	// NPC is still alive and fights back!
-	result.WriteString("The " + npc.Name + " is wounded but still fighting!\n")
+	// NPC counter-attacks (VILLAIN-BLOW routine)
+	result.WriteString("\n")
+	villainOutcome, villainMessage := g.villainBlow(npc)
+	result.WriteString(villainMessage + "\n")
 
-	// NPC counter-attacks
-	npcDamage := npc.Strength / 5 // Simple damage calculation
-	if npcDamage < 3 {
-		npcDamage = 3
-	}
+	// Apply outcome to player
+	g.applyVillainOutcome(villainOutcome)
 
-	g.Player.Health -= npcDamage
-	result.WriteString(fmt.Sprintf("The %s strikes back, dealing %d damage!\n", npc.Name, npcDamage))
-
+	// Check if player died
 	if g.Player.Health <= 0 {
 		g.GameOver = true
-		result.WriteString("\n****  You have died  ****\n")
-	} else {
-		result.WriteString(fmt.Sprintf("Your health: %d\n", g.Player.Health))
+		result.WriteString("\n    ****  You have died  ****\n")
 	}
 
 	return strings.TrimSpace(result.String())
+}
+
+// handleNPCDeath handles special death cases for each NPC
+func (g *GameV2) handleNPCDeath(npc *NPC) string {
+	var result strings.Builder
+
+	switch npc.ID {
+	case "troll":
+		// Troll drops axe and vanishes (TROLL-FCN F-DEAD in ZIL)
+		g.Flags["troll-dead"] = true
+		room := g.Rooms[npc.Location]
+
+		// Troll drops his axe
+		axe := g.Items["axe"]
+		if axe != nil {
+			axe.Location = npc.Location
+			if room != nil {
+				room.AddItem("axe")
+			}
+		}
+
+		// Remove troll from room (special case - body vanishes)
+		if room != nil {
+			room.RemoveNPC("troll")
+		}
+		result.WriteString("Almost as soon as the troll breathes his last breath, a cloud of sinister black fog envelops him, and when the fog lifts, the carcass has disappeared.\n\nThe troll's axe clatters to the floor.")
+
+	case "cyclops":
+		// Cyclops drops treasure (if defeated via combat - which shouldn't happen with strength 10000!)
+		g.Flags["cyclops-dead"] = true
+
+		// Note: In ZIL, cyclops has strength 10000 - can't be killed via combat
+		// This will essentially never happen in ZIL-faithful combat
+		// But we'll keep the handler for consistency
+
+		// Add treasure to room
+		if treasure := g.Items["cyclops-treasure"]; treasure != nil {
+			treasure.Location = npc.Location
+			if room := g.Rooms[npc.Location]; room != nil {
+				room.AddItem("cyclops-treasure")
+			}
+		}
+		// Remove cyclops from room
+		room := g.Rooms[npc.Location]
+		if room != nil {
+			room.RemoveNPC("cyclops")
+		}
+		result.WriteString("The cyclops falls with a thunderous crash. His treasures are now yours!")
+
+	case "thief":
+		// Thief is killed - loot remains on body until searched
+		g.Flags["thief-dead"] = true
+
+		// DON'T remove thief from room - leave corpse for examination/searching
+		// DON'T drop inventory yet - player must search corpse to find loot
+		// (In original Zork, you search the thief's body to get the stolen treasures)
+
+		result.WriteString("The thief, his last breath gurgling in his throat, falls to the ground.\nYou should probably search his body for stolen treasures.")
+
+	default:
+		// Generic death message
+		result.WriteString(fmt.Sprintf("The %s is defeated!", npc.Name))
+	}
+
+	return result.String()
 }
 
 // handleWave waves an item (V-WAVE in ZIL)
@@ -3367,4 +3361,11 @@ func (g *GameV2) handleHello(cmd *Command) string {
 
 	// Otherwise, talk to the NPC
 	return g.handleTalk(cmd)
+}
+
+// handleClear clears the screen and reprints location (meta-command, not in ZIL)
+func (g *GameV2) handleClear() string {
+	// Return special marker that will be handled by main.go
+	// We can't call UI functions directly from the engine
+	return "<<CLEAR_SCREEN>>"
 }
