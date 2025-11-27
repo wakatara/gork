@@ -2,11 +2,12 @@
 
 > You'll likely be eaten by a grue
 
-An somewhat faithful port of the classic 1980s text adventure game **Zork I: The
-Great Underground Empire** from Infocom to Go from the original variant of a
-variant of lisp ZIL (Zork Implementation Language) [Zork I ZIL code
-here](https://github.com/historicalsource/zork1). If you care about the how and
-changes I made from the ZIL Code, you can find details in [[./ARCHITECTURE.md]]
+A faithful-as-possible port of the classic 1980s text adventure game **Zork I:
+The Great Underground Empire** from Infocom to Go from the original variant of a
+variant of lisp ZIL (Zork Implementation Language). The [Zork I ZIL source files
+are here](https://github.com/historicalsource/zork1). If you care about the how
+and changes I made from the ZIL Code, you can find details in
+[ARCHITECTURE.md](https://github.com/wakatara/gork/blob/main/ARCHITECTURE.md)
 
 ## About
 
@@ -18,41 +19,31 @@ Zork was incredibly influential as a piece of interactive fiction and to
 computer gaming, and instrumental in Infocom being by Activision. It was also a
 runaway commercial success for video games at that time.
 
-I never really got a chance to play the whole thing. I didn't even have my own
-computer (a Vic 20!) until years later. And when the nice people at
-[nixCraft](https://mastodon.social/@nixCraft/115585413690855037) posted on
-Mastodon about the original source code being open sourced. Well, I honestly
-wodnered how hard it would be to port (and have been doing a lot of game dev
-lately outside of scientific work, anyway.). And kinda wanted to play the whol
-thing through, ya know?
+I never really got a chance to play the whole thing. And when the nice people at
+[nixCraft](https://mastodon.social/@nixCraft/115585413690855037) posted on about
+the original source being open sourced. Well, I wondered how hard it could be to
+port and kinda wanted to play the whole thing through.
 
-The idea is to recreate the original game experience (as I jazily remember it -
-yell if you see I've messed something up) and just make it fun and available for
-people to try and play through (now, I am wondering about the old Hitchhiker's
-Guide to the Galaxy text games and what happened to them. 🤔).
-
-I had to take some serious liberties with the original ZIL source code since
-_everything_ was an non-type-safe object, so translating to modern computing
-constructs for my own sanity took a bit of overarching redesign though the
-gameplay _should be_ completely faithful to the original. The ZIL fiels have no
-tests, and while I've created as many as I could, I am flying a bit blind here
-(so please playtest the heck outta this thing for me). The parser was trickier
-than you'd think despite the simplicity of the language commands. Other than the
-underlying internals though, and some affectations with intentionally trying to
-make it "CRT"-y with terminal effects, I _think_ I managed to stick the landing.
+I took serious liberties with the original ZIL source code since it's not
+type-safe and had no real concept of object inheritence or structs. I am flying
+a bit blind here, so please playtest the heck outta this thing for me. The
+parser was trickier than you'd think despite the simplicity of the language
+commands. Other than the underlying internals though, and some affectations with
+intentionally trying to make it "CRT"-y with terminal effects, I _think_ I
+managed to stick the landing.
 
 I also ignored the original save and restore custom text format in favour of
 something more modern (json) and Go idiomatic. Also, as a quality of life
 addition, there is a `clear` and `cls` command I added to keep everything on one
 screen if you choose. But, other than those, yeah... it should be a rather
-faitful rendition of Zork I.
+faithful to the original.
 
-Please try it out and let me know what I may have gotten worong. I'm sure there
-must be bugs - even with using an AI to list and trace all room exissts and
-entrances, I ran across from serious DAG problems early on, though think I
-nailed all of those. I'm really hoping there's someone who actually played the
-whole thing through that can give feedback on the port with some proper
-playtesting.
+Please try it out! And let me know what I may have gotten wrong. I'm sure there
+must be bugs - even tracing all room exits and entrances, I ran across from
+serious DAG problems early on, though think I nailed all of those (and some are
+intentional affectation in the ZIL code to emulate mazes etc). I'm really
+hoping there's someone who actually played the whole thing through that can give
+feedback on the port.
 
 _Anyways, kinda an early 2025 Xmas gift back to the world, if you will._
 
@@ -81,7 +72,7 @@ _Anyways, kinda an early 2025 Xmas gift back to the world, if you will._
 
 - ✅ **Complete Game World**:
   - All 110 rooms from original Zork I
-  - Famous locations and puzzles: West of House, Trolls, Maze, Cyclops, Canyon
+  - Famous locations and puzzles
   - Conditional exits (aka puzzles)
   - Light/dark room mechanics with grue warning
   - Outdoor/indoor/underground areas
@@ -101,8 +92,7 @@ _Anyways, kinda an early 2025 Xmas gift back to the world, if you will._
 ### Homebrew (macOS/Linux)
 
 ```sh
-brew tap wakatara/tap
-brew install gork
+brew install wakatara/tap/gork
 ```
 
 ### Working Go Environment
@@ -172,23 +162,6 @@ You are carrying:
 - **Interaction**: `put <obj> in <container>`, `give <obj> to <npc>`
 - **System**: `inventory` (`i`), `help`, `save`, `restore`, `quit`
 
-### Items in the Game
-
-122 items across 10 categories (ALL items from original Zork I):
-
-- **Treasures** (19): diamond, emerald, chalice, jade, coins, painting,
-  bracelet, scarab, sceptre, egg, pot-of-gold, trident, bauble, platinum bar,
-  sapphire, ivory torch, trunk of jewels, pearl, oriental rug
-- **Weapons** (5): elvish sword, knife, axe, stiletto, trident
-- **Tools** (6): pump, screwdriver, wrench, rope, shovel, putty
-- **Containers** (11): mailbox, trophy case, bottle, coffin, nest, bags
-- **Light Sources** (4): brass lantern, torch, candles
-- **Readable** (8): leaflet, prayer book, guidebook, maps, manuals
-- **Food/Drink** (3): lunch, garlic, water
-- **Fixed Objects** (14): windows, doors, buttons, grating, altar, machine
-- **Scenery** (8): white house, forest, mountains, rainbow, river, engravings
-- **Miscellaneous** (13): boats, skull, bones, coal, ladder, canary, etc.
-
 ### Tips
 
 - The lamp is crucial - you can't explore in the dark or you'll be eaten by a grue!
@@ -206,48 +179,16 @@ test all packages:
 go test ./...
 
 # Run all tests with verbose output
-go test ./... -v
+go test -v ./...
 
-# Run only engine tests with verbose output
-go test ./engine -v
-
-# Run specific test
-go test ./engine -run TestParser
-
-# Run with coverage report
-go test ./engine -cover
+# Run against engine with coverage report
+go test -v ./engine -cover
 ```
 
 **Note:** Running `go test -v` without `./...` from the root will fail because the root directory has no Go files. Always use `go test ./...` to test all packages recursively.
 
-Current test coverage:
-
-- `engine/parser_test.go`: Parser and command processing
-- `engine/rooms_test.go`: All 110 rooms and navigation
-- `engine/items_test.go`: All 122 items
-- `engine/game_verbs_test.go`: Verb handlers
-- `engine/new_verbs_test.go`: New verb handlers
-- `engine/puzzle_integration_test.go`: Major puzzle sequences
-- `engine/save_test.go`: Save/restore functionality
-- **Total: 200 tests passing**
-
 All tests use `t.Logf()` for debug output, so verbose mode (`-v`) will show
 detailed test information with proper PASS/FAIL indicators.
-
-## Architecture
-
-```
-gork/
-├── engine/           # Core game engine
-│   ├── parser.go     # Natural language parser
-│   ├── vocabulary.go # 684 words from original Zork
-│   ├── types.go      # Room, Item, NPC type definitions
-│   ├── game_v2.go    # Game state and command execution
-│   ├── rooms.go      # All 110 rooms from Zork I
-│   └── items.go      # All 122 items from Zork I
-├── ui/               # Terminal UI and retro effects
-└── cmd/gork/         # Main entry point
-```
 
 ## Implementation Notes
 
@@ -295,17 +236,6 @@ type NPC struct {
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the complete design rationale behind
 choosing separate structs over ZIL's generic object model.
-
-### Action Dispatch
-
-Following ZIL's priority chain from `gmain.zil`:
-
-1. Player/Actor action handler
-2. Room's M-BEG handler
-3. Preaction handlers
-4. Indirect object handler
-5. Direct object handler
-6. Default verb handler
 
 ## Original Source
 
