@@ -2018,14 +2018,72 @@ func (g *GameV2) handleNPCDeath(npc *NPC) string {
 		result.WriteString("The cyclops falls with a thunderous crash. His treasures are now yours!")
 
 	case "thief":
-		// Thief is killed - loot remains on body until searched
+		// Thief is killed - implement DEPOSIT-BOOTY (ZIL 1actions.zil:2035-2062)
 		g.Flags["thief-dead"] = true
+		room := g.Rooms[npc.Location]
 
-		// DON'T remove thief from room - leave corpse for examination/searching
-		// DON'T drop inventory yet - player must search corpse to find loot
-		// (In original Zork, you search the thief's body to get the stolen treasures)
+		// Drop stiletto to room (ZIL line 2036)
+		stiletto := g.Items["stiletto"]
+		if stiletto != nil {
+			stiletto.Location = npc.Location
+			if room != nil {
+				room.AddItem("stiletto")
+			}
+			npc.Inventory = removeFromSlice(npc.Inventory, "stiletto")
+		}
 
-		result.WriteString("The thief, his last breath gurgling in his throat, falls to the ground.\nYou should probably search his body for stolen treasures.")
+		// DEPOSIT-BOOTY: Drop all stolen treasures (ZIL line 2038, routine at 1897-1913)
+		var droppedTreasures []string
+		for _, itemID := range npc.Inventory {
+			item := g.Items[itemID]
+			// Skip large-bag, drop all treasures (Value > 0)
+			if item != nil && itemID != "large-bag" && item.Value > 0 {
+				item.Location = npc.Location
+				if room != nil {
+					room.AddItem(itemID)
+				}
+				droppedTreasures = append(droppedTreasures, itemID)
+
+				// Special case: egg opens when dropped (ZIL line 2009)
+				if itemID == "egg" {
+					g.Flags["egg-solve"] = true
+					item.Flags.IsOpen = true
+				}
+			}
+		}
+
+		// Remove dropped treasures from thief's inventory
+		for _, itemID := range droppedTreasures {
+			npc.Inventory = removeFromSlice(npc.Inventory, itemID)
+		}
+
+		// If in treasure room, reveal invisible treasures (ZIL lines 2039-2059)
+		if npc.Location == "treasure-room" && len(droppedTreasures) > 0 {
+			result.WriteString("As the thief dies, the power of his magic decreases, and his treasures reappear:\n")
+			for _, itemID := range droppedTreasures {
+				item := g.Items[itemID]
+				if item != nil {
+					result.WriteString(fmt.Sprintf("  A %s\n", item.Name))
+					// Make visible if it was invisible
+					if item.Flags.IsInvisible {
+						item.Flags.IsInvisible = false
+					}
+				}
+			}
+		} else if len(droppedTreasures) > 0 {
+			// Not in treasure room - just say booty remains
+			result.WriteString("The thief, his last breath gurgling in his throat, falls to the ground.\nHis booty remains.")
+		} else {
+			// No treasures to drop
+			result.WriteString("The thief, his last breath gurgling in his throat, falls to the ground.")
+		}
+
+		// Disable thief AI (ZIL line 2062)
+		// Note: Thief AI daemon will be disabled when we implement I-THIEF interval
+		// For now, setting thief-dead flag is sufficient
+
+		// DON'T remove thief from room - corpse remains (unlike troll)
+		// This matches ZIL behavior
 
 	default:
 		// Generic death message
