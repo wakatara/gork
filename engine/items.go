@@ -240,10 +240,11 @@ func createWeapons(g *GameV2) {
 	g.Items["stiletto"] = stiletto
 
 	// AXE (bloody)
-	axe := NewItem("axe", "bloody axe", "There is a bloody axe here.")
+	axe := NewItem("axe", "bloody axe", "")
 	axe.Aliases = []string{"axe", "ax"}
 	axe.Flags.IsTakeable = true
 	axe.Flags.IsWeapon = true
+	// No TEXT property in ZIL - examine gives default message
 	g.Items["axe"] = axe
 }
 

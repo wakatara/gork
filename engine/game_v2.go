@@ -1098,7 +1098,11 @@ func (g *GameV2) handleExamine(objName string) string {
 			return "The window is slightly ajar, but not enough to allow entry."
 		}
 
+		// ZIL V-EXAMINE: If no TEXT property (empty Description), give default message
 		result := item.Description
+		if result == "" {
+			result = fmt.Sprintf("There's nothing special about the %s.", item.Name)
+		}
 
 		// If it's a container, show if it's open/closed
 		if item.Flags.IsContainer {
