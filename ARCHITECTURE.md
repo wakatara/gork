@@ -261,25 +261,11 @@ gork/
 │   ├── game_v2.go     # Game state and logic
 │   ├── parser.go      # Natural language parsing
 │   └── vocabulary.go  # Word database
-├── world/
-│   ├── rooms.go       # Room definitions (to be created)
-│   ├── items.go       # Item definitions (to be created)
-│   └── npcs.go        # NPC definitions (to be created)
 ├── ui/
 │   └── terminal.go    # Display and colors
 └── cmd/gork/
     └── main.go        # Entry point
 ```
-
-## Next Steps
-
-1. **Extract world definitions** - Move room/item/NPC creation from `game_v2.go` to `world/` package
-2. **Add more rooms** - Port ~50 rooms from original ZIL
-3. **Add more items** - Implement all items from original game
-4. **Add more NPCs** - Troll, thief, cyclops behaviors
-5. **Combat system** - Implement fighting mechanics
-6. **Puzzle system** - Dam, mirrors, maze, etc.
-7. **Save/restore** - Serialize game state
 
 ## Lessons Learned
 
