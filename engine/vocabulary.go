@@ -193,6 +193,7 @@ func (v *Vocabulary) initVerbs() {
 	v.addVerb("chomp", "chomp", "lose", "barf")
 	v.addVerb("bug", "bug")
 	v.addVerb("treasure", "treasure", "temple")
+	v.addVerb("clear", "clear", "cls", "refresh")
 
 	// Miscellaneous actions
 	v.addVerb("apply", "apply")

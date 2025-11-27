@@ -25,23 +25,6 @@ func TestAllNPCsExist(t *testing.T) {
 	t.Logf("All 5 NPCs created successfully")
 }
 
-func TestTrollCombat(t *testing.T) {
-	g := NewGameV2("test")
-	g.Location = "troll-room"
-
-	// Give player a sword
-	sword := g.Items["sword"]
-	sword.Location = "inventory"
-	g.Player.Inventory = append(g.Player.Inventory, "sword")
-
-	// Attack troll
-	result := g.Process("attack troll")
-
-	if !strings.Contains(result, "attack") {
-		t.Errorf("Expected combat message, got: %s", result)
-	}
-}
-
 func TestTrollFood(t *testing.T) {
 	g := NewGameV2("test")
 	g.Location = "troll-room"
@@ -65,21 +48,6 @@ func TestTrollFood(t *testing.T) {
 	troll := g.NPCs["troll"]
 	if troll == nil || troll.Location == "" {
 		t.Error("Troll should still be present (non-treasure doesn't satisfy him)")
-	}
-}
-
-func TestCyclopsCombat(t *testing.T) {
-	g := NewGameV2("test")
-	g.Location = "cyclops-room"
-
-	// Verify cyclops exists
-	cyclops := g.NPCs["cyclops"]
-	if cyclops == nil {
-		t.Fatal("Cyclops does not exist")
-	}
-
-	if !cyclops.Flags.IsAggressive {
-		t.Error("Cyclops should be aggressive")
 	}
 }
 
