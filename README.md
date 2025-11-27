@@ -332,14 +332,22 @@ This enables:
 
 ## License
 
-The original Zork I source code was released as open source by
-Infocom/Activision for historical preservation. This Go port is created for
-educational purposes and preserving gaming history.
+MIT License - see [LICENSE](LICENSE) file for details.
+
+This is a modern Go port of the classic 1980s text adventure game "Zork I: The
+Great Underground Empire" originally created by Infocom, Inc. The game's source
+code in ZIL (Zork Implementation Language) was released as open source by
+Microsoft Corporation in 2025 under the MIT License for historical preservation
+purposes.
+
+This implementation is also released under the MIT License, with proper
+attribution to both the original creators and the ZIL source release.
 
 ## Acknowledgments
 
-- Marc Blank, Dave Lebling, Bruce Daniels, and Tim Anderson - Original Zork creators
-- Infocom - For creating the ZIL language and Zork
+- Marc Blank, Dave Lebling, Bruce Daniels, and Tim Anderson - Original Zork creators (1977-1979)
+- Infocom, Inc. - For creating the ZIL language and publishing Zork I (1980)
+- Microsoft Corporation - For releasing the ZIL source code under MIT License (2025)
 - The interactive fiction community - For preserving these classics
 
 ---
