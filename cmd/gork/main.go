@@ -69,6 +69,14 @@ func main() {
 		// Process command
 		output := game.Process(input)
 
+		// Check for special clear screen command
+		if output == "<<CLEAR_SCREEN>>" {
+			// Clear screen and reprint title + current location
+			locationDesc := game.Process("look")
+			ui.PrintTitleAndLocation(locationDesc)
+			continue
+		}
+
 		// Display result
 		if output != "" {
 			ui.PrintSlow(output)

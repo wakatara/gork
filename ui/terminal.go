@@ -36,17 +36,17 @@ func PrintTitle() {
 	title := `
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║   ▄████  ▒█████   ██▀███   ██ ▄█▀                          ║
-║  ██▒ ▀█▒▒██▒  ██▒▓██ ▒ ██▒ ██▄█▒                           ║
-║ ▒██░▄▄▄░▒██░  ██▒▓██ ░▄█ ▒▓███▄░                           ║
-║ ░▓█  ██▓▒██   ██░▒██▀▀█▄  ▓██ █▄                           ║
-║ ░▒▓███▀▒░ ████▓▒░░██▓ ▒██▒▒██▒ █▄                          ║
-║  ░▒   ▒ ░ ▒░▒░▒░ ░ ▒▓ ░▒▓░▒ ▒▒ ▓▒                          ║
-║   ░   ░   ░ ▒ ▒░   ░▒ ░ ▒░░ ░▒ ▒░                          ║
-║ ░ ░   ░ ░ ░ ░ ▒    ░░   ░ ░ ░░ ░                           ║
-║       ░     ░ ░     ░     ░  ░                              ║
+║   ▄████  ▒█████   ██▀███   ██ ▄█▀                            ║
+║  ██▒ ▀█▒▒██▒  ██▒▓██ ▒ ██▒ ██▄█▒                             ║
+║ ▒██░▄▄▄░▒██░  ██▒▓██ ░▄█ ▒▓███▄░                             ║
+║ ░▓█  ██▓▒██   ██░▒██▀▀█▄  ▓██ █▄                             ║
+║ ░▒▓███▀▒░ ████▓▒░░██▓ ▒██▒▒██▒ █▄                            ║
+║  ░▒   ▒ ░ ▒░▒░▒░ ░ ▒▓ ░▒▓░▒ ▒▒ ▓▒                            ║
+║   ░   ░   ░ ▒ ▒░   ░▒ ░ ▒░░ ░▒ ▒░                            ║
+║ ░ ░   ░ ░ ░ ░ ▒    ░░   ░ ░ ░░ ░                             ║
+║       ░     ░ ░     ░     ░  ░                               ║
 ║                                                              ║
-║           The Great Underground Empire (Go Edition)         ║
+║           The Great Underground Empire (Go Edition)          ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 `
@@ -90,6 +90,18 @@ func PrintSlow(text string) {
 // ClearScreen clears the terminal screen
 func ClearScreen() {
 	fmt.Print("\033[H\033[2J")
+}
+
+// PrintTitleAndLocation clears screen, reprints title, and returns to top
+// This is used by the "clear" command to refresh the display
+func PrintTitleAndLocation(locationDescription string) {
+	ClearScreen()
+	PrintTitle()
+	if locationDescription != "" {
+		PrintSlow(locationDescription)
+		fmt.Println()
+		fmt.Println()
+	}
 }
 
 // PrintBox prints text in a bordered box
