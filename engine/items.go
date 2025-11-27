@@ -904,6 +904,11 @@ func createSceneryObjects(g *GameV2) {
 	gunk.Aliases = []string{"gunk", "slag", "vitreous"}
 	gunk.Flags.IsTakeable = true
 	g.Items["gunk"] = gunk
+
+	// NOTE: NPCs (troll, thief, cyclops, bat, ghosts) are NOT items.
+	// They are defined in the NPC system in game_v2.go
+	// The examine command automatically checks g.findNPC() so they are examinable
+	// without being duplicated as items.
 }
 
 // createMiscItems creates various other items
