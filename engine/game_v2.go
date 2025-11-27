@@ -91,10 +91,11 @@ func (g *GameV2) createNPCs() {
 
 	// The Thief - Steals treasures, moves around dungeon
 	// ZIL STRENGTH: 5 (1dungeon.zil:978) - TOUGHER THAN TROLL!
+	// LDESC from ZIL 1dungeon.zil:978
 	thief := NewNPC(
 		"thief",
 		"shady thief",
-		"A suspicious-looking individual with a bag of stolen goods eyes you warily.",
+		"There is a suspicious-looking individual, holding a large bag, leaning against one wall. He is armed with a deadly stiletto.",
 	)
 	thief.Location = "maze-1" // Starts in maze
 	thief.Strength = 5 // ZIL-faithful value - much stronger than troll!
@@ -1098,6 +1099,26 @@ func (g *GameV2) handleExamine(objName string) string {
 			return "The window is slightly ajar, but not enough to allow entry."
 		}
 
+		// Special case: examining white house (ZIL 1actions.zil:113-117)
+		if item.ID == "white-house" {
+			return "The house is a beautiful colonial house which is painted white.\nIt is clear that the owners must have been extremely wealthy."
+		}
+
+		// Special case: examining chimney (ZIL 1actions.zil:546-551)
+		if item.ID == "chimney" {
+			return "The chimney leads downward (or upward), and looks climbable."
+		}
+
+		// Special case: examining burning torch (ZIL 1actions.zil:945-946)
+		if item.ID == "torch" && item.Flags.IsLit {
+			return "The torch is burning."
+		}
+
+		// Special case: examining tool chest (ZIL 1actions.zil:1333-1334)
+		if item.ID == "tool-chest" {
+			return "The chests are all empty."
+		}
+
 		// ZIL V-EXAMINE: If no TEXT property (empty Description), give default message
 		result := item.Description
 		if result == "" {
@@ -1136,6 +1157,10 @@ func (g *GameV2) handleExamine(objName string) string {
 	// Try to find NPC
 	npc := g.findNPC(objName)
 	if npc != nil {
+		// Special case: examining sleeping cyclops (ZIL 1actions.zil:1540-1543)
+		if npc.ID == "cyclops" && g.Flags["cyclops-flag"] {
+			return "The cyclops is sleeping like a baby, albeit a very ugly one."
+		}
 		return npc.Description
 	}
 

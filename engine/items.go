@@ -372,6 +372,8 @@ func createContainers(g *GameV2) {
 	tube.Flags.IsTakeable = true
 	tube.Flags.IsContainer = true
 	tube.Flags.IsReadable = true
+	tube.Text = `---> Frobozz Magic Gunk Company <---|
+	  All-Purpose Gunk`
 	g.Items["tube"] = tube
 
 	// TRUNK
@@ -419,6 +421,11 @@ Surely thou shalt repent of thy cunning.`
 	advertisement.Aliases = []string{"advertisement", "ad"}
 	advertisement.Flags.IsTakeable = true
 	advertisement.Flags.IsReadable = true
+	advertisement.Text = `"WELCOME TO ZORK!
+
+ZORK is a game of adventure, danger, and low cunning. In it you
+will explore some of the most amazing territory ever seen by mortals.
+No computer should be without one!"`
 	g.Items["advertisement"] = advertisement
 
 	// GUIDE (guide book)
@@ -426,6 +433,30 @@ Surely thou shalt repent of thy cunning.`
 	guide.Aliases = []string{"guide", "guidebook", "book"}
 	guide.Flags.IsTakeable = true
 	guide.Flags.IsReadable = true
+	guide.Text = `	Flood Control Dam #3
+
+FCD#3 was constructed in year 783 of the Great Underground Empire to
+harness the mighty Frigid River. This work was supported by a grant of
+37 million zorkmids from your omnipotent local tyrant Lord Dimwit
+Flathead the Excessive. This impressive structure is composed of
+370,000 cubic feet of concrete, is 256 feet tall at the center, and 193
+feet wide at the top. The lake created behind the dam has a volume
+of 1.7 billion cubic feet, an area of 12 million square feet, and a
+shore line of 36 thousand feet.
+
+The construction of FCD#3 took 112 days from ground breaking to
+the dedication. It required a work force of 384 slaves, 34 slave
+drivers, 12 engineers, 2 turtle doves, and a partridge in a pear
+tree. The work was managed by a command team composed of 2345
+bureaucrats, 2347 secretaries (at least two of whom could type),
+12,256 paper shufflers, 52,469 rubber stampers, 245,193 red tape
+processors, and nearly one million dead trees.
+
+We will now point out some of the more interesting features
+of FCD#3 as we conduct you on a guided tour of the facilities:
+
+        1) You start your tour here in the Dam Lobby. You will notice
+on your right that....`
 	g.Items["guide"] = guide
 
 	// MAP
@@ -433,6 +464,9 @@ Surely thou shalt repent of thy cunning.`
 	mapItem.Aliases = []string{"map"}
 	mapItem.Flags.IsTakeable = true
 	mapItem.Flags.IsReadable = true
+	mapItem.Text = `The map shows a forest with three clearings. The largest clearing contains
+a house. Three paths leave the large clearing. One of these paths, leading
+southwest, is marked "To Stone Barrow".`
 	g.Items["map"] = mapItem
 
 	// BOAT LABEL
@@ -440,6 +474,24 @@ Surely thou shalt repent of thy cunning.`
 	boatLabel.Aliases = []string{"label", "boat-label"}
 	boatLabel.Flags.IsTakeable = true
 	boatLabel.Flags.IsReadable = true
+	boatLabel.Text = `  !!!!FROBOZZ MAGIC BOAT COMPANY!!!!
+
+Hello, Sailor!
+
+Instructions for use:
+
+   To get into a body of water, say "Launch".
+   To get to shore, say "Land" or the direction in which you want
+to maneuver the boat.
+
+Warranty:
+
+  This boat is guaranteed against all defects for a period of 76
+milliseconds from date of purchase or until first used, whichever comes first.
+
+Warning:
+   This boat is made of thin plastic.
+   Good Luck!`
 	g.Items["boat-label"] = boatLabel
 
 	// MATCH (matchbook)
@@ -447,6 +499,20 @@ Surely thou shalt repent of thy cunning.`
 	match.Aliases = []string{"match", "matchbook", "matches"}
 	match.Flags.IsTakeable = true
 	match.Flags.IsReadable = true
+	match.Text = `(Close cover before striking)
+
+YOU too can make BIG MONEY in the exciting field of PAPER SHUFFLING!
+
+Mr. Anderson of Muddle, Mass. says: "Before I took this course I
+was a lowly bit twiddler. Now with what I learned at GUE Tech
+I feel really important and can obfuscate and confuse with the best."
+
+Dr. Blank had this to say: "Ten short days ago all I could look
+forward to was a dead-end job as a doctor. Now I have a promising
+future and make really big Zorkmids."
+
+GUE Tech can't promise these fantastic results to everyone. But when
+you earn your degree from GUE Tech, your future will be brighter.`
 	g.Items["match"] = match
 
 	// OWNERS MANUAL
@@ -454,6 +520,12 @@ Surely thou shalt repent of thy cunning.`
 	manual.Aliases = []string{"manual", "owners-manual"}
 	manual.Flags.IsTakeable = true
 	manual.Flags.IsReadable = true
+	manual.Text = `Congratulations!
+
+You are the privileged owner of ZORK I: The Great Underground Empire,
+a self-contained and self-maintaining universe. If used and maintained
+in accordance with normal operating practices for small universes, ZORK
+will provide many months of trouble-free operation.`
 	g.Items["owners-manual"] = manual
 }
 
@@ -687,6 +759,12 @@ func createSceneryObjects(g *GameV2) {
 	engravings.Aliases = []string{"engravings", "inscription"}
 	engravings.Flags.IsTakeable = false
 	engravings.Flags.IsReadable = true
+	engravings.Text = `The engravings were incised in the living rock of the cave wall by
+an unknown hand. They depict, in symbolic form, the beliefs of the
+ancient Zorkers. Skillfully interwoven with the bas reliefs are excerpts
+illustrating the major religious tenets of that time. Unfortunately, a
+later age seems to have considered them blasphemous and just as skillfully
+excised them.`
 	g.Items["engravings"] = engravings
 
 	// LEAVES
@@ -1021,6 +1099,11 @@ func createMiscItems(g *GameV2) {
 	prayer.Aliases = []string{"prayer"}
 	prayer.Flags.IsTakeable = false
 	prayer.Flags.IsReadable = true
+	prayer.Text = `The prayer is inscribed in an ancient script, rarely used today. It seems
+to be a philippic against small insects, absent-mindedness, and the picking
+up and dropping of small objects. The final verse consigns trespassers to
+the land of the dead. All evidence indicates that the beliefs of the ancient
+Zorkers were obscure.`
 	g.Items["prayer"] = prayer
 
 	// KEYS
