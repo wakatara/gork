@@ -40,9 +40,12 @@ tests, and while I've created as many as I could, I am flying a bit blind here
 than you'd think despite the simplicity of the language commands. Other than the
 underlying internals though, and some affectations with intentionally trying to
 make it "CRT"-y with terminal effects, I _think_ I managed to stick the landing.
+
 I also ignored the original save and restore custom text format in favour of
-something more modern (json) and Go idiomatic, but other than that, yeah... it
-should be a rather faitful rendition of Zork I.
+something more modern (json) and Go idiomatic. Also, as a quality of life
+addition, there is a `clear` and `cls` command I added to keep everything on one
+screen if you choose. But, other than those, yeah... it should be a rather
+faitful rendition of Zork I.
 
 Please try it out and let me know what I may have gotten worong. I'm sure there
 must be bugs - even with using an AI to list and trace all room exissts and
