@@ -1,3 +1,5 @@
+version: 2
+
 project_name: gork
 
 before:
@@ -21,11 +23,10 @@ builds:
       - amd64
       - arm64
       - arm
-      # Windows doesn't need all architectures
+    # Exclude certain OS/arch combinations
+    ignore:
       - goos: windows
         goarch: arm
-      - goos: windows
-        goarch: 386
 
 archives:
   - name_template: >-
@@ -59,11 +60,11 @@ changelog:
       - Merge branch
 
 brews:
-  - name: gork
-    repository:
+  - repository:
       owner: wakatara
       name: homebrew-tap
       token: "{{ .Env.GITHUB_TOKEN }}"
+    name: gork
     description: "ZORK I: The Great Underground Empire - Classic 1980s text adventure game ported to Go"
     homepage: https://github.com/wakatara/gork
     license: MIT
